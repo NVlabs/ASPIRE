@@ -1,6 +1,6 @@
 # ASPIRE: Agentic Skills Discovery for Robotics
 
-[Project Page](https://research.nvidia.com/labs/gear/aspire/) &ensp; [arXiv](https://arxiv.org/abs/2607.00272) &ensp;
+[Website](https://research.nvidia.com/labs/gear/aspire/) &ensp; [ArXiv](https://arxiv.org/abs/2607.00272) &ensp;
 
 **Runyu Lu<sup>1,2,&#42;,&dagger;</sup>, Yubo Wu<sup>1,3,&#42;</sup>, Ethan Kou<sup>1,4,&#42;</sup>,
 Letian Fu<sup>1,4</sup>, Wenli Xiao<sup>1,5</sup>, Ajay Mandlekar<sup>1</sup>, Yinzhen Xu<sup>1</sup>,
