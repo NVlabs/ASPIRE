@@ -1,0 +1,2578 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: YAM Recovery <recovery@example.invalid>
+Date: Thu, 2 Jul 2026 15:38:35 -0700
+Subject: [PATCH] YAM workstation changes for curobo
+
+---
+ reference/curobo_api.py                       | 1319 +++++++++++++++++
+ .../content/configs/world/collision_table.yml |    6 +-
+ src/curobo/wrap/reacher/motion_gen.py         |  524 +++++--
+ uv.lock                                       |    3 +
+ 4 files changed, 1709 insertions(+), 143 deletions(-)
+ create mode 100644 reference/curobo_api.py
+ create mode 100644 uv.lock
+
+diff --git a/reference/curobo_api.py b/reference/curobo_api.py
+new file mode 100644
+index 0000000..7a5e2dc
+--- /dev/null
++++ b/reference/curobo_api.py
+@@ -0,0 +1,1319 @@
++"""CuRobo world and motion planning helpers."""
++
++import pathlib
++import time
++from typing import Any
++
++import numpy as np
++import torch
++from scipy.spatial.transform import Rotation as R_scipy
++import trimesh
++
++from curobo.cuda_robot_model.cuda_robot_model import CudaRobotModel
++from curobo.geom.sphere_fit import SphereFitType
++from curobo.geom.types import Cuboid, Mesh, WorldConfig
++from curobo.types.base import TensorDeviceType
++from curobo.types.camera import CameraObservation
++from curobo.types.math import Pose
++from curobo.types.robot import JointState, RobotConfig
++from curobo.types.state import JointState as StateJointState
++from curobo.util_file import get_robot_configs_path, join_path, load_yaml
++from curobo.wrap.model.robot_segmenter import RobotSegmenter
++from curobo.wrap.reacher.ik_solver import IKSolver, IKSolverConfig
++from curobo.wrap.reacher.motion_gen import (
++    MotionGen,
++    MotionGenConfig,
++    MotionGenPlanConfig,
++    PoseCostMetric,
++)
++
++# Franka panda_hand to gripper fingertip center (along hand z), from franka_description/panda.urdf
++# panda_finger_joint1 origin xyz="0 0.04 0.0584" -> center between fingers is (0, 0, 0.0584) in hand frame
++FRANKA_HAND_TO_FINGERTIP_Z_M = 0.0584 * 2
++
++
++
++def _wrap_to_pi(x: np.ndarray) -> np.ndarray:
++    """Wrap angles to [-pi, pi] range."""
++    return (x + np.pi) % (2.0 * np.pi) - np.pi
++
++
++def _pick_nearest_solution(q_solutions: np.ndarray, q_ref: np.ndarray) -> np.ndarray:
++    """Pick the IK solution closest to the reference joint configuration.
++    
++    Args:
++        q_solutions: (K, 7) array of IK solutions
++        q_ref: (7,) reference joint configuration
++        
++    Returns:
++        (7,) array of the nearest solution
++    """
++    # q_solutions: (K, 7), q_ref: (7,)
++    dq = _wrap_to_pi(q_solutions - q_ref[None, :])
++    score = np.sum(dq * dq, axis=-1)
++    return q_solutions[int(np.argmin(score))]
++
++
++def _grasp_pose_fingertip_to_hand(
++    position: np.ndarray,
++    quat_wxyz: np.ndarray,
++    hand_to_fingertip_z: float = FRANKA_HAND_TO_FINGERTIP_Z_M,
++) -> np.ndarray:
++    """Convert grasp position from gripper fingertip frame to panda_hand (EE) frame.
++    Grasp nets typically output pose for the fingertip center; CuRobo plans for panda_hand.
++    Returns new position (3,) in world frame; orientation is unchanged."""
++    R = R_scipy.from_quat(np.roll(np.asarray(quat_wxyz), -1)).as_matrix()  # wxyz -> xyzw for scipy
++    offset_world = R @ np.array([0.0, 0.0, hand_to_fingertip_z])
++    return np.asarray(position, dtype=np.float64) - offset_world
++
++
++def save_world_and_robot_spheres_debug(
++    world_config,
++    joint_position: np.ndarray,
++    *,
++    robot_file: str = "franka.yml",
++    out_dir: str | pathlib.Path = "curobo_debug",
++    tag: str = "debug",
++    attached_obstacle: Any = None,
++    attached_obstacle_pose: tuple[np.ndarray, np.ndarray] | None = None,
++    exclude_obstacle_names: list[str] | None = None,
++) -> tuple[pathlib.Path | None, pathlib.Path | None]:
++    """Save CuRobo world + robot collision spheres at a given joint configuration.
++
++    This is a lightweight debug helper to visualize why IK / planning failed. It saves:
++
++      - world_and_robot_spheres_{tag}.obj: single OBJ containing both the CuRobo world
++        geometry (all obstacles in the WorldConfig) and the robot collision spheres at
++        the given joint configuration. Optionally includes an attached object at a given pose.
++      - robot_spheres_{tag}.npz: centers (N, 3) and radii (N,) of robot collision spheres.
++
++    Use a separate script (e.g. Plotly, Open3D, or trimesh) to visualize the mesh+spheres.
++
++    Args:
++        world_config: CuRobo WorldConfig or None.
++        joint_position: Joint configuration (7,) or (8,); only first 7 are used.
++        robot_file: Robot config YAML under CuRobo's robot configs (default franka.yml).
++        out_dir: Directory to save debug artifacts into (default ./curobo_debug).
++        tag: String tag to distinguish multiple saves (e.g. "grasp_3_IK_FAIL").
++        attached_obstacle: Optional CuRobo Obstacle (e.g. grasped object) to add at attached_obstacle_pose.
++        attached_obstacle_pose: (position (3,), quat_wxyz (4,)) world frame; required if attached_obstacle is set.
++        exclude_obstacle_names: When collecting world geometry, skip obstacles with these names (use to avoid
++            drawing the attached object at its old world pose when adding it at attached_obstacle_pose).
++
++    Returns:
++        (world_path, spheres_path): Paths to saved files; either may be None on error.
++    """
++    out_path = pathlib.Path(out_dir)
++    out_path.mkdir(parents=True, exist_ok=True)
++
++    world_path: pathlib.Path | None = None
++    spheres_path: pathlib.Path | None = None
++    exclude_set = set(exclude_obstacle_names or [])
++
++    # Collect world geometry for combined OBJ (skip tiny/noise meshes that appear as floating points)
++    MIN_WORLD_MESH_VERTICES = 20
++    MIN_WORLD_MESH_EXTENT_M = 0.025
++    geometries: list[trimesh.Trimesh] = []
++    if world_config is not None:
++        try:
++            # WorldConfig/obstacles expose get_trimesh_mesh()
++            for obj in getattr(world_config, "objects", []) or []:
++                if getattr(obj, "name", None) in exclude_set:
++                    continue
++                try:
++                    m = obj.get_trimesh_mesh()
++                    if m is None:
++                        continue
++                    n_verts = len(m.vertices) if hasattr(m.vertices, "__len__") else 0
++                    if n_verts < MIN_WORLD_MESH_VERTICES:
++                        continue
++                    extents = getattr(m, "extents", None)
++                    if extents is None and hasattr(m, "bounds") and m.bounds is not None:
++                        extents = np.ptp(m.bounds, axis=0)
++                    if extents is not None and float(np.max(extents)) < MIN_WORLD_MESH_EXTENT_M:
++                        continue
++                    geometries.append(m)
++                except Exception as e:  # pragma: no cover - debug/log only
++                    print(f"[curobo_debug] Warning: failed to convert world obstacle to mesh for tag={tag}: {e}")
++        except Exception as e:  # pragma: no cover - debug/log only
++            print(f"[curobo_debug] Warning: failed to iterate world objects for tag={tag}: {e}")
++
++    # Add attached object: draw at its position in the world (no EE transform).
++    # When the world is built with object_pose_override=EE, the object is already at the grasped pose.
++    if attached_obstacle is not None:
++        try:
++            tensor_args = TensorDeviceType()
++            mesh_added = False
++            try:
++                m = attached_obstacle.get_trimesh_mesh()
++                if m is not None:
++                    m_copy = m.copy()
++                    verts = np.asarray(m_copy.vertices, dtype=np.float64)
++                    pose_list = getattr(attached_obstacle, "pose", None)
++                    if pose_list is not None and len(pose_list) >= 7:
++                        obj_pose = Pose.from_list(pose_list, tensor_args)
++                        verts_t = tensor_args.to_device(torch.from_numpy(verts).float())
++                        verts = obj_pose.transform_points(verts_t).cpu().numpy()
++                        m_copy.vertices = verts
++                    geometries.append(m_copy)
++                    mesh_added = True
++            except Exception:
++                pass
++            if not mesh_added:
++                sph_list = attached_obstacle.get_bounding_spheres(
++                    n_spheres=min(128, 64),
++                    surface_sphere_radius=0.002,
++                    pre_transform_pose=None,
++                    tensor_args=tensor_args,
++                )
++                for s in sph_list:
++                    center = np.asarray(s.pose[:3], dtype=np.float64)
++                    r = float(getattr(s, "radius", 0.01))
++                    if r <= 0.0:
++                        r = 0.01
++                    sph_mesh = trimesh.creation.icosphere(radius=r)
++                    sph_mesh.apply_translation(center)
++                    geometries.append(sph_mesh)
++        except Exception as e:  # pragma: no cover - debug/log only
++            print(f"[curobo_debug] Warning: failed to add attached obstacle for tag={tag}: {e}")
++
++    # Save robot collision spheres at the given joint configuration
++    try:
++        tensor_args = TensorDeviceType()
++        robot_path = join_path(get_robot_configs_path(), robot_file)
++        robot_cfg = RobotConfig.from_dict(load_yaml(robot_path), tensor_args)
++        robot_model = CudaRobotModel(robot_cfg.kinematics)
++
++        q = np.asarray(joint_position, dtype=np.float64).flatten()[:7]
++        q_tensor = tensor_args.to_device(torch.from_numpy(q).unsqueeze(0).float())
++
++        spheres_batch = robot_model.get_robot_as_spheres(q_tensor)
++        if not spheres_batch:
++            print(f"[curobo_debug] No robot spheres found for tag={tag}.")
++            centers = np.zeros((0, 3), dtype=np.float64)
++            radii = np.zeros((0,), dtype=np.float64)
++        else:
++            # get_robot_as_spheres returns list over batch; we use the first batch element
++            spheres = spheres_batch[0]
++            centers = np.array(
++                [np.asarray(s.position, dtype=np.float64) for s in spheres],
++                dtype=np.float64,
++            )
++            radii = np.array([float(s.radius) for s in spheres], dtype=np.float64)
++
++        spheres_path = out_path / f"robot_spheres_{tag}.npz"
++        np.savez(spheres_path, centers=centers, radii=radii)
++        print(f"[curobo_debug] Saved robot spheres to {spheres_path}")
++
++        # Add robot spheres to combined geometry
++        for center, radius in zip(centers, radii):
++            if radius <= 0.0:
++                continue
++            try:
++                sph_mesh = trimesh.creation.icosphere(radius=float(radius))
++                sph_mesh.apply_translation(center.astype(np.float64))
++                geometries.append(sph_mesh)
++            except Exception as e:  # pragma: no cover - debug/log only
++                print(f"[curobo_debug] Warning: failed to create sphere mesh for tag={tag}: {e}")
++
++        # Export combined world + robot spheres OBJ if we have any geometry
++        if geometries:
++            try:
++                scene = trimesh.Scene(geometries)
++                world_path = out_path / f"world_and_robot_spheres_{tag}.obj"
++                scene.export(str(world_path))
++                print(f"[curobo_debug] Saved combined world+spheres OBJ to {world_path}")
++            except Exception as e:  # pragma: no cover - debug/log only
++                print(f"[curobo_debug] Failed to save combined OBJ for tag={tag}: {e}")
++                world_path = None
++    except Exception as e:  # pragma: no cover - debug/log only
++        print(f"[curobo_debug] Failed to save robot spheres for tag={tag}: {e}")
++        spheres_path = None
++
++    return world_path, spheres_path
++
++
++def joint_trajectory_to_ee_positions(
++    joint_traj: np.ndarray,
++    *,
++    robot_file: str = "franka.yml",
++    tensor_args=None,
++    ee_link_name: str = "panda_hand",
++) -> np.ndarray:
++    """Compute end-effector positions (T, 3) from joint trajectory (T, 7) using CuRobo FK.
++    joint_traj: (T, 7) arm joint positions in radians.
++    Returns (T, 3) Cartesian positions in meters (robot base frame)."""
++    if tensor_args is None:
++        tensor_args = TensorDeviceType()
++    robot_path = join_path(get_robot_configs_path(), robot_file)
++    robot_cfg = RobotConfig.from_dict(load_yaml(robot_path), tensor_args)
++    model = CudaRobotModel(robot_cfg.kinematics)
++    q = tensor_args.to_device(torch.from_numpy(np.asarray(joint_traj, dtype=np.float32)))
++    if q.ndim == 1:
++        q = q.unsqueeze(0)
++    state = model.forward(q, link_name=ee_link_name)
++    ee_pos = state[0].detach().cpu().numpy()
++    return np.squeeze(ee_pos).astype(np.float64)
++
++
++def robot_joint_position_to_ee_pose(
++    joint_position: np.ndarray,
++    *,
++    robot_file: str = "franka.yml",
++    tensor_args=None,
++    ee_link_name: str = "panda_hand",
++) -> tuple[np.ndarray, np.ndarray]:
++    """Compute EE pose (position, quat_wxyz) for a single joint config using CuRobo FK.
++    joint_position: (7,) or (8,) arm joint positions in radians.
++    Returns (position (3,), quaternion_wxyz (4,)) in robot base frame."""
++    if tensor_args is None:
++        tensor_args = TensorDeviceType()
++    robot_path = join_path(get_robot_configs_path(), robot_file)
++    robot_cfg = RobotConfig.from_dict(load_yaml(robot_path), tensor_args)
++    model = CudaRobotModel(robot_cfg.kinematics)
++    q = np.asarray(joint_position, dtype=np.float32).flatten()[:7]
++    q_t = tensor_args.to_device(torch.from_numpy(q).unsqueeze(0))
++    state = model.forward(q_t, link_name=ee_link_name)
++    ee_pos = state[0].detach().cpu().numpy().squeeze()
++    ee_quat = state[1].detach().cpu().numpy().squeeze()  # wxyz
++    return ee_pos.astype(np.float64), ee_quat.astype(np.float64)
++
++
++def create_curobo_world_from_depth(
++    depth_image: np.ndarray,
++    object_mask: np.ndarray,
++    intrinsics: np.ndarray,
++    camera_pose: np.ndarray | None = None,
++    *,
++    depth_clip_range: tuple[float, float] = (0.015, 20.0),
++    marching_cubes_pitch: float = 0.04,
++    scene_name: str = "scene",
++    object_name: str = "object",
++):
++    """
++    Create a CuRobo WorldConfig from a depth image and object mask.
++
++    Builds a point cloud from the depth image, splits it into (A) points under
++    the object mask and (B) all other points (scene/obstacles), then converts
++    each part to a mesh via marching cubes and returns a single WorldConfig
++    containing both as collision obstacles.
++
++    :param depth_image: Depth image (H, W) in meters.
++    :param object_mask: Boolean or 0/1 mask (H, W). True/1 = object; False/0 = scene.
++    :param intrinsics: Camera intrinsics (3, 3).
++    :param camera_pose: Optional (4, 4) camera-to-world transform. If None, points stay in camera frame.
++    :param depth_clip_range: (near, far) depth range in meters.
++    :param marching_cubes_pitch: Voxel size for marching cubes when converting point clouds to mesh.
++    :param scene_name: Name for the scene obstacle in the world.
++    :param object_name: Name for the object obstacle in the world.
++    :return: WorldConfig with mesh obstacles for scene and object (each only added if non-empty).
++    """
++    depth = np.asarray(depth_image, dtype=np.float64)
++    if depth.ndim == 3:
++        depth = depth.squeeze(-1)
++    mask = np.asarray(object_mask, dtype=bool)
++    if mask.ndim != 2 or depth.shape[:2] != mask.shape[:2]:
++        raise ValueError(
++            "depth_image and object_mask must be 2D with same shape, got "
++            f"depth {depth.shape}, mask {mask.shape}"
++        )
++    if intrinsics.shape != (3, 3):
++        raise ValueError(f"intrinsics must be (3, 3), got {intrinsics.shape}")
++
++    H, W = depth.shape
++    fx, fy = intrinsics[0, 0], intrinsics[1, 1]
++    cx, cy = intrinsics[0, 2], intrinsics[1, 2]
++
++    w, h = np.meshgrid(np.arange(W), np.arange(H), indexing="xy")
++    w_flat = w.reshape(-1)
++    h_flat = h.reshape(-1)
++    z_flat = depth.reshape(-1)
++
++    near, far = depth_clip_range
++    valid = (
++        ~np.isnan(z_flat)
++        & ~np.isinf(z_flat)
++        & (z_flat >= near)
++        & (z_flat <= far)
++        & (z_flat > 0)
++    )
++
++    x_cam = (w_flat - cx) * z_flat / fx
++    y_cam = (h_flat - cy) * z_flat / fy
++    points_cam = np.stack([x_cam, y_cam, z_flat], axis=-1)
++    points_cam = points_cam[valid]
++    mask_flat = mask.reshape(-1)[valid]
++
++    if camera_pose is not None:
++        cam = np.asarray(camera_pose, dtype=np.float64)
++        if cam.shape != (4, 4):
++            raise ValueError(f"camera_pose must be (4, 4), got {cam.shape}")
++        ones = np.ones((points_cam.shape[0], 1), dtype=np.float64)
++        points_cam_hom = np.hstack([points_cam, ones])
++        points = (cam @ points_cam_hom.T).T[:, :3]
++    else:
++        points = points_cam
++
++    scene_points = points[~mask_flat]
++    object_points = points[mask_flat]
++
++    # Subsample to avoid marching cubes on 100k+ points (very slow / hang)
++    max_points_for_mc = 25000
++    rng = np.random.default_rng(42)
++    if scene_points.shape[0] > max_points_for_mc:
++        idx = rng.choice(scene_points.shape[0], max_points_for_mc, replace=False)
++        scene_points = scene_points[idx]
++    if object_points.shape[0] > max_points_for_mc:
++        idx = rng.choice(object_points.shape[0], max_points_for_mc, replace=False)
++        object_points = object_points[idx]
++
++    meshes: list[Mesh] = []
++    if scene_points.shape[0] > 0:
++        scene_mesh = Mesh.from_pointcloud(
++            scene_points,
++            pitch=marching_cubes_pitch,
++            name=scene_name,
++        )
++        meshes.append(scene_mesh)
++    if object_points.shape[0] > 0:
++        object_mesh = Mesh.from_pointcloud(
++            object_points,
++            pitch=marching_cubes_pitch,
++            name=object_name,
++        )
++        meshes.append(object_mesh)
++
++    return WorldConfig(mesh=meshes)
++
++
++def _get_robot_mask_from_depth(
++    depth_m: np.ndarray,
++    intrinsics: np.ndarray,
++    camera_pose_4x4: np.ndarray,
++    joint_position: np.ndarray,
++    *,
++    robot_file: str = "franka.yml",
++    distance_threshold: float = 0.05,
++    collision_sphere_buffer: float = 0.01,
++) -> np.ndarray:
++    """Use CuRobo RobotSegmenter to get a boolean mask (H, W) where True = robot pixel.
++    Expects depth in meters; camera_pose is camera-to-world (world = robot base).
++    """
++    tensor_args = TensorDeviceType()
++    segmenter = RobotSegmenter.from_robot_file(
++        robot_file,
++        collision_sphere_buffer=collision_sphere_buffer,
++        distance_threshold=distance_threshold,
++        use_cuda_graph=True,
++        tensor_args=tensor_args,
++        ops_dtype=torch.float16,
++        depth_to_meter=0.001,
++    )
++    # Depth in mm for CameraObservation (segmenter uses depth_to_meter=0.001)
++    depth_mm = torch.from_numpy(depth_m.astype(np.float32)).to(
++        device=tensor_args.device, dtype=torch.float32
++    ) * 1000.0
++    if depth_mm.ndim == 2:
++        depth_mm = depth_mm.unsqueeze(0)
++    intrinsics_t = tensor_args.to_device(torch.from_numpy(intrinsics.astype(np.float32)))
++    pose_t = tensor_args.to_device(torch.from_numpy(camera_pose_4x4.astype(np.float32)))
++    cam_obs = CameraObservation(
++        depth_image=depth_mm,
++        intrinsics=intrinsics_t,
++        pose=Pose.from_matrix(pose_t),
++    )
++    q = np.asarray(joint_position, dtype=np.float64).flatten()[:7]
++    q_tensor = tensor_args.to_device(torch.from_numpy(q).unsqueeze(0).float())
++    q_js = StateJointState(position=q_tensor, joint_names=segmenter.kinematics.joint_names)
++    if not segmenter.ready:
++        segmenter.update_camera_projection(cam_obs)
++    depth_mask, _ = segmenter.get_robot_mask_from_active_js(cam_obs, q_js)
++    return depth_mask[0].detach().cpu().numpy()
++
++
++def create_curobo_world_from_depth_full(
++    depth_image: np.ndarray,
++    intrinsics: np.ndarray,
++    camera_pose: np.ndarray | None = None,
++    *,
++    depth_clip_range: tuple[float, float] = (0.015, 20.0),
++    marching_cubes_pitch: float = 0.03,
++    scene_name: str = "scene",
++    robot_joint_position: np.ndarray | None = None,
++    robot_file: str = "franka.yml",
++    robot_distance_threshold: float = 0.05,
++    max_points_for_marching_cubes: int = 25000,
++):
++    """
++    Create a single CuRobo WorldConfig mesh from the full depth image (no object/scene split).
++
++    Use this for approach-to-grasp planning to avoid false collisions from object and scene
++    meshes overlapping (e.g. object resting on table). Optionally exclude robot pixels using
++    CuRobo's RobotSegmenter (kinematics + sphere distance), so the start configuration is
++    not in collision with the scene mesh.
++
++    :param depth_image: Depth image (H, W) in meters.
++    :param intrinsics: Camera intrinsics (3, 3).
++    :param camera_pose: Optional (4, 4) camera-to-world (robot base) transform.
++    :param depth_clip_range: (near, far) depth range in meters.
++    :param marching_cubes_pitch: Voxel size for marching cubes. Default 0.02 (finer mesh).
++    :param scene_name: Name for the single scene mesh.
++    :param robot_joint_position: If provided, robot pixels are removed via RobotSegmenter.
++    :param robot_file: Robot config file for RobotSegmenter (default franka.yml).
++    :param robot_distance_threshold: Distance (m) threshold for segmenter. Default 0.05.
++    :param max_points_for_marching_cubes: Subsample point cloud to this many points before MC.
++    :return: WorldConfig with a single mesh obstacle.
++    """
++    depth = np.asarray(depth_image, dtype=np.float64)
++    if depth.ndim == 3:
++        depth = depth.squeeze(-1)
++    if intrinsics.shape != (3, 3):
++        raise ValueError(f"intrinsics must be (3, 3), got {intrinsics.shape}")
++
++    H, W = depth.shape
++    fx, fy = intrinsics[0, 0], intrinsics[1, 1]
++    cx, cy = intrinsics[0, 2], intrinsics[1, 2]
++
++    w, h = np.meshgrid(np.arange(W), np.arange(H), indexing="xy")
++    w_flat = w.reshape(-1)
++    h_flat = h.reshape(-1)
++    z_flat = depth.reshape(-1)
++
++    near, far = depth_clip_range
++    valid = (
++        ~np.isnan(z_flat)
++        & ~np.isinf(z_flat)
++        & (z_flat >= near)
++        & (z_flat <= far)
++        & (z_flat > 0)
++    )
++
++    x_cam = (w_flat - cx) * z_flat / fx
++    y_cam = (h_flat - cy) * z_flat / fy
++    points_cam = np.stack([x_cam, y_cam, z_flat], axis=-1)
++    valid_indices = np.where(valid)[0]
++    points = points_cam[valid]
++
++    if robot_joint_position is not None and camera_pose is not None:
++        robot_mask = _get_robot_mask_from_depth(
++            depth,
++            intrinsics,
++            camera_pose,
++            robot_joint_position,
++            robot_file=robot_file,
++            distance_threshold=robot_distance_threshold,
++        )
++        robot_mask_flat = robot_mask.reshape(-1)
++        robot_at_valid = robot_mask_flat[valid_indices]
++        keep = ~robot_at_valid
++        points = points[keep]
++
++    if camera_pose is not None:
++        cam = np.asarray(camera_pose, dtype=np.float64)
++        if cam.shape != (4, 4):
++            raise ValueError(f"camera_pose must be (4, 4), got {cam.shape}")
++        ones = np.ones((points.shape[0], 1), dtype=np.float64)
++        points_hom = np.hstack([points, ones])
++        points = (cam @ points_hom.T).T[:, :3]
++
++    rng = np.random.default_rng(42)
++    if points.shape[0] > max_points_for_marching_cubes:
++        idx = rng.choice(points.shape[0], max_points_for_marching_cubes, replace=False)
++        points = points[idx]
++
++    meshes = []
++    if points.shape[0] > 0:
++        meshes.append(
++            Mesh.from_pointcloud(
++                points,
++                pitch=marching_cubes_pitch,
++                name=scene_name,
++            )
++        )
++    return WorldConfig(mesh=meshes)
++
++
++def create_curobo_world_from_pointcloud(
++    point_cloud: np.ndarray,
++    object_mask: np.ndarray,
++    *,
++    marching_cubes_pitch: float = 0.04,
++    scene_name: str = "scene",
++    object_name: str = "object",
++    max_points_for_marching_cubes: int = 25000,
++):
++    """
++    Create a CuRobo WorldConfig from a point cloud and a per-point object mask.
++
++    Splits the point cloud into (A) points where object_mask is True and (B) the rest
++    (scene), then converts each part to a mesh and returns a WorldConfig.
++
++    :param point_cloud: Points (N, 3) in the desired world or camera frame.
++    :param object_mask: Boolean or 0/1 array of shape (N,). True/1 = object; False/0 = scene.
++    :param marching_cubes_pitch: Voxel size for marching cubes.
++    :param scene_name: Name for the scene obstacle.
++    :param object_name: Name for the object obstacle.
++    :return: WorldConfig with mesh obstacles for scene and object (each only if non-empty).
++    """
++    points = np.asarray(point_cloud, dtype=np.float64)
++    mask = np.asarray(object_mask, dtype=bool).reshape(-1)
++    if points.ndim != 2 or points.shape[1] != 3:
++        raise ValueError(f"point_cloud must be (N, 3), got {points.shape}")
++    if mask.shape[0] != points.shape[0]:
++        raise ValueError(
++            f"object_mask length must match point cloud size, got {mask.shape[0]} vs {points.shape[0]}"
++        )
++
++    scene_points = points[~mask]
++    object_points = points[mask]
++
++    rng = np.random.default_rng(42)
++    if scene_points.shape[0] > max_points_for_marching_cubes:
++        idx = rng.choice(scene_points.shape[0], max_points_for_marching_cubes, replace=False)
++        scene_points = scene_points[idx]
++    if object_points.shape[0] > max_points_for_marching_cubes:
++        idx = rng.choice(object_points.shape[0], max_points_for_marching_cubes, replace=False)
++        object_points = object_points[idx]
++
++    meshes: list[Mesh] = []
++    if scene_points.shape[0] > 0:
++        meshes.append(
++            Mesh.from_pointcloud(
++                scene_points,
++                pitch=marching_cubes_pitch,
++                name=scene_name,
++            )
++        )
++    if object_points.shape[0] > 0:
++        meshes.append(
++            Mesh.from_pointcloud(
++                object_points,
++                pitch=marching_cubes_pitch,
++                name=object_name,
++            )
++        )
++
++    return WorldConfig(mesh=meshes)
++
++
++def plan_to_grasp_poses(
++    world_config,
++    start_joint_position: np.ndarray,
++    grasp_poses: list[tuple[np.ndarray, np.ndarray]],
++    *,
++    robot_file: str = "franka.yml",
++    tensor_args=None,
++    max_attempts: int = 8,
++    use_cuda_graph: bool = False,
++    position_threshold: float = 0.01,
++    rotation_threshold: float = 0.05,
++    position_threshold_z: float | None = 0.01,
++    grasp_pose_is_fingertip: bool = True,
++    num_ik_seeds: int = 128,
++    relax_orientation: bool = False,
++    use_grasp_approach: bool = False,
++    grasp_approach_offset: float = 0.03,
++    grasp_approach_linear_axis: int = 2,
++    grasp_approach_tstep_fraction: float = 0.7,
++    use_world_collision: bool = True,
++    robot_collision_sphere_buffer: float | None = None,
++    collision_activation_distance: float | None = 0.01,
++    ignore_obstacle_names: list[str] | None = None,
++) -> tuple[bool, np.ndarray | None, int | None]:
++    """
++    Plan a collision-free trajectory from the current joint configuration to one of
++    the given grasp poses (end-effector position + quaternion wxyz) in the given
++    CuRobo world.
++
++    Frame convention: grasp_poses must be in the robot base frame (CuRobo uses the
++    robot base as world origin). Camera extrinsics and any saved grasp poses must
++    be expressed in this same frame.
++
++    :param world_config: CuRobo WorldConfig (e.g. from create_curobo_world_from_depth). Ignored if use_world_collision=False.
++    :param start_joint_position: Current joint positions (7,) or (8,); only first 7 (arm) are used.
++    :param grasp_poses: List of (position (3,), quaternion_wxyz (4,)) in robot base (world) frame.
++    :param robot_file: Robot config filename under curobo robot configs (default franka.yml).
++    :param tensor_args: Device/dtype; default TensorDeviceType().
++    :param max_attempts: Max planning attempts per grasp.
++    :param use_cuda_graph: Whether to use CUDA graph (disable for varying world/start).
++    :param position_threshold: Success threshold for position (m); larger allows more variance (default 0.02).
++    :param rotation_threshold: Success threshold for orientation; larger allows more variance (default 0.12).
++    :param position_threshold_z: If set, use max(position_threshold, position_threshold_z) so final reached
++        position can have more variance (e.g. on z). Default 0.05 when collision checking. Set None to use only position_threshold.
++    :param grasp_pose_is_fingertip: If True (default), treat grasp position as gripper fingertip center and
++        convert to panda_hand (EE) frame using FRANKA_HAND_TO_FINGERTIP_Z_M before planning.
++    :param num_ik_seeds: Number of IK seeds (default 128). Higher can fix IK_FAIL at cost of time.
++    :param relax_orientation: If True (default), only require reaching goal position; orientation is relaxed
++        to improve IK success. Set False to require full pose. Ignored if use_grasp_approach=True.
++    :param use_grasp_approach: If True, use PoseCostMetric.create_grasp_approach_metric to bias the
++        trajectory towards a two-phase motion: move towards an offset (pre-grasp) and then linearly
++        approach the final grasp along a single axis (no hard stop at the offset; blended path).
++    :param grasp_approach_offset: Offset (m) along the linear axis for grasp-approach cost.
++    :param grasp_approach_linear_axis: Linear axis index for grasp-approach cost (0=x, 1=y, 2=z).
++    :param grasp_approach_tstep_fraction: Timestep fraction in [0,1] at which to start activating the
++        grasp-approach constraint (later part of the trajectory).
++    :param use_world_collision: If True (default), use world_config for collision checking. If False, pass
++        world_model=None to MotionGen (no obstacle collision checking).
++    :param robot_collision_sphere_buffer: If set, override the robot's collision_sphere_buffer (m). Negative
++        values shrink the robot's collision spheres and can reduce IK_FAIL when the world mesh is close.
++        E.g. -0.01 or -0.02. Default None uses the value from the robot config file.
++    :param collision_activation_distance: Distance (m) to activate collision cost; smaller is less
++        conservative and can reduce IK_FAIL with dense meshes. Default 0.01. Set None to use CuRobo default.
++    :param ignore_obstacle_names: If provided, these world obstacles are disabled for collision during
++        planning (e.g. the object to grasp so the robot can approach it). Re-enabled before return.
++    :return: (success, trajectory, goalset_index). trajectory is (T, 7) joint positions or None.
++    """
++    if tensor_args is None:
++        tensor_args = TensorDeviceType()
++    device = tensor_args.device
++    dtype = tensor_args.dtype
++
++    robot_path = join_path(get_robot_configs_path(), robot_file)
++    robot_dict = load_yaml(robot_path)
++    if robot_collision_sphere_buffer is not None:
++        inner = robot_dict.get("robot_cfg", robot_dict)
++        if "kinematics" in inner:
++            inner["kinematics"] = {**inner["kinematics"], "collision_sphere_buffer": robot_collision_sphere_buffer}
++            print(f"[plan_to_grasp_poses] Overriding robot collision_sphere_buffer={robot_collision_sphere_buffer} m.")
++    robot_cfg = RobotConfig.from_dict(robot_dict, tensor_args)
++    world_model = world_config if use_world_collision else None
++    if not use_world_collision:
++        print("[plan_to_grasp_poses] use_world_collision=False: not providing world model to MotionGen (no obstacle collision checking).")
++    effective_position_threshold = position_threshold
++    if position_threshold_z is not None:
++        effective_position_threshold = max(position_threshold, position_threshold_z)
++        if effective_position_threshold > position_threshold:
++            print(f"[plan_to_grasp_poses] Using position_threshold={effective_position_threshold:.3f} m (z allowance: position_threshold_z={position_threshold_z}).")
++    # Debug: print thresholds and collision buffer settings
++    print(
++        "[plan_to_grasp_poses] thresholds: "
++        f"position_threshold={position_threshold}, "
++        f"rotation_threshold={rotation_threshold}, "
++        f"position_threshold_z={position_threshold_z}, "
++        f"effective_position_threshold={effective_position_threshold}"
++    )
++    print(
++        f"[plan_to_grasp_poses] robot_collision_sphere_buffer="
++        f"{robot_collision_sphere_buffer if robot_collision_sphere_buffer is not None else 'config_default'}"
++    )
++    if collision_activation_distance is not None:
++        print(f"[plan_to_grasp_poses] collision_activation_distance={collision_activation_distance} m.")
++    motion_gen_cfg = MotionGenConfig.load_from_robot_config(
++        robot_cfg,
++        world_model=world_model,
++        tensor_args=tensor_args,
++        use_cuda_graph=use_cuda_graph,
++        position_threshold=effective_position_threshold,
++        rotation_threshold=rotation_threshold,
++        num_ik_seeds=num_ik_seeds,
++        collision_activation_distance=collision_activation_distance,
++        # maximum_trajectory_dt=
++    )
++    motion_gen = MotionGen(motion_gen_cfg)
++
++    q_start = np.asarray(start_joint_position, dtype=np.float64)
++    q_start = q_start[:7].flatten()
++    print(f"[plan_to_grasp_poses] start_joint_position (7): {q_start.tolist()}")
++    print(f"[plan_to_grasp_poses] start valid: no_nan={not np.any(np.isnan(q_start))}, no_inf={not np.any(np.isinf(q_start))}, in_range=[{q_start.min():.3f}, {q_start.max():.3f}]")
++    start_state = JointState.from_position(
++        tensor_args.to_device(torch.from_numpy(q_start).unsqueeze(0).float())
++    )
++
++    n = len(grasp_poses)
++    if n == 0:
++        print("[plan_to_grasp_poses] No grasp poses; returning False, None, None.")
++        return False, None, None
++
++    if use_grasp_approach:
++        pose_metric = PoseCostMetric.create_grasp_approach_metric(
++            offset_position=grasp_approach_offset,
++            linear_axis=grasp_approach_linear_axis,
++            tstep_fraction=grasp_approach_tstep_fraction,
++            tensor_args=tensor_args,
++        )
++        pose_metric.reach_partial_pose=True
++        pose_metric.reach_vec_weight=tensor_args.to_device([1.0, 1.0, 1.0, 1.0, 1.0, 0.2])
++        pose_metric.hold_vec_weight=tensor_args.to_device([1.0, 1.0, 1.0, 1.0, 1.0, 0.2])
++
++        print(
++            "[plan_to_grasp_poses] Using grasp-approach metric: "
++            f"offset={grasp_approach_offset}, axis={grasp_approach_linear_axis}, "
++            f"tstep_fraction={grasp_approach_tstep_fraction}."
++        )
++    elif relax_orientation:
++        pose_metric = PoseCostMetric(
++            reach_partial_pose=True,
++            reach_vec_weight=tensor_args.to_device([1.0, 1.0, 1.0, 1.0, 1.0, 0.2]),
++        )
++        print("[plan_to_grasp_poses] Using position-only reach (relax_orientation=True) to improve IK success.")
++    else:
++        pose_metric = PoseCostMetric.reset_metric()
++    plan_cfg = MotionGenPlanConfig(
++        pose_cost_metric=pose_metric,
++        max_attempts=max_attempts,
++        enable_graph_attempt=True,
++        # time_dilation_factor=,        # try 1.25–2.0
++        # finetune_js_dt_scale=,        # try 1.25–2.0
++    )
++
++    # Disable collision with specified obstacles (e.g. object to grasp) so robot can approach
++    if ignore_obstacle_names:
++        for name in ignore_obstacle_names:
++            try:
++                motion_gen.world_coll_checker.enable_obstacle(enable=False, name=name)
++            except Exception as e:
++                print(f"[plan_to_grasp_poses] Warning: could not disable obstacle '{name}': {e}")
++    try:
++        for idx in range(n):
++            pos = np.asarray(grasp_poses[idx][0], dtype=np.float64)
++            # pos[2] += 0.05
++            quat = np.asarray(grasp_poses[idx][1], dtype=np.float64)
++            if grasp_pose_is_fingertip:
++                pos = _grasp_pose_fingertip_to_hand(pos, quat)
++                print(f"[plan_to_grasp_poses] grasp {idx}/{n}: position (panda_hand after offset): {pos.tolist()}, quat_wxyz={quat.tolist()}")
++            else:
++                print(f"[plan_to_grasp_poses] grasp {idx}/{n}: position={pos.tolist()}, quat_wxyz={quat.tolist()}")
++
++            goal_pose = Pose(
++                position=tensor_args.to_device(torch.from_numpy(pos).unsqueeze(0).float()),
++                quaternion=tensor_args.to_device(torch.from_numpy(quat).unsqueeze(0).float()),
++            )
++
++            # First solve IK to find the closest joint configuration, then plan in joint space
++            # When ignoring the object (e.g. to grasp it), IK should not check collision with it
++            ik_world = None if ignore_obstacle_names else world_model
++            ik_cfg = IKSolverConfig.load_from_robot_config(
++                robot_cfg,
++                world_model=ik_world,
++                tensor_args=tensor_args,
++                num_seeds=num_ik_seeds,
++                position_threshold=position_threshold,
++                rotation_threshold=rotation_threshold,
++                self_collision_check=True,
++            )
++            ik_solver = IKSolver(ik_cfg)
++
++            retract_cfg = tensor_args.to_device(torch.from_numpy(q_start).unsqueeze(0).float())
++            ik_result = ik_solver.solve_single(goal_pose, retract_config=retract_cfg)
++
++            if bool(ik_result.success.item()):
++                # Extract IK solutions and pick the nearest to start state
++                q_sols = ik_result.solution.detach().cpu().numpy()
++                q_sols = np.atleast_2d(q_sols)[:, :7]  # (K, 7)
++                q_goal = _pick_nearest_solution(q_sols, q_start)
++
++                # CuRobo versions differ in where joint_names live:
++                # - Some expose robot_cfg.kinematics.joint_names (kinematics model)
++                # - Others expose robot_cfg.cspace.joint_names (config)
++                joint_names = None
++                try:
++                    joint_names = getattr(robot_cfg.kinematics, "joint_names")
++                except Exception:
++                    joint_names = None
++                if joint_names is None:
++                    try:
++                        joint_names = getattr(robot_cfg, "cspace").joint_names
++                    except Exception:
++                        joint_names = None
++                if joint_names is None:
++                    try:
++                        joint_names = getattr(robot_cfg.kinematics, "cspace").joint_names
++                    except Exception:
++                        joint_names = None
++                if joint_names is None:
++                    raise AttributeError(
++                        "Could not determine robot joint_names from RobotConfig. "
++                        "Tried robot_cfg.kinematics.joint_names and robot_cfg.cspace.joint_names."
++                    )
++
++                goal_state = JointState(
++                    position=tensor_args.to_device(torch.from_numpy(q_goal).unsqueeze(0).float()),
++                    joint_names=joint_names,
++                )
++
++                # Plan in joint space to the selected IK solution
++                result = motion_gen.plan_single_js(start_state, goal_state, plan_cfg)
++                print(f"[plan_to_grasp_poses] grasp {idx}: IK succeeded, planning in joint space to nearest solution.")
++            else:
++                # Fallback to pose planning if IK fails
++                print(f"[plan_to_grasp_poses] grasp {idx}: IK failed, falling back to pose planning.")
++                result = motion_gen.plan_single(start_state, goal_pose, plan_cfg)
++
++            success = bool(result.success.item() if result.success is not None else False)
++            status_str = getattr(result.status, "name", str(result.status)) if hasattr(result, "status") and result.status is not None else "N/A"
++            traj_shape = None
++            if result.interpolated_plan is not None:
++                try:
++                    traj_js = result.get_interpolated_plan()
++                    if traj_js is not None and traj_js.position is not None:
++                        traj_shape = traj_js.position.shape
++                except Exception as e:  # pragma: no cover - debug/log only
++                    print(f"[plan_to_grasp_poses] Warning: failed to get interpolated plan shape for grasp {idx}: {e}")
++
++            print(f"[plan_to_grasp_poses] grasp {idx}: success={success}, status={status_str}, trajectory shape={traj_shape}")
++
++            if not success:
++                # Debug helper: solve pure IK (no world collision) to reach goal, then save
++                # world + robot collision spheres at that IK solution to inspect intersections.
++                q_ik_debug = None
++                try:
++                    ik_cfg = IKSolverConfig.load_from_robot_config(
++                        robot_cfg,
++                        world_model=None,  # no world collision checking
++                        tensor_args=tensor_args,
++                        num_seeds=num_ik_seeds,
++                        position_threshold=position_threshold,
++                        rotation_threshold=rotation_threshold,
++                        self_collision_check=False,
++                        self_collision_opt=False,
++                    )
++                    ik_solver = IKSolver(ik_cfg)
++
++                    retract_cfg = tensor_args.to_device(
++                        torch.from_numpy(q_start).unsqueeze(0).float()
++                    )
++                    ik_result = ik_solver.solve_single(
++                        goal_pose,
++                        retract_config=retract_cfg,
++                    )
++                    ik_success = bool(ik_result.success.item())
++                    if not ik_success:
++                        try:
++                            pos_err = float(ik_result.position_error.item())
++                            rot_err = float(ik_result.rotation_error.item())
++                            print(
++                                f"[plan_to_grasp_poses] IK(no-collision) also failed for grasp {idx}: "
++                                f"position_error={pos_err:.4f}, rotation_error={rot_err:.4f}"
++                            )
++                        except Exception:
++                            print(
++                                f"[plan_to_grasp_poses] IK(no-collision) also failed for grasp {idx} (could not read errors)."
++                            )
++                    else:
++                        sol = ik_result.solution.detach().cpu().numpy()
++                        q_ik_debug = np.asarray(sol, dtype=np.float64).reshape(-1)[:7]
++                        print(
++                            f"[plan_to_grasp_poses] IK(no-collision) succeeded for grasp {idx}; saving debug world+spheres."
++                        )
++                except Exception as e:  # pragma: no cover - debug/log only
++                    print(
++                        f"[plan_to_grasp_poses] Warning: IK(no-collision) debug failed for grasp {idx}: {e}"
++                    )
++                    q_ik_debug = None
++
++                if q_ik_debug is not None:
++                    try:
++                        tag = f"grasp_{idx}_IK_NO_COLLISION"
++                        save_world_and_robot_spheres_debug(
++                            world_model,
++                            q_ik_debug,
++                            robot_file=robot_file,
++                            tag=tag,
++                        )
++                    except Exception as e:  # pragma: no cover - debug/log only
++                        print(
++                            f"[plan_to_grasp_poses] Warning: failed to save debug world/spheres for grasp {idx}: {e}"
++                        )
++
++            if success and result.interpolated_plan is not None:
++                try:
++                    traj_js = result.get_interpolated_plan()
++                    if traj_js is not None and traj_js.position is not None:
++                        trajectory = np.squeeze(traj_js.position.detach().cpu().numpy())
++                        print(f"[plan_to_grasp_poses] Returning first success at grasp index {idx}.")
++                        return True, trajectory, idx
++                except Exception as e:  # pragma: no cover - debug/log only
++                    print(f"[plan_to_grasp_poses] Warning: failed to extract trajectory for grasp {idx} despite success: {e}")
++
++        print("[plan_to_grasp_poses] No grasp succeeded; returning False, None, None.")
++        return False, None, None
++    finally:
++        if ignore_obstacle_names:
++            for name in ignore_obstacle_names:
++                try:
++                    motion_gen.world_coll_checker.enable_obstacle(enable=True, name=name)
++                except Exception as e:
++                    print(f"[plan_to_grasp_poses] Warning: could not re-enable obstacle '{name}': {e}")
++
++
++def create_curobo_world_from_depth_with_object(
++    depth_image: np.ndarray,
++    object_mask: np.ndarray,
++    intrinsics: np.ndarray,
++    camera_pose: np.ndarray | None = None,
++    *,
++    depth_clip_range: tuple[float, float] = (0.015, 20.0),
++    marching_cubes_pitch: float = 0.03,
++    scene_name: str = "scene",
++    object_name: str = "object",
++    robot_joint_position: np.ndarray | None = None,
++    robot_file: str = "franka.yml",
++    robot_distance_threshold: float = 0.15,
++    max_points_for_marching_cubes: int = 25000,
++    object_pose_override: tuple[np.ndarray, np.ndarray] | None = None,
++) -> Any:
++    """
++    Create a CuRobo WorldConfig with object and scene as separate meshes (robot excluded).
++
++    Similar to create_curobo_world_from_depth, but also excludes points near the robot
++    (like create_curobo_world_from_depth_full) so the world doesn't include the robot volume.
++    This is useful for planning with a grasped object: the object mesh can be attached to
++    the robot, while the scene mesh remains as a collision obstacle.
++
++    :param depth_image: Depth image (H, W) in meters.
++    :param object_mask: Boolean or 0/1 mask (H, W). True/1 = object; False/0 = scene.
++    :param intrinsics: Camera intrinsics (3, 3).
++    :param camera_pose: Optional (4, 4) camera-to-world (robot base) transform.
++    :param depth_clip_range: (near, far) depth range in meters.
++    :param marching_cubes_pitch: Voxel size for marching cubes. Default 0.03.
++    :param scene_name: Name for the scene obstacle in the world.
++    :param object_name: Name for the object obstacle in the world.
++    :param robot_joint_position: If provided, robot pixels are removed via RobotSegmenter.
++    :param robot_file: Robot config file for RobotSegmenter (default franka.yml).
++    :param robot_distance_threshold: Distance (m) threshold for segmenter. Default 0.15.
++    :param max_points_for_marching_cubes: Subsample point cloud to this many points before MC.
++    :param object_pose_override: Optional (position (3,), quat_wxyz (4,)). When provided (e.g. current EE
++        pose when object is grasped), the object point cloud is placed at this pose so the object mesh
++        in the world matches the grasped location; avoids wrong attached-object position in planning/debug.
++    :return: WorldConfig with mesh obstacles for scene and object (each only added if non-empty).
++    """
++    depth = np.asarray(depth_image, dtype=np.float64)
++    if depth.ndim == 3:
++        depth = depth.squeeze(-1)
++    mask = np.asarray(object_mask, dtype=bool)
++    if mask.ndim != 2 or depth.shape[:2] != mask.shape[:2]:
++        raise ValueError(
++            "depth_image and object_mask must be 2D with same shape, got "
++            f"depth {depth.shape}, mask {mask.shape}"
++        )
++    if intrinsics.shape != (3, 3):
++        raise ValueError(f"intrinsics must be (3, 3), got {intrinsics.shape}")
++
++    H, W = depth.shape
++    fx, fy = intrinsics[0, 0], intrinsics[1, 1]
++    cx, cy = intrinsics[0, 2], intrinsics[1, 2]
++
++    w, h = np.meshgrid(np.arange(W), np.arange(H), indexing="xy")
++    w_flat = w.reshape(-1)
++    h_flat = h.reshape(-1)
++    z_flat = depth.reshape(-1)
++
++    near, far = depth_clip_range
++    valid = (
++        ~np.isnan(z_flat)
++        & ~np.isinf(z_flat)
++        & (z_flat >= near)
++        & (z_flat <= far)
++        & (z_flat > 0)
++    )
++
++    x_cam = (w_flat - cx) * z_flat / fx
++    y_cam = (h_flat - cy) * z_flat / fy
++    points_cam = np.stack([x_cam, y_cam, z_flat], axis=-1)
++    valid_indices = np.where(valid)[0]
++    points = points_cam[valid]
++    mask_flat = mask.reshape(-1)[valid_indices]
++
++    # Exclude robot points from scene only (keep object points so grasped object stays in world)
++    if robot_joint_position is not None and camera_pose is not None:
++        robot_mask = _get_robot_mask_from_depth(
++            depth,
++            intrinsics,
++            camera_pose,
++            robot_joint_position,
++            robot_file=robot_file,
++            distance_threshold=robot_distance_threshold,
++        )
++        robot_mask_flat = robot_mask.reshape(-1)
++        robot_at_valid = robot_mask_flat[valid_indices]
++        is_object = mask_flat
++        # Keep all object points; drop only scene points that are near the robot
++        keep = is_object | (~robot_at_valid)
++        points = points[keep]
++        mask_flat = mask_flat[keep]
++
++    # Transform to world frame if camera_pose provided
++    if camera_pose is not None:
++        cam = np.asarray(camera_pose, dtype=np.float64)
++        if cam.shape != (4, 4):
++            raise ValueError(f"camera_pose must be (4, 4), got {cam.shape}")
++        ones = np.ones((points.shape[0], 1), dtype=np.float64)
++        points_hom = np.hstack([points, ones])
++        points = (cam @ points_hom.T).T[:, :3]
++
++    # Split into object and scene
++    scene_points = points[~mask_flat]
++    object_points = points[mask_flat]
++
++    # Optionally place object at a given pose (e.g. EE when grasped) so world matches reality
++    if object_pose_override is not None and object_points.shape[0] > 0:
++        pos_ov = np.asarray(object_pose_override[0], dtype=np.float64).reshape(3)
++        quat_ov = np.asarray(object_pose_override[1], dtype=np.float64).reshape(4)
++        tensor_args = TensorDeviceType()
++        override_pose = Pose(
++            position=tensor_args.to_device(torch.from_numpy(pos_ov).unsqueeze(0).float()),
++            quaternion=tensor_args.to_device(torch.from_numpy(quat_ov).unsqueeze(0).float()),
++        )
++        obj_center = object_points.mean(axis=0)
++        object_points_centered = object_points - obj_center
++        pts_t = tensor_args.to_device(torch.from_numpy(object_points_centered.astype(np.float32)).float())
++        object_points = override_pose.transform_points(pts_t).detach().cpu().numpy().astype(np.float64)
++
++    # Subsample to avoid marching cubes on 100k+ points
++    rng = np.random.default_rng(42)
++    if scene_points.shape[0] > max_points_for_marching_cubes:
++        idx = rng.choice(scene_points.shape[0], max_points_for_marching_cubes, replace=False)
++        scene_points = scene_points[idx]
++    if object_points.shape[0] > max_points_for_marching_cubes:
++        idx = rng.choice(object_points.shape[0], max_points_for_marching_cubes, replace=False)
++        object_points = object_points[idx]
++
++    meshes: list[Mesh] = []
++    if scene_points.shape[0] > 0:
++        meshes.append(
++            Mesh.from_pointcloud(
++                scene_points,
++                pitch=marching_cubes_pitch,
++                name=scene_name,
++            )
++        )
++    if object_points.shape[0] > 0:
++        meshes.append(
++            Mesh.from_pointcloud(
++                object_points,
++                pitch=marching_cubes_pitch,
++                name=object_name,
++            )
++        )
++
++    return WorldConfig(mesh=meshes)
++
++
++def plan_with_grasped_object(
++    world_config: Any,
++    start_joint_position: np.ndarray,
++    target_pose: tuple[np.ndarray, np.ndarray],
++    object_name: str,
++    *,
++    robot_file: str = "franka.yml",
++    tensor_args=None,
++    max_attempts: int = 8,
++    use_cuda_graph: bool = False,
++    position_threshold: float = 0.05,
++    rotation_threshold: float = 0.1,
++    position_threshold_z: float | None = 0.05,
++    num_ik_seeds: int = 128,
++    use_world_collision: bool = True,
++    robot_collision_sphere_buffer: float | None = None,
++    collision_activation_distance: float | None = 0.01,
++    surface_sphere_radius: float = 0.001,
++    link_name: str = "attached_object",
++    remove_obstacles_from_world: bool = False,
++    debug_out_dir: str | pathlib.Path | None = "curobo_debug2",
++) -> tuple[bool, np.ndarray | None]:
++    """
++    Plan a collision-free trajectory to move a grasped object to a target pose.
++
++    This function:
++    1. Attaches the object (by name) from world_config to the robot at the current joint state
++    2. Computes IK for the goal pose, selecting the solution closest to the start joint state
++    3. Plans a trajectory in joint space from start to the IK solution
++    4. Returns the joint trajectory
++
++    The object must exist in world_config with the given object_name. After attaching,
++    the object moves with the robot and is checked for collisions with the remaining
++    scene obstacles.
++
++    If planning fails, debug world meshes are saved to debug_out_dir (default: "curobo_debug2"):
++    - start_joint_state_{tag}.obj: World + robot at start configuration
++    - end_joint_state_{tag}.obj: World + robot at IK goal configuration (if IK succeeded)
++
++    :param world_config: CuRobo WorldConfig containing the object (by object_name) and scene obstacles.
++    :param start_joint_position: Current joint positions (7,) or (8,); object is assumed grasped at this state.
++    :param target_pose: (position (3,), quaternion_wxyz (4,)) target pose in robot base (world) frame.
++    :param object_name: Name of the object in world_config to attach to the robot.
++    :param robot_file: Robot config filename under curobo robot configs (default franka.yml).
++    :param tensor_args: Device/dtype; default TensorDeviceType().
++    :param max_attempts: Max planning attempts.
++    :param use_cuda_graph: Whether to use CUDA graph (disable for varying world/start).
++    :param position_threshold: Success threshold for position (m).
++    :param rotation_threshold: Success threshold for orientation.
++    :param position_threshold_z: If set, use max(position_threshold, position_threshold_z).
++    :param num_ik_seeds: Number of IK seeds (default 128).
++    :param use_world_collision: If True, use world_config for collision checking.
++    :param robot_collision_sphere_buffer: Override robot collision_sphere_buffer (m).
++    :param collision_activation_distance: Distance (m) to activate collision cost.
++    :param surface_sphere_radius: Radius (m) for surface spheres when attaching object.
++    :param link_name: Link name to attach object to (default "attached_object").
++    :param remove_obstacles_from_world: Remove attached object from world after attaching.
++    :param debug_out_dir: Directory to save debug meshes on planning failure (default "curobo_debug2"). Set to None to disable.
++    :return: (success, joint_trajectory). joint_trajectory is (T, 7) or None.
++    """
++    if tensor_args is None:
++        tensor_args = TensorDeviceType()
++    device = tensor_args.device
++    dtype = tensor_args.dtype
++
++    robot_path = join_path(get_robot_configs_path(), robot_file)
++    robot_dict = load_yaml(robot_path)
++    if robot_collision_sphere_buffer is not None:
++        inner = robot_dict.get("robot_cfg", robot_dict)
++        if "kinematics" in inner:
++            inner["kinematics"] = {**inner["kinematics"], "collision_sphere_buffer": robot_collision_sphere_buffer}
++            print(f"[plan_with_grasped_object] Overriding robot collision_sphere_buffer={robot_collision_sphere_buffer} m.")
++    robot_cfg = RobotConfig.from_dict(robot_dict, tensor_args)
++    world_model = world_config if use_world_collision else None
++    if not use_world_collision:
++        print("[plan_with_grasped_object] use_world_collision=False: not providing world model to MotionGen (no obstacle collision checking).")
++
++    # For pose planning with z variance: use position_threshold for x, y and a large value for z
++    # Set position_threshold_z to a large value to allow any z position
++    if position_threshold_z is None:
++        position_threshold_z = 10.0  # Allow any z by default
++    effective_position_threshold = max(position_threshold, position_threshold_z)
++    if effective_position_threshold > position_threshold:
++        print(f"[plan_with_grasped_object] Using position_threshold={effective_position_threshold:.3f} m (z allowance: position_threshold_z={position_threshold_z:.3f}).")
++
++    motion_gen_cfg = MotionGenConfig.load_from_robot_config(
++        robot_cfg,
++        world_model=world_model,
++        tensor_args=tensor_args,
++        use_cuda_graph=use_cuda_graph,
++        position_threshold=effective_position_threshold,
++        rotation_threshold=rotation_threshold,
++        num_ik_seeds=num_ik_seeds,
++        collision_activation_distance=collision_activation_distance,
++    )
++    motion_gen = MotionGen(motion_gen_cfg)
++
++    q_start = np.asarray(start_joint_position, dtype=np.float64)
++    q_start = q_start[:7].flatten()
++    print(f"[plan_with_grasped_object] start_joint_position (7): {q_start.tolist()}")
++    start_state = JointState.from_position(
++        tensor_args.to_device(torch.from_numpy(q_start).unsqueeze(0).float())
++    )
++
++    # Capture attached object reference before attach (so we can add it to debug meshes at EE pose)
++    attached_obstacle = world_config.get_obstacle(object_name) if world_config else None
++
++    # Attach object to robot
++    print(f"[plan_with_grasped_object] Attaching object '{object_name}' to robot at link '{link_name}'...")
++    attach_success = motion_gen.attach_objects_to_robot(
++        start_state,
++        [object_name],
++        surface_sphere_radius=surface_sphere_radius,
++        link_name=link_name,
++        sphere_fit_type=SphereFitType.VOXEL_VOLUME_SAMPLE_SURFACE,
++        remove_obstacles_from_world_config=remove_obstacles_from_world,
++    )
++    if not attach_success:
++        print(f"[plan_with_grasped_object] Failed to attach object '{object_name}'. Check that it exists in world_config.")
++        return False, None
++    print(f"[plan_with_grasped_object] Successfully attached object '{object_name}' to robot.")
++
++    # Convert target pose to CuRobo Pose
++    pos = np.asarray(target_pose[0], dtype=np.float64)
++    quat = np.asarray(target_pose[1], dtype=np.float64)
++    print(f"[plan_with_grasped_object] Target pose: position={pos.tolist()}, quat_wxyz={quat.tolist()}")
++    print(f"[plan_with_grasped_object] Allowing z variance (position_threshold_z={position_threshold_z:.3f} m), matching x, y, orientation")
++
++    goal_pose = Pose(
++        position=tensor_args.to_device(torch.from_numpy(pos).unsqueeze(0).float()),
++        quaternion=tensor_args.to_device(torch.from_numpy(quat).unsqueeze(0).float()),
++    )
++
++    # Plan directly to pose with z variance enabled
++    # The effective_position_threshold allows z variance while still matching x, y, orientation
++    plan_cfg = MotionGenPlanConfig(
++        pose_cost_metric=PoseCostMetric.reset_metric(),
++        max_attempts=max_attempts,
++        enable_graph_attempt=True,
++    )
++
++    print(f"[plan_with_grasped_object] Planning to pose with z variance (position_threshold={effective_position_threshold:.3f} m)...")
++    result = motion_gen.plan_single(start_state, goal_pose, plan_cfg)
++
++    success = bool(result.success.item() if result.success is not None else False)
++    status_str = getattr(result.status, "name", str(result.status)) if hasattr(result, "status") and result.status is not None else "N/A"
++    print(f"[plan_with_grasped_object] Planning result: success={success}, status={status_str}")
++
++    if success and result.interpolated_plan is not None:
++        try:
++            traj_js = result.get_interpolated_plan()
++            if traj_js is not None and traj_js.position is not None:
++                trajectory = np.squeeze(traj_js.position.detach().cpu().numpy())
++                print(f"[plan_with_grasped_object] Planning succeeded; trajectory shape: {trajectory.shape}")
++                return True, trajectory
++        except Exception as e:
++            print(f"[plan_with_grasped_object] Warning: failed to extract trajectory despite success: {e}")
++
++    # Planning failed - save debug meshes if requested
++    if debug_out_dir is not None:
++        tag = f"plan_fail_{int(time.time())}"
++        print(f"[plan_with_grasped_object] Planning failed; saving debug meshes to {debug_out_dir}...")
++        
++        # Save start joint state (include attached object at EE pose)
++        try:
++            ee_pos, ee_quat = robot_joint_position_to_ee_pose(
++                q_start, robot_file=robot_file, tensor_args=tensor_args
++            )
++            save_world_and_robot_spheres_debug(
++                world_config=world_config,
++                joint_position=q_start,
++                robot_file=robot_file,
++                out_dir=debug_out_dir,
++                tag=f"{tag}_start",
++                attached_obstacle=attached_obstacle,
++                attached_obstacle_pose=(ee_pos, ee_quat),
++                exclude_obstacle_names=[object_name],
++            )
++        except Exception as e:
++            print(f"[plan_with_grasped_object] Warning: failed to save start debug mesh: {e}")
++        
++        # Try to compute IK for goal pose to save end joint state debug mesh
++        try:
++            ik_world = world_model
++            ik_cfg = IKSolverConfig.load_from_robot_config(
++                robot_cfg,
++                world_model=ik_world,
++                tensor_args=tensor_args,
++                num_seeds=num_ik_seeds,
++                position_threshold=effective_position_threshold,  # Use same threshold as planning
++                rotation_threshold=rotation_threshold,
++                self_collision_check=True,
++            )
++            ik_solver = IKSolver(ik_cfg)
++            retract_cfg = tensor_args.to_device(torch.from_numpy(q_start).unsqueeze(0).float())
++            ik_result = ik_solver.solve_single(goal_pose, retract_config=retract_cfg)
++            
++            if bool(ik_result.success.item() if ik_result.success is not None else False):
++                q_sols = ik_result.solution.detach().cpu().numpy()
++                q_sols = np.atleast_2d(q_sols)[:, :7]
++                q_goal_debug = _pick_nearest_solution(q_sols, q_start)
++                ee_pos_end, ee_quat_end = robot_joint_position_to_ee_pose(
++                    q_goal_debug, robot_file=robot_file, tensor_args=tensor_args
++                )
++                save_world_and_robot_spheres_debug(
++                    world_config=world_config,
++                    joint_position=q_goal_debug,
++                    robot_file=robot_file,
++                    out_dir=debug_out_dir,
++                    tag=f"{tag}_end_ik",
++                    attached_obstacle=attached_obstacle,
++                    attached_obstacle_pose=(ee_pos_end, ee_quat_end),
++                    exclude_obstacle_names=[object_name],
++                )
++            else:
++                print(f"[plan_with_grasped_object] IK failed for debug mesh; skipping end state debug mesh.")
++        except Exception as e:
++            print(f"[plan_with_grasped_object] Warning: failed to compute IK and save end debug mesh: {e}")
++
++    print("[plan_with_grasped_object] Planning failed; returning False, None.")
++    return False, None
++
++
++if __name__ == "__main__":
++    print("curobo_api is a library.")
++    print("To test CuRobo on saved data, run: uv run python scripts/curobo_test.py")
++    raise SystemExit(0)
++
+diff --git a/src/curobo/content/configs/world/collision_table.yml b/src/curobo/content/configs/world/collision_table.yml
+index 526b550..7aa8d53 100644
+--- a/src/curobo/content/configs/world/collision_table.yml
++++ b/src/curobo/content/configs/world/collision_table.yml
+@@ -10,5 +10,7 @@
+ ##
+ cuboid:
+   table:
+-    dims: [5.0, 5.0, 0.2] # x, y, z
+-    pose: [0.0, 0.0, -0.1, 1, 0, 0, 0.0] # x, y, z, qx, qy, qz, qw                                                                                                                                                                                                                                                            
+\ No newline at end of file
++    dims: [0.595, 1.3, 0.01] # x, y, z
++    # multi_arm_reacher.py subtracts 0.02 from z after loading this file.
++    # 0.765 -> 0.745, matching the play_table center in station_physics*.urdf.
++    pose: [0.6, 0.0, 0.765, 1, 0, 0, 0.0] # x, y, z, qx, qy, qz, qw
+diff --git a/src/curobo/wrap/reacher/motion_gen.py b/src/curobo/wrap/reacher/motion_gen.py
+index c2b3d97..53a8ad5 100644
+--- a/src/curobo/wrap/reacher/motion_gen.py
++++ b/src/curobo/wrap/reacher/motion_gen.py
+@@ -47,12 +47,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
+ import numpy as np
+ import torch
+ import torch.autograd.profiler as profiler
+-import warp as wp
+ 
+ # CuRobo
+ from curobo.cuda_robot_model.cuda_robot_model import CudaRobotModel
+ from curobo.geom.sdf.utils import create_collision_checker
+-from curobo.geom.sdf.world import CollisionCheckerType, WorldCollision, WorldCollisionConfig
++from curobo.geom.sdf.world import (
++    CollisionCheckerType,
++    WorldCollision,
++    WorldCollisionConfig,
++)
+ from curobo.geom.sphere_fit import SphereFitType
+ from curobo.geom.types import Cuboid, Obstacle, WorldConfig
+ from curobo.graph.graph_base import GraphConfig, GraphPlanBase, GraphResult
+@@ -80,7 +83,11 @@ from curobo.util_file import (
+ )
+ from curobo.wrap.reacher.evaluator import TrajEvaluator, TrajEvaluatorConfig
+ from curobo.wrap.reacher.ik_solver import IKResult, IKSolver, IKSolverConfig
+-from curobo.wrap.reacher.trajopt import TrajOptResult, TrajOptSolver, TrajOptSolverConfig
++from curobo.wrap.reacher.trajopt import (
++    TrajOptResult,
++    TrajOptSolver,
++    TrajOptSolverConfig,
++)
+ from curobo.wrap.reacher.types import ReacherSolveState, ReacherSolveType
+ 
+ 
+@@ -196,7 +203,9 @@ class MotionGenConfig:
+         trajopt_seed_ratio: Dict[str, int] = {"linear": 1.0, "bias": 0.0},
+         ik_opt_iters: Optional[int] = None,
+         ik_particle_opt: bool = True,
+-        collision_checker_type: Optional[CollisionCheckerType] = CollisionCheckerType.MESH,
++        collision_checker_type: Optional[
++            CollisionCheckerType
++        ] = CollisionCheckerType.MESH,
+         sync_cuda_time: Optional[bool] = None,
+         trajopt_particle_opt: bool = True,
+         traj_evaluator_config: Optional[TrajEvaluatorConfig] = None,
+@@ -496,7 +505,9 @@ class MotionGenConfig:
+             high_precision = True
+         if high_precision:
+             finetune_trajopt_iters = (
+-                300 if finetune_trajopt_iters is None else max(300, finetune_trajopt_iters)
++                300
++                if finetune_trajopt_iters is None
++                else max(300, finetune_trajopt_iters)
+             )
+             if grad_trajopt_iters is None:
+                 grad_trajopt_iters = 200
+@@ -558,8 +569,12 @@ class MotionGenConfig:
+             and min(velocity_scale) < 1.0
+             and maximum_trajectory_dt <= 0.2
+         ):
+-            maximum_trajectory_dt_vel = (1.0 / min(velocity_scale)) * maximum_trajectory_dt * 3
+-        maximum_trajectory_dt = max(maximum_trajectory_dt_acc, maximum_trajectory_dt_vel)
++            maximum_trajectory_dt_vel = (
++                (1.0 / min(velocity_scale)) * maximum_trajectory_dt * 3
++            )
++        maximum_trajectory_dt = max(
++            maximum_trajectory_dt_acc, maximum_trajectory_dt_vel
++        )
+         if maximum_trajectory_dt is not None:
+             if trajopt_dt is None:
+                 trajopt_dt = maximum_trajectory_dt
+@@ -578,7 +593,9 @@ class MotionGenConfig:
+             finetune_trajopt_file = "finetune_trajopt_slow.yml"
+ 
+         if isinstance(robot_cfg, str):
+-            robot_cfg = load_yaml(join_path(get_robot_configs_path(), robot_cfg))["robot_cfg"]
++            robot_cfg = load_yaml(join_path(get_robot_configs_path(), robot_cfg))[
++                "robot_cfg"
++            ]
+         elif isinstance(robot_cfg, Dict) and "robot_cfg" in robot_cfg.keys():
+             robot_cfg = robot_cfg["robot_cfg"]
+         if isinstance(robot_cfg, RobotConfig):
+@@ -589,13 +606,19 @@ class MotionGenConfig:
+                 log_error("ee link cannot be changed after creating RobotConfig")
+             if (
+                 acceleration_scale is not None
+-                and torch.max(robot_cfg.kinematics.kinematics_config.cspace.acceleration_scale)
++                and torch.max(
++                    robot_cfg.kinematics.kinematics_config.cspace.acceleration_scale
++                )
+                 != acceleration_scale
+             ):
+-                log_error("acceleration_scale cannot be changed after creating RobotConfig")
++                log_error(
++                    "acceleration_scale cannot be changed after creating RobotConfig"
++                )
+             if (
+                 velocity_scale is not None
+-                and torch.max(robot_cfg.kinematics.kinematics_config.cspace.velocity_scale)
++                and torch.max(
++                    robot_cfg.kinematics.kinematics_config.cspace.velocity_scale
++                )
+                 != velocity_scale
+             ):
+                 log_error("velocity cannot be changed after creating RobotConfig")
+@@ -605,7 +628,9 @@ class MotionGenConfig:
+             if jerk_scale is not None:
+                 robot_cfg["kinematics"]["cspace"]["jerk_scale"] = jerk_scale
+             if acceleration_scale is not None:
+-                robot_cfg["kinematics"]["cspace"]["acceleration_scale"] = acceleration_scale
++                robot_cfg["kinematics"]["cspace"]["acceleration_scale"] = (
++                    acceleration_scale
++                )
+             if velocity_scale is not None:
+                 robot_cfg["kinematics"]["cspace"]["velocity_scale"] = velocity_scale
+ 
+@@ -622,9 +647,13 @@ class MotionGenConfig:
+             if acceleration_scale is not None:
+                 max_dt = max_dt * (1.0 / np.sqrt(min(acceleration_scale)))
+             traj_evaluator_config = TrajEvaluatorConfig.from_basic(
+-                min_dt=minimum_trajectory_dt, max_dt=max_dt, dof=robot_cfg.kinematics.dof
++                min_dt=minimum_trajectory_dt,
++                max_dt=max_dt,
++                dof=robot_cfg.kinematics.dof,
+             )
+-        traj_evaluator_config.max_acc = robot_cfg.kinematics.get_joint_limits().acceleration[1]
++        traj_evaluator_config.max_acc = (
++            robot_cfg.kinematics.get_joint_limits().acceleration[1]
++        )
+ 
+         traj_evaluator_config.max_jerk = robot_cfg.kinematics.get_joint_limits().jerk[1]
+ 
+@@ -639,18 +668,22 @@ class MotionGenConfig:
+         if collision_max_outside_distance is not None:
+             if collision_max_outside_distance < 0.0:
+                 log_error("collision_max_outside_distance cannot be negative")
+-            base_config_data["world_collision_checker_cfg"][
+-                "max_distance"
+-            ] = collision_max_outside_distance
++            base_config_data["world_collision_checker_cfg"]["max_distance"] = (
++                collision_max_outside_distance
++            )
+         if collision_checker_type is not None:
+             # log_info("updating collision checker type to ",collision_checker_type)
+-            base_config_data["world_collision_checker_cfg"]["checker_type"] = collision_checker_type
++            base_config_data["world_collision_checker_cfg"]["checker_type"] = (
++                collision_checker_type
++            )
+         if not self_collision_check:
+             base_config_data["constraint"]["self_collision_cfg"]["weight"] = 0.0
+ 
+         if world_coll_checker is None and world_model is not None:
+             world_cfg = WorldCollisionConfig.load_from_dict(
+-                base_config_data["world_collision_checker_cfg"], world_model, tensor_args
++                base_config_data["world_collision_checker_cfg"],
++                world_model,
++                tensor_args,
+             )
+             world_coll_checker = create_collision_checker(world_cfg)
+         ik_solver_cfg = IKSolverConfig.load_from_robot_config(
+@@ -875,10 +908,13 @@ class MotionGenConfig:
+ 
+         if graph_trajopt_iters is not None:
+             graph_trajopt_iters = math.ceil(
+-                graph_trajopt_iters / finetune_trajopt_solver.solver.newton_optimizer.inner_iters
++                graph_trajopt_iters
++                / finetune_trajopt_solver.solver.newton_optimizer.inner_iters
+             )
+         else:
+-            graph_trajopt_iters = finetune_trajopt_solver.solver.newton_optimizer.outer_iters + 2
++            graph_trajopt_iters = (
++                finetune_trajopt_solver.solver.newton_optimizer.outer_iters + 2
++            )
+         return MotionGenConfig(
+             num_ik_seeds,
+             num_graph_seeds,
+@@ -1183,11 +1219,21 @@ class MotionGenResult:
+         m = MotionGenResult(
+             self.success.clone(),
+             valid_query=self.valid_query,
+-            optimized_plan=self.optimized_plan.clone() if self.optimized_plan is not None else None,
+-            optimized_dt=self.optimized_dt.clone() if self.optimized_dt is not None else None,
+-            position_error=self.position_error.clone() if self.position_error is not None else None,
+-            rotation_error=self.rotation_error.clone() if self.rotation_error is not None else None,
+-            cspace_error=self.cspace_error.clone() if self.cspace_error is not None else None,
++            optimized_plan=self.optimized_plan.clone()
++            if self.optimized_plan is not None
++            else None,
++            optimized_dt=self.optimized_dt.clone()
++            if self.optimized_dt is not None
++            else None,
++            position_error=self.position_error.clone()
++            if self.position_error is not None
++            else None,
++            rotation_error=self.rotation_error.clone()
++            if self.rotation_error is not None
++            else None,
++            cspace_error=self.cspace_error.clone()
++            if self.cspace_error is not None
++            else None,
+             solve_time=self.solve_time,
+             ik_time=self.ik_time,
+             graph_time=self.graph_time,
+@@ -1201,10 +1247,14 @@ class MotionGenResult:
+             used_graph=self.used_graph,
+             path_buffer_last_tstep=self.path_buffer_last_tstep,
+             interpolated_plan=(
+-                self.interpolated_plan.clone() if self.interpolated_plan is not None else None
++                self.interpolated_plan.clone()
++                if self.interpolated_plan is not None
++                else None
+             ),
+             interpolation_dt=self.interpolation_dt,
+-            goalset_index=self.goalset_index.clone() if self.goalset_index is not None else None,
++            goalset_index=self.goalset_index.clone()
++            if self.goalset_index is not None
++            else None,
+         )
+         return m
+ 
+@@ -1351,11 +1401,15 @@ class MotionGenResult:
+                 self.optimized_dt,
+                 self.interpolation_dt,
+                 kind=interpolation_kind,
+-                out_traj_state=self.interpolated_plan if not create_interpolation_buffer else None,
++                out_traj_state=self.interpolated_plan
++                if not create_interpolation_buffer
++                else None,
+                 tensor_args=self.interpolated_plan.tensor_args,
+                 optimize_dt=False,
+             )
+-            self.path_buffer_last_tstep = [last_tstep[i] for i in range(len(last_tstep))]
++            self.path_buffer_last_tstep = [
++                last_tstep[i] for i in range(len(last_tstep))
++            ]
+             if len(self.optimized_plan.shape) == 2:
+                 self.interpolated_plan = self.interpolated_plan.squeeze(0)
+ 
+@@ -1472,7 +1526,8 @@ class MotionGen(MotionGenConfig):
+                 dtype=self.tensor_args.dtype,
+             )
+             self._batch_col = (
+-                torch.arange(0, batch, device=self.tensor_args.device, dtype=torch.long) * seeds
++                torch.arange(0, batch, device=self.tensor_args.device, dtype=torch.long)
++                * seeds
+             )
+         if (
+             self._batch_graph_search_buffer is None
+@@ -1527,7 +1582,10 @@ class MotionGen(MotionGenConfig):
+ 
+     @profiler.record_function("motion_gen/graph_search")
+     def graph_search(
+-        self, start_config: T_BDOF, goal_config: T_BDOF, interpolation_steps: Optional[int] = None
++        self,
++        start_config: T_BDOF,
++        goal_config: T_BDOF,
++        interpolation_steps: Optional[int] = None,
+     ) -> GraphResult:
+         """Run graph search to find collision-free paths between start and goal configurations.
+ 
+@@ -1539,7 +1597,9 @@ class MotionGen(MotionGenConfig):
+         Returns:
+             GraphResult: Result of graph search.
+         """
+-        return self.graph_planner.find_paths(start_config, goal_config, interpolation_steps)
++        return self.graph_planner.find_paths(
++            start_config, goal_config, interpolation_steps
++        )
+ 
+     def plan_single(
+         self,
+@@ -1834,7 +1894,9 @@ class MotionGen(MotionGenConfig):
+         Args:
+             world: New world configuration for collision checking.
+         """
+-        self.world_coll_checker.load_collision_model(world, fix_cache_reference=self.use_cuda_graph)
++        self.world_coll_checker.load_collision_model(
++            world, fix_cache_reference=self.use_cuda_graph
++        )
+         self.graph_planner.reset_buffer()
+ 
+     def clear_world_cache(self):
+@@ -1957,7 +2019,9 @@ class MotionGen(MotionGenConfig):
+             else:
+                 retract_pose = Pose(
+                     state.ee_pos_seq.repeat(n_goalset, 1).view(1, n_goalset, 3),
+-                    quaternion=state.ee_quat_seq.repeat(n_goalset, 1).view(1, n_goalset, 4),
++                    quaternion=state.ee_quat_seq.repeat(n_goalset, 1).view(
++                        1, n_goalset, 4
++                    ),
+                 )
+                 start_state.position[..., warmup_joint_index] += warmup_joint_delta
+                 for _ in range(3):
+@@ -2023,7 +2087,9 @@ class MotionGen(MotionGenConfig):
+                         )
+             else:
+                 retract_pose = Pose(
+-                    state.ee_pos_seq.view(batch, 1, 3).repeat(1, n_goalset, 1).contiguous(),
++                    state.ee_pos_seq.view(batch, 1, 3)
++                    .repeat(1, n_goalset, 1)
++                    .contiguous(),
+                     quaternion=state.ee_quat_seq.view(batch, 1, 4)
+                     .repeat(1, n_goalset, 1)
+                     .contiguous(),
+@@ -2121,7 +2187,8 @@ class MotionGen(MotionGenConfig):
+             time_dict["finetune_time"] += result.finetune_time
+             time_dict["trajopt_attempts"] = n
+             if plan_config.enable_graph_attempt is not None and (
+-                n >= plan_config.enable_graph_attempt - 1 and not plan_config.enable_graph
++                n >= plan_config.enable_graph_attempt - 1
++                and not plan_config.enable_graph
+             ):
+                 plan_config.enable_graph = True
+             if plan_config.disable_graph_attempt is not None and (
+@@ -2139,10 +2206,15 @@ class MotionGen(MotionGenConfig):
+         result.graph_time = time_dict["graph_time"]
+         result.finetune_time = time_dict["finetune_time"]
+         result.trajopt_time = time_dict["trajopt_time"]
+-        result.solve_time = result.trajopt_time + result.graph_time + result.finetune_time
++        result.solve_time = (
++            result.trajopt_time + result.graph_time + result.finetune_time
++        )
+         result.total_time = result.solve_time
+         result.attempts = n
+-        if plan_config.time_dilation_factor is not None and torch.count_nonzero(result.success) > 0:
++        if (
++            plan_config.time_dilation_factor is not None
++            and torch.count_nonzero(result.success) > 0
++        ):
+             result.retime_trajectory(
+                 plan_config.time_dilation_factor,
+                 interpolation_kind=self.js_trajopt_solver.interpolation_type,
+@@ -2168,7 +2240,10 @@ class MotionGen(MotionGenConfig):
+             TrajOptResult: Result of trajectory optimization.
+         """
+         result = self.trajopt_solver.solve(
+-            goal, act_seed, return_all_solutions=return_all_solutions, num_seeds=num_seeds
++            goal,
++            act_seed,
++            return_all_solutions=return_all_solutions,
++            num_seeds=num_seeds,
+         )
+         return result
+ 
+@@ -2225,7 +2300,9 @@ class MotionGen(MotionGenConfig):
+                 if torch.count_nonzero(metric.hold_vec_weight[:3] > 0.0) > 0:
+                     # angular distance should be zero:
+                     distance = projected_pose.angular_distance(
+-                        Pose.from_list([0, 0, 0, 1, 0, 0, 0], tensor_args=self.tensor_args)
++                        Pose.from_list(
++                            [0, 0, 0, 1, 0, 0, 0], tensor_args=self.tensor_args
++                        )
+                     )
+                     if torch.max(distance) > 0.05:
+                         log_warn(
+@@ -2237,7 +2314,11 @@ class MotionGen(MotionGenConfig):
+                 # check linear distance:
+                 if (
+                     torch.count_nonzero(
+-                        torch.abs(projected_pose.position[..., metric.hold_vec_weight[3:] > 0.0])
++                        torch.abs(
++                            projected_pose.position[
++                                ..., metric.hold_vec_weight[3:] > 0.0
++                            ]
++                        )
+                         > 0.005
+                     )
+                     > 0
+@@ -2250,7 +2331,10 @@ class MotionGen(MotionGenConfig):
+                 # check linear distance:
+                 if (
+                     torch.count_nonzero(
+-                        torch.abs(projected_position[..., metric.hold_vec_weight[3:] > 0.0]) > 0.005
++                        torch.abs(
++                            projected_position[..., metric.hold_vec_weight[3:] > 0.0]
++                        )
++                        > 0.005
+                     )
+                     > 0
+                 ):
+@@ -2375,7 +2459,9 @@ class MotionGen(MotionGenConfig):
+             # w_T_ee = offset_T_w * w_T_ee
+             # ee_T_w
+         ee_pose = ee_pose.inverse()  # ee_T_w to multiply all objects later
+-        max_spheres = self.robot_cfg.kinematics.kinematics_config.get_number_of_spheres(link_name)
++        max_spheres = self.robot_cfg.kinematics.kinematics_config.get_number_of_spheres(
++            link_name
++        )
+         n_spheres = int(max_spheres / len(object_names))
+         sphere_tensor = torch.zeros((max_spheres, 4))
+         sphere_tensor[:, 3] = -10.0
+@@ -2465,7 +2551,9 @@ class MotionGen(MotionGenConfig):
+             # w_T_ee = offset_T_w * w_T_ee
+             # ee_T_w
+         ee_pose = ee_pose.inverse()  # ee_T_w to multiply all objects later
+-        max_spheres = self.robot_cfg.kinematics.kinematics_config.get_number_of_spheres(link_name)
++        max_spheres = self.robot_cfg.kinematics.kinematics_config.get_number_of_spheres(
++            link_name
++        )
+         object_names = [x.name for x in external_objects]
+         n_spheres = int(max_spheres / len(object_names))
+         sphere_tensor = torch.zeros((max_spheres, 4))
+@@ -2502,7 +2590,9 @@ class MotionGen(MotionGenConfig):
+         self.attach_spheres_to_robot(sphere_tensor=sphere_tensor, link_name=link_name)
+         return True
+ 
+-    def add_camera_frame(self, camera_observation: CameraObservation, obstacle_name: str):
++    def add_camera_frame(
++        self, camera_observation: CameraObservation, obstacle_name: str
++    ):
+         """Add camera frame to the world collision checker.
+ 
+         Only supported by :py:class:`~curobo.geom.sdf.world_blox.WorldBloxCollision`.
+@@ -2513,7 +2603,9 @@ class MotionGen(MotionGenConfig):
+         """
+         self.world_coll_checker.add_camera_frame(camera_observation, obstacle_name)
+ 
+-    def process_camera_frames(self, obstacle_name: Optional[str] = None, process_aux: bool = False):
++    def process_camera_frames(
++        self, obstacle_name: Optional[str] = None, process_aux: bool = False
++    ):
+         """Process camera frames for collision checking.
+ 
+         Only supported by :py:class:`~curobo.geom.sdf.world_blox.WorldBloxCollision`.
+@@ -2525,7 +2617,9 @@ class MotionGen(MotionGenConfig):
+                 not required for collision checking and is only needed for debugging. Default is
+                 False to reduce computation time.
+         """
+-        self.world_coll_checker.process_camera_frames(obstacle_name, process_aux=process_aux)
++        self.world_coll_checker.process_camera_frames(
++            obstacle_name, process_aux=process_aux
++        )
+ 
+     def attach_bounding_box_from_blox_to_robot(
+         self,
+@@ -2554,7 +2648,9 @@ class MotionGen(MotionGenConfig):
+             # w_T_ee = offset_T_w * w_T_ee
+             # ee_T_w
+         ee_pose = ee_pose.inverse()  # ee_T_w to multiply all objects later
+-        max_spheres = self.robot_cfg.kinematics.kinematics_config.get_number_of_spheres(link_name)
++        max_spheres = self.robot_cfg.kinematics.kinematics_config.get_number_of_spheres(
++            link_name
++        )
+         n_spheres = max_spheres
+         sphere_tensor = torch.zeros((max_spheres, 4))
+         sphere_tensor[:, 3] = -10.0
+@@ -2632,7 +2728,9 @@ class MotionGen(MotionGenConfig):
+                 already have pre-allocated spheres.
+         """
+         self.robot_cfg.kinematics.kinematics_config.attach_object(
+-            sphere_radius=sphere_radius, sphere_tensor=sphere_tensor, link_name=link_name
++            sphere_radius=sphere_radius,
++            sphere_tensor=sphere_tensor,
++            link_name=link_name,
+         )
+ 
+     def detach_spheres_from_robot(self, link_name: str = "attached_object") -> None:
+@@ -2710,9 +2808,9 @@ class MotionGen(MotionGenConfig):
+             robot_config_dict: Robot configuration dictionary or path to robot configuration file.
+         """
+         if isinstance(robot_config_dict, str):
+-            robot_config_dict = load_yaml(join_path(get_robot_configs_path(), robot_config_dict))[
+-                "robot_cfg"
+-            ]
++            robot_config_dict = load_yaml(
++                join_path(get_robot_configs_path(), robot_config_dict)
++            )["robot_cfg"]
+         if "robot_cfg" in robot_config_dict:
+             robot_config_dict = robot_config_dict["robot_cfg"]
+         robot_config_dict["kinematics"]["lock_joints"] = lock_joints
+@@ -2733,7 +2831,9 @@ class MotionGen(MotionGenConfig):
+         """
+         joint_position = start_state.position
+         if self.rollout_fn.cuda_graph_instance:
+-            log_error("Cannot check start state as this rollout_fn is used by a CUDA graph.")
++            log_error(
++                "Cannot check start state as this rollout_fn is used by a CUDA graph."
++            )
+         if len(joint_position.shape) == 1:
+             joint_position = joint_position.unsqueeze(0)
+         if len(joint_position.shape) > 2:
+@@ -2905,7 +3005,9 @@ class MotionGen(MotionGenConfig):
+         """
+ 
+         num_ik_seeds = (
+-            self.ik_seeds if plan_config.num_ik_seeds is None else plan_config.num_ik_seeds
++            self.ik_seeds
++            if plan_config.num_ik_seeds is None
++            else plan_config.num_ik_seeds
+         )
+         num_trajopt_seeds = (
+             self.trajopt_seeds
+@@ -2914,7 +3016,9 @@ class MotionGen(MotionGenConfig):
+         )
+ 
+         num_graph_seeds = (
+-            self.trajopt_seeds if plan_config.num_graph_seeds is None else num_trajopt_seeds
++            self.trajopt_seeds
++            if plan_config.num_graph_seeds is None
++            else num_trajopt_seeds
+         )
+         solve_state = None
+         if solve_type == ReacherSolveType.SINGLE:
+@@ -3024,7 +3128,9 @@ class MotionGen(MotionGenConfig):
+                     status=MotionGenStatus.INVALID_PARTIAL_POSE_COST_METRIC,
+                 )
+                 return result
+-        self.update_batch_size(seeds=solve_state.num_trajopt_seeds, batch=solve_state.batch_size)
++        self.update_batch_size(
++            seeds=solve_state.num_trajopt_seeds, batch=solve_state.batch_size
++        )
+         if solve_state.batch_env:
+             if solve_state.batch_size > self.world_coll_checker.n_envs:
+                 log_error("Batch Env is less that goal batch")
+@@ -3056,7 +3162,8 @@ class MotionGen(MotionGenConfig):
+             time_dict["trajopt_time"] += result.trajopt_time
+             time_dict["trajopt_attempts"] += result.trajopt_attempts
+             if (
+-                result.status == MotionGenStatus.IK_FAIL and plan_config.ik_fail_return is not None
++                result.status == MotionGenStatus.IK_FAIL
++                and plan_config.ik_fail_return is not None
+             ):  # IF IK fails the first time, we exist assuming the goal is not reachable
+                 ik_fail_count += 1
+                 best_status = max(best_status, 1)
+@@ -3113,7 +3220,10 @@ class MotionGen(MotionGenConfig):
+         torch.cuda.synchronize(device=self.tensor_args.device)
+         if plan_config.pose_cost_metric is not None:
+             self.update_pose_cost_metric(PoseCostMetric.reset_metric())
+-        if plan_config.time_dilation_factor is not None and torch.count_nonzero(result.success) > 0:
++        if (
++            plan_config.time_dilation_factor is not None
++            and torch.count_nonzero(result.success) > 0
++        ):
+             result.retime_trajectory(
+                 plan_config.time_dilation_factor,
+                 interpolation_kind=self.finetune_trajopt_solver.interpolation_type,
+@@ -3164,18 +3274,24 @@ class MotionGen(MotionGenConfig):
+             if solve_state.batch_size > self.world_coll_checker.n_envs:
+                 log_error("Batch Env is less that goal batch")
+             if plan_config.enable_graph:
+-                log_error("Graph Search / Geometric Planner not supported in batch_env mode")
++                log_error(
++                    "Graph Search / Geometric Planner not supported in batch_env mode"
++                )
+ 
+         if plan_config.enable_graph or (
+             plan_config.enable_graph_attempt is not None
+             and plan_config.max_attempts >= plan_config.enable_graph_attempt
+         ):
+-            log_warn("Batch mode enable graph is only supported with num_graph_seeds==1")
++            log_warn(
++                "Batch mode enable graph is only supported with num_graph_seeds==1"
++            )
+             plan_config.num_trajopt_seeds = 1
+             plan_config.num_graph_seeds = 1
+             solve_state.num_trajopt_seeds = 1
+             solve_state.num_graph_seeds = 1
+-        self.update_batch_size(seeds=solve_state.num_trajopt_seeds, batch=solve_state.batch_size)
++        self.update_batch_size(
++            seeds=solve_state.num_trajopt_seeds, batch=solve_state.batch_size
++        )
+ 
+         ik_fail_count = 0
+         force_graph = plan_config.enable_graph
+@@ -3217,7 +3333,8 @@ class MotionGen(MotionGenConfig):
+                     best_result.copy_idx(idx, result)
+ 
+             if (
+-                result.status == MotionGenStatus.IK_FAIL and plan_config.ik_fail_return is not None
++                result.status == MotionGenStatus.IK_FAIL
++                and plan_config.ik_fail_return is not None
+             ):  # IF IK fails the first time, we exit assuming the goal is not reachable
+                 ik_fail_count += 1
+                 if ik_fail_count > plan_config.ik_fail_return:
+@@ -3239,7 +3356,8 @@ class MotionGen(MotionGenConfig):
+ 
+             if plan_config.disable_graph_attempt is not None and (
+                 n >= plan_config.disable_graph_attempt - 1
+-                and result.status in [MotionGenStatus.TRAJOPT_FAIL, MotionGenStatus.GRAPH_FAIL]
++                and result.status
++                in [MotionGenStatus.TRAJOPT_FAIL, MotionGenStatus.GRAPH_FAIL]
+                 and not force_graph
+             ):
+                 plan_config.enable_graph = False
+@@ -3262,7 +3380,10 @@ class MotionGen(MotionGenConfig):
+         if plan_config.pose_cost_metric is not None:
+             self.update_pose_cost_metric(PoseCostMetric.reset_metric())
+ 
+-        if plan_config.time_dilation_factor is not None and torch.count_nonzero(result.success) > 0:
++        if (
++            plan_config.time_dilation_factor is not None
++            and torch.count_nonzero(result.success) > 0
++        ):
+             result.retime_trajectory(
+                 plan_config.time_dilation_factor,
+                 interpolation_kind=self.finetune_trajopt_solver.interpolation_type,
+@@ -3337,9 +3458,9 @@ class MotionGen(MotionGenConfig):
+             if plan_config.enable_graph:
+                 ik_out_seeds = min(solve_state.num_trajopt_seeds, ik_success)
+ 
+-            goal_config = ik_result.solution[ik_result.success].view(-1, self.ik_solver.dof)[
+-                :ik_success
+-            ]
++            goal_config = ik_result.solution[ik_result.success].view(
++                -1, self.ik_solver.dof
++            )[:ik_success]
+             start_config = tensor_repeat_seeds(start_state.position, ik_out_seeds)
+             if plan_config.enable_opt:
+                 self._trajopt_goal_config[:] = ik_result.solution
+@@ -3350,7 +3471,9 @@ class MotionGen(MotionGenConfig):
+             if plan_config.enable_opt:
+                 interpolation_steps = self.trajopt_solver.action_horizon
+             log_info("MG: running GP")
+-            graph_result = self.graph_search(start_config, goal_config, interpolation_steps)
++            graph_result = self.graph_search(
++                start_config, goal_config, interpolation_steps
++            )
+             trajopt_seed_success = graph_result.success
+ 
+             graph_success = torch.count_nonzero(graph_result.success).item()
+@@ -3374,13 +3497,19 @@ class MotionGen(MotionGenConfig):
+                         .contiguous()
+                     )
+                     trajopt_seed_traj = torch.zeros(
+-                        (trajopt_seed.shape[0], 1, self.trajopt_solver.action_horizon, self._dof),
++                        (
++                            trajopt_seed.shape[0],
++                            1,
++                            self.trajopt_solver.action_horizon,
++                            self._dof,
++                        ),
+                         device=self.tensor_args.device,
+                         dtype=self.tensor_args.dtype,
+                     )
+                     trajopt_seed_traj[:, :, :interpolation_steps, :] = trajopt_seed
+-                    trajopt_seed_success = ik_result.success.clone()
+-                    trajopt_seed_success[ik_result.success] = graph_result.success
++                    ik_success_mask = ik_result.success.clone()
++                    trajopt_seed_success = ik_success_mask.clone()
++                    trajopt_seed_success[ik_success_mask] = graph_result.success
+ 
+                     trajopt_seed_success = trajopt_seed_success.view(
+                         solve_state.batch_size, solve_state.num_trajopt_seeds
+@@ -3388,10 +3517,14 @@ class MotionGen(MotionGenConfig):
+                     trajopt_newton_iters = self.graph_trajopt_iters
+                 else:
+                     _, idx = torch.topk(
+-                        graph_result.path_length[graph_result.success], k=1, largest=False
++                        graph_result.path_length[graph_result.success],
++                        k=1,
++                        largest=False,
+                     )
+                     result.interpolated_plan = result.interpolated_plan[idx].squeeze(0)
+-                    result.optimized_dt = self.tensor_args.to_device(self.interpolation_dt)
++                    result.optimized_dt = self.tensor_args.to_device(
++                        self.interpolation_dt
++                    )
+                     result.optimized_plan = result.interpolated_plan[
+                         : graph_result.path_buffer_last_tstep[idx.item()]
+                     ]
+@@ -3436,7 +3569,8 @@ class MotionGen(MotionGenConfig):
+ 
+                 if (
+                     trajopt_seed_traj is None
+-                    or graph_success < solve_state.num_trajopt_seeds * self.noisy_trajopt_seeds
++                    or graph_success
++                    < solve_state.num_trajopt_seeds * self.noisy_trajopt_seeds
+                 ):
+                     goal_config = self._trajopt_goal_config[0]  # batch index == 0
+ 
+@@ -3458,25 +3592,33 @@ class MotionGen(MotionGenConfig):
+                         )
+                     seed_goal = Goal(
+                         goal_pose=goal_pose.repeat_seeds(solve_state.num_trajopt_seeds),
+-                        current_state=start_state.repeat_seeds(solve_state.num_trajopt_seeds),
++                        current_state=start_state.repeat_seeds(
++                            solve_state.num_trajopt_seeds
++                        ),
+                         goal_state=goal_state,
+                         links_goal_pose=seed_link_poses,
+                     )
+                     if trajopt_seed_traj is not None:
+-                        trajopt_seed_traj = trajopt_seed_traj.transpose(0, 1).contiguous()
++                        trajopt_seed_traj = trajopt_seed_traj.transpose(
++                            0, 1
++                        ).contiguous()
+                         # batch, num_seeds, h, dof
+                         if (
+                             trajopt_seed_success.shape[1]
+                             < solve_state.num_trajopt_seeds * self.noisy_trajopt_seeds
+                         ):
+                             trajopt_seed_success_new = torch.zeros(
+-                                (1, solve_state.num_trajopt_seeds * self.noisy_trajopt_seeds),
++                                (
++                                    1,
++                                    solve_state.num_trajopt_seeds
++                                    * self.noisy_trajopt_seeds,
++                                ),
+                                 device=self.tensor_args.device,
+                                 dtype=torch.bool,
+                             )
+-                            trajopt_seed_success_new[0, : trajopt_seed_success.shape[1]] = (
+-                                trajopt_seed_success
+-                            )
++                            trajopt_seed_success_new[
++                                0, : trajopt_seed_success.shape[1]
++                            ] = trajopt_seed_success
+                             trajopt_seed_success = trajopt_seed_success_new
+                     # create seeds here:
+                     trajopt_seed_traj = self.trajopt_solver.get_seed_set(
+@@ -3501,7 +3643,8 @@ class MotionGen(MotionGenConfig):
+                     goal,
+                     solve_state,
+                     trajopt_seed_traj,
+-                    num_seeds_override=solve_state.num_trajopt_seeds * self.noisy_trajopt_seeds,
++                    num_seeds_override=solve_state.num_trajopt_seeds
++                    * self.noisy_trajopt_seeds,
+                     newton_iters=trajopt_newton_iters,
+                     return_all_solutions=plan_config.parallel_finetune
+                     and plan_config.enable_finetune_trajopt,
+@@ -3511,16 +3654,23 @@ class MotionGen(MotionGenConfig):
+             if self.store_debug_in_result:
+                 result.debug_info["trajopt_result"] = traj_result
+             # run finetune
+-            if plan_config.enable_finetune_trajopt and torch.count_nonzero(traj_result.success) > 0:
++            if (
++                plan_config.enable_finetune_trajopt
++                and torch.count_nonzero(traj_result.success) > 0
++            ):
+                 with profiler.record_function("motion_gen/finetune_trajopt"):
+-                    seed_traj = traj_result.raw_action.clone()  # solution.position.clone()
++                    seed_traj = (
++                        traj_result.raw_action.clone()
++                    )  # solution.position.clone()
+                     seed_traj = seed_traj.contiguous()
+                     og_solve_time = traj_result.solve_time
+                     seed_override = 1
+                     opt_dt = traj_result.optimized_dt
+ 
+                     if plan_config.parallel_finetune:
+-                        seed_override = solve_state.num_trajopt_seeds * self.noisy_trajopt_seeds
++                        seed_override = (
++                            solve_state.num_trajopt_seeds * self.noisy_trajopt_seeds
++                        )
+                         if self.optimize_dt:
+                             opt_dt = torch.min(opt_dt[traj_result.success])
+ 
+@@ -3529,14 +3679,15 @@ class MotionGen(MotionGenConfig):
+ 
+                     for k in range(plan_config.finetune_attempts):
+                         if self.optimize_dt:
+-
+                             scaled_dt = torch.clamp(
+                                 opt_dt
+                                 * plan_config.finetune_dt_scale
+                                 * (plan_config.finetune_dt_decay ** (k)),
+                                 self.trajopt_solver.minimum_trajectory_dt,
+                             )
+-                            self.finetune_trajopt_solver.update_solver_dt(scaled_dt.item())
++                            self.finetune_trajopt_solver.update_solver_dt(
++                                scaled_dt.item()
++                            )
+ 
+                         traj_result = self._solve_trajopt_from_solve_state(
+                             goal,
+@@ -3547,7 +3698,10 @@ class MotionGen(MotionGenConfig):
+                             newton_iters=newton_iters,
+                         )
+                         finetune_time += traj_result.solve_time
+-                        if torch.count_nonzero(traj_result.success) > 0 or not self.optimize_dt:
++                        if (
++                            torch.count_nonzero(traj_result.success) > 0
++                            or not self.optimize_dt
++                        ):
+                             break
+                         seed_traj = traj_result.optimized_seeds.detach().clone()
+                         newton_iters = 4
+@@ -3568,8 +3722,10 @@ class MotionGen(MotionGenConfig):
+             result.trajopt_attempts = 1
+             result.success = traj_result.success
+ 
+-            if plan_config.enable_finetune_trajopt and torch.count_nonzero(result.success) == 0:
+-
++            if (
++                plan_config.enable_finetune_trajopt
++                and torch.count_nonzero(result.success) == 0
++            ):
+                 result.status = MotionGenStatus.FINETUNE_TRAJOPT_FAIL
+                 if (
+                     traj_result.debug_info is not None
+@@ -3578,8 +3734,10 @@ class MotionGen(MotionGenConfig):
+                 ):
+                     result.status = MotionGenStatus.DT_EXCEPTION
+ 
+-            result.interpolated_plan = traj_result.interpolated_solution.trim_trajectory(
+-                0, traj_result.path_buffer_last_tstep[0]
++            result.interpolated_plan = (
++                traj_result.interpolated_solution.trim_trajectory(
++                    0, traj_result.path_buffer_last_tstep[0]
++                )
+             )
+             result.interpolation_dt = self.trajopt_solver.interpolation_dt
+             result.path_buffer_last_tstep = traj_result.path_buffer_last_tstep
+@@ -3616,7 +3774,9 @@ class MotionGen(MotionGenConfig):
+         if len(start_state.shape) == 1:
+             log_error("Joint state should be not a vector (dof) should be (bxdof)")
+ 
+-        result = MotionGenResult(cspace_error=torch.zeros((1), device=self.tensor_args.device))
++        result = MotionGenResult(
++            cspace_error=torch.zeros((1), device=self.tensor_args.device)
++        )
+         if self.store_debug_in_result:
+             result.debug_info = {}
+         # do graph search:
+@@ -3633,7 +3793,9 @@ class MotionGen(MotionGenConfig):
+             if plan_config.enable_opt:
+                 interpolation_steps = self.js_trajopt_solver.action_horizon
+             log_info("MG: running GP")
+-            graph_result = self.graph_search(start_config, goal_config, interpolation_steps)
++            graph_result = self.graph_search(
++                start_config, goal_config, interpolation_steps
++            )
+             trajopt_seed_success = graph_result.success
+ 
+             graph_success = torch.count_nonzero(graph_result.success).item()
+@@ -3656,7 +3818,12 @@ class MotionGen(MotionGenConfig):
+                         .contiguous()
+                     )
+                     trajopt_seed_traj = torch.zeros(
+-                        (trajopt_seed.shape[0], 1, self.trajopt_solver.action_horizon, self._dof),
++                        (
++                            trajopt_seed.shape[0],
++                            1,
++                            self.trajopt_solver.action_horizon,
++                            self._dof,
++                        ),
+                         device=self.tensor_args.device,
+                         dtype=self.tensor_args.dtype,
+                     )
+@@ -3669,23 +3836,33 @@ class MotionGen(MotionGenConfig):
+                     trajopt_newton_iters = self.graph_trajopt_iters
+                 else:
+                     _, idx = torch.topk(
+-                        graph_result.path_length[graph_result.success], k=1, largest=False
++                        graph_result.path_length[graph_result.success],
++                        k=1,
++                        largest=False,
+                     )
+                     result.interpolated_plan = result.interpolated_plan[idx].squeeze(0)
+-                    result.optimized_dt = self.tensor_args.to_device(self.interpolation_dt)
++                    result.optimized_dt = self.tensor_args.to_device(
++                        self.interpolation_dt
++                    )
+                     result.optimized_plan = result.interpolated_plan[
+                         : graph_result.path_buffer_last_tstep[idx.item()]
+                     ]
+                     idx = idx.view(-1) + self._batch_col
+-                    result.cspace_error = torch.zeros((1), device=self.tensor_args.device)
++                    result.cspace_error = torch.zeros(
++                        (1), device=self.tensor_args.device
++                    )
+ 
+                     result.path_buffer_last_tstep = graph_result.path_buffer_last_tstep[
+                         idx.item() : idx.item() + 1
+                     ]
+-                    result.success = torch.as_tensor([True], device=self.tensor_args.device)
++                    result.success = torch.as_tensor(
++                        [True], device=self.tensor_args.device
++                    )
+                     return result
+             else:
+-                result.success = torch.as_tensor([False], device=self.tensor_args.device)
++                result.success = torch.as_tensor(
++                    [False], device=self.tensor_args.device
++                )
+                 result.status = MotionGenStatus.GRAPH_FAIL
+                 if not graph_result.valid_query:
+                     result.valid_query = False
+@@ -3698,29 +3875,40 @@ class MotionGen(MotionGenConfig):
+         # do trajopt:
+         if plan_config.enable_opt:
+             with profiler.record_function("motion_gen/setup_trajopt_seeds"):
+-
+                 goal = Goal(
+                     current_state=start_state,
+                     goal_state=goal_state,
+                 )
+ 
+-                if trajopt_seed_traj is None or graph_success < solve_state.num_trajopt_seeds * 1:
++                if (
++                    trajopt_seed_traj is None
++                    or graph_success < solve_state.num_trajopt_seeds * 1
++                ):
+                     seed_goal = Goal(
+-                        current_state=start_state.repeat_seeds(solve_state.num_trajopt_seeds),
+-                        goal_state=goal_state.repeat_seeds(solve_state.num_trajopt_seeds),
++                        current_state=start_state.repeat_seeds(
++                            solve_state.num_trajopt_seeds
++                        ),
++                        goal_state=goal_state.repeat_seeds(
++                            solve_state.num_trajopt_seeds
++                        ),
+                     )
+                     if trajopt_seed_traj is not None:
+-                        trajopt_seed_traj = trajopt_seed_traj.transpose(0, 1).contiguous()
++                        trajopt_seed_traj = trajopt_seed_traj.transpose(
++                            0, 1
++                        ).contiguous()
+                         # batch, num_seeds, h, dof
+-                        if trajopt_seed_success.shape[1] < self.js_trajopt_solver.num_seeds:
++                        if (
++                            trajopt_seed_success.shape[1]
++                            < self.js_trajopt_solver.num_seeds
++                        ):
+                             trajopt_seed_success_new = torch.zeros(
+                                 (1, solve_state.num_trajopt_seeds),
+                                 device=self.tensor_args.device,
+                                 dtype=torch.bool,
+                             )
+-                            trajopt_seed_success_new[0, : trajopt_seed_success.shape[1]] = (
+-                                trajopt_seed_success
+-                            )
++                            trajopt_seed_success_new[
++                                0, : trajopt_seed_success.shape[1]
++                            ] = trajopt_seed_success
+                             trajopt_seed_success = trajopt_seed_success_new
+                     # create seeds here:
+                     trajopt_seed_traj = self.js_trajopt_solver.get_seed_set(
+@@ -3761,7 +3949,10 @@ class MotionGen(MotionGenConfig):
+             if torch.count_nonzero(traj_result.success) == 0:
+                 result.status = MotionGenStatus.TRAJOPT_FAIL
+             # run finetune
+-            if plan_config.enable_finetune_trajopt and torch.count_nonzero(traj_result.success) > 0:
++            if (
++                plan_config.enable_finetune_trajopt
++                and torch.count_nonzero(traj_result.success) > 0
++            ):
+                 with profiler.record_function("motion_gen/finetune_trajopt"):
+                     seed_traj = traj_result.raw_action.clone()
+                     og_solve_time = traj_result.solve_time
+@@ -3770,7 +3961,6 @@ class MotionGen(MotionGenConfig):
+                     finetune_time = 0
+                     newton_iters = None
+                     for k in range(plan_config.finetune_attempts):
+-
+                         scaled_dt = torch.clamp(
+                             opt_dt
+                             * plan_config.finetune_js_dt_scale
+@@ -3779,7 +3969,9 @@ class MotionGen(MotionGenConfig):
+                         )
+ 
+                         if self.optimize_dt:
+-                            self.finetune_js_trajopt_solver.update_solver_dt(scaled_dt.item())
++                            self.finetune_js_trajopt_solver.update_solver_dt(
++                                scaled_dt.item()
++                            )
+                         traj_result = self._solve_trajopt_from_solve_state(
+                             goal,
+                             solve_state,
+@@ -3791,7 +3983,10 @@ class MotionGen(MotionGenConfig):
+                         )
+ 
+                         finetune_time += traj_result.solve_time
+-                        if torch.count_nonzero(traj_result.success) > 0 or not self.optimize_dt:
++                        if (
++                            torch.count_nonzero(traj_result.success) > 0
++                            or not self.optimize_dt
++                        ):
+                             break
+                         seed_traj = traj_result.optimized_seeds.detach().clone()
+                         newton_iters = 4
+@@ -3816,8 +4011,10 @@ class MotionGen(MotionGenConfig):
+             result.trajopt_time = traj_result.solve_time
+             result.trajopt_attempts = 1
+             result.success = traj_result.success
+-            result.interpolated_plan = traj_result.interpolated_solution.trim_trajectory(
+-                0, traj_result.path_buffer_last_tstep[0]
++            result.interpolated_plan = (
++                traj_result.interpolated_solution.trim_trajectory(
++                    0, traj_result.path_buffer_last_tstep[0]
++                )
+             )
+ 
+             result.interpolation_dt = self.trajopt_solver.interpolation_dt
+@@ -3868,9 +4065,11 @@ class MotionGen(MotionGenConfig):
+         if not plan_config.enable_graph and plan_config.partial_ik_opt:
+             ik_result.success[:] = True
+ 
++        ik_success_mask = ik_result.success.clone()
++
+         # check for success:
+         result = MotionGenResult(
+-            ik_result.success,
++            ik_success_mask,
+             position_error=ik_result.position_error,
+             rotation_error=ik_result.rotation_error,
+             ik_time=ik_result.solve_time,
+@@ -3879,7 +4078,7 @@ class MotionGen(MotionGenConfig):
+             # goalset_index=ik_result.goalset_index,
+         )
+ 
+-        ik_success = torch.count_nonzero(ik_result.success)
++        ik_success = torch.count_nonzero(ik_success_mask)
+         if ik_success == 0:
+             result.status = MotionGenStatus.IK_FAIL
+             result.success = result.success[:, 0]
+@@ -3896,7 +4095,7 @@ class MotionGen(MotionGenConfig):
+         # elif plan_config.enable_graph:
+         #    self.graph_planner.interpolation_steps = self.trajopt_solver.traj_tsteps
+         #    self.graph_planner.interpolation_type = InterpolateType.LINEAR
+-        goal_config = ik_result.solution[ik_result.success].view(-1, self.ik_solver.dof)
++        goal_config = ik_result.solution[ik_success_mask].view(-1, self.ik_solver.dof)
+ 
+         # get shortest path
+         if plan_config.enable_graph:
+@@ -3905,10 +4104,12 @@ class MotionGen(MotionGenConfig):
+                 interpolation_steps = self.trajopt_solver.action_horizon
+ 
+             start_graph_state = start_state.repeat_seeds(ik_out_seeds)
+-            start_config = start_graph_state.position[ik_result.success.view(-1)].view(
++            start_config = start_graph_state.position[ik_success_mask.view(-1)].view(
+                 -1, self.ik_solver.dof
+             )
+-            graph_result = self.graph_search(start_config, goal_config, interpolation_steps)
++            graph_result = self.graph_search(
++                start_config, goal_config, interpolation_steps
++            )
+             graph_success = torch.count_nonzero(graph_result.success).item()
+ 
+             result.graph_time = graph_result.solve_time
+@@ -3926,14 +4127,19 @@ class MotionGen(MotionGenConfig):
+                         self._dof,
+                     ).contiguous()
+                     trajopt_seed_traj = torch.zeros(
+-                        (1, trajopt_seed.shape[0], self.trajopt_solver.action_horizon, self._dof),
++                        (
++                            1,
++                            trajopt_seed.shape[0],
++                            self.trajopt_solver.action_horizon,
++                            self._dof,
++                        ),
+                         device=self.tensor_args.device,
+                         dtype=self.tensor_args.dtype,
+                     )
+                     trajopt_seed_traj[0, :, :interpolation_steps, :] = trajopt_seed
+                     trajopt_seed_traj = trajopt_seed_traj.transpose(0, 1).contiguous()
+-                    trajopt_seed_success = ik_result.success.clone()
+-                    trajopt_seed_success[ik_result.success] = graph_result.success
++                    trajopt_seed_success = ik_success_mask.clone()
++                    trajopt_seed_success[ik_success_mask] = graph_result.success
+ 
+                     trajopt_seed_success = trajopt_seed_success.view(
+                         solve_state.num_trajopt_seeds, solve_state.batch_size
+@@ -3941,7 +4147,7 @@ class MotionGen(MotionGenConfig):
+                     trajopt_newton_iters = self.graph_trajopt_iters
+ 
+                 else:
+-                    ik_success = ik_result.success.view(-1).clone()
++                    ik_success = ik_success_mask.view(-1).clone()
+ 
+                     # only some might be successful:
+ 
+@@ -3989,7 +4195,7 @@ class MotionGen(MotionGenConfig):
+ 
+         if plan_config.enable_opt:
+             # get goal configs based on ik success:
+-            self._trajopt_goal_config[ik_result.success] = goal_config
++            self._trajopt_goal_config[ik_success_mask] = goal_config
+ 
+             goal_config = self._trajopt_goal_config  # batch index == 0
+ 
+@@ -4012,8 +4218,12 @@ class MotionGen(MotionGenConfig):
+                         )
+                 seed_goal = Goal(
+                     goal_pose=goal_pose.repeat_seeds(solve_state.num_trajopt_seeds),
+-                    current_state=start_state.repeat_seeds(solve_state.num_trajopt_seeds),
+-                    goal_state=JointState.from_position(goal_config.view(-1, self._dof)),
++                    current_state=start_state.repeat_seeds(
++                        solve_state.num_trajopt_seeds
++                    ),
++                    goal_state=JointState.from_position(
++                        goal_config.view(-1, self._dof)
++                    ),
+                     links_goal_pose=seed_link_poses,
+                 )
+                 if trajopt_seed_traj is not None:
+@@ -4054,9 +4264,14 @@ class MotionGen(MotionGenConfig):
+                 result.debug_info["trajopt_result"] = traj_result
+ 
+             # run finetune
+-            if plan_config.enable_finetune_trajopt and torch.count_nonzero(traj_result.success) > 0:
++            if (
++                plan_config.enable_finetune_trajopt
++                and torch.count_nonzero(traj_result.success) > 0
++            ):
+                 with profiler.record_function("motion_gen/finetune_trajopt"):
+-                    seed_traj = traj_result.raw_action.clone()  # solution.position.clone()
++                    seed_traj = (
++                        traj_result.raw_action.clone()
++                    )  # solution.position.clone()
+                     seed_traj = seed_traj.contiguous()
+                     og_solve_time = traj_result.solve_time
+ 
+@@ -4080,7 +4295,10 @@ class MotionGen(MotionGenConfig):
+                 traj_result.solve_time = og_solve_time
+                 if self.store_debug_in_result:
+                     result.debug_info["finetune_trajopt_result"] = traj_result
+-            elif plan_config.enable_finetune_trajopt and len(traj_result.success.shape) == 2:
++            elif (
++                plan_config.enable_finetune_trajopt
++                and len(traj_result.success.shape) == 2
++            ):
+                 traj_result.success = traj_result.success[:, 0]
+ 
+             result.success = traj_result.success
+@@ -4201,9 +4419,23 @@ class MotionGen(MotionGenConfig):
+         grasp_poses: Pose,
+         plan_config: MotionGenPlanConfig,
+         grasp_approach_offset: Pose = Pose.from_list([0, 0, -0.15, 1, 0, 0, 0]),
+-        grasp_approach_path_constraint: Union[None, List[float]] = [0.1, 0.1, 0.1, 0.1, 0.1, 0.0],
++        grasp_approach_path_constraint: Union[None, List[float]] = [
++            0.1,
++            0.1,
++            0.1,
++            0.1,
++            0.1,
++            0.0,
++        ],
+         retract_offset: Pose = Pose.from_list([0, 0, -0.15, 1, 0, 0, 0]),
+-        retract_path_constraint: Union[None, List[float]] = [0.1, 0.1, 0.1, 0.1, 0.1, 0.0],
++        retract_path_constraint: Union[None, List[float]] = [
++            0.1,
++            0.1,
++            0.1,
++            0.1,
++            0.1,
++            0.0,
++        ],
+         disable_collision_links: List[str] = [],
+         plan_approach_to_grasp: bool = True,
+         plan_grasp_to_retract: bool = True,
+@@ -4295,20 +4527,26 @@ class MotionGen(MotionGenConfig):
+         )
+         result.approach_result = reach_offset_mg_result
+         if not reach_offset_mg_result.success.item():
+-            result.status = f"Planning to Approach pose failed: {reach_offset_mg_result.status}"
++            result.status = (
++                f"Planning to Approach pose failed: {reach_offset_mg_result.status}"
++            )
+             return result
+ 
+         if not plan_approach_to_grasp:
+             result.grasp_trajectory = reach_offset_mg_result.optimized_plan
+             result.grasp_trajectory_dt = reach_offset_mg_result.optimized_dt
+-            result.grasp_interpolated_trajectory = reach_offset_mg_result.get_interpolated_plan()
++            result.grasp_interpolated_trajectory = (
++                reach_offset_mg_result.get_interpolated_plan()
++            )
+             result.grasp_interpolation_dt = reach_offset_mg_result.interpolation_dt
+             return result
+         # plan to final grasp
+         if grasp_approach_path_constraint is not None:
+             hold_pose_cost_metric = PoseCostMetric(
+                 hold_partial_pose=True,
+-                hold_vec_weight=self.tensor_args.to_device(grasp_approach_path_constraint),
++                hold_vec_weight=self.tensor_args.to_device(
++                    grasp_approach_path_constraint
++                ),
+                 project_to_goal_frame=grasp_approach_constraint_in_goal_frame,
+             )
+             plan_config.pose_cost_metric = hold_pose_cost_metric
+@@ -4325,9 +4563,7 @@ class MotionGen(MotionGenConfig):
+         self.toggle_link_collision(disable_collision_links, True)
+         result.grasp_result = reach_grasp_mg_result
+         if not reach_grasp_mg_result.success.item():
+-            result.status = (
+-                f"Planning from Approach to Grasp Failed: {reach_grasp_mg_result.status}"
+-            )
++            result.status = f"Planning from Approach to Grasp Failed: {reach_grasp_mg_result.status}"
+             return result
+ 
+         # Get stitched trajectory:
+@@ -4350,7 +4586,9 @@ class MotionGen(MotionGenConfig):
+                 interpolate_trajectory=True,
+             )
+ 
+-        if (reach_offset_mg_result.optimized_dt - reach_grasp_mg_result.optimized_dt).abs() > 0.01:
++        if (
++            reach_offset_mg_result.optimized_dt - reach_grasp_mg_result.optimized_dt
++        ).abs() > 0.01:
+             reach_offset_mg_result.success[:] = False
+             if reach_offset_mg_result.debug_info is None:
+                 reach_offset_mg_result.debug_info = {}
+@@ -4414,14 +4652,18 @@ class MotionGen(MotionGenConfig):
+         self.toggle_link_collision(disable_collision_links, True)
+         result.planning_time += retract_grasp_mg_result.total_time
+         if not retract_grasp_mg_result.success.item():
+-            result.status = f"Retract from Grasp failed: {retract_grasp_mg_result.status}"
++            result.status = (
++                f"Retract from Grasp failed: {retract_grasp_mg_result.status}"
++            )
+             result.retract_result = retract_grasp_mg_result
+             return result
+         result.success[:] = True
+ 
+         result.retract_trajectory = retract_grasp_mg_result.optimized_plan
+         result.retract_trajectory_dt = retract_grasp_mg_result.optimized_dt
+-        result.retract_interpolated_trajectory = retract_grasp_mg_result.get_interpolated_plan()
++        result.retract_interpolated_trajectory = (
++            retract_grasp_mg_result.get_interpolated_plan()
++        )
+         result.retract_interpolation_dt = retract_grasp_mg_result.interpolation_dt
+ 
+         return result
+diff --git a/uv.lock b/uv.lock
+new file mode 100644
+index 0000000..7518fc9
+--- /dev/null
++++ b/uv.lock
+@@ -0,0 +1,3 @@
++version = 1
++revision = 3
++requires-python = ">=3.12"

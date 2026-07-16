@@ -1,0 +1,206 @@
+[project]
+name = "aspire"
+version = "0.1.0"
+description = "ASPIRE code-as-policy robot execution and evaluation tools for LIBERO, Robosuite, and BEHAVIOR-1K."
+readme = "README.md"
+requires-python = ">=3.10, <3.13"
+authors = [
+  { name = "ASPIRE Authors" }
+]
+keywords = ["LLM", "VLM", "robotics", "code-as-policy", "lifelong-learning"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: POSIX :: Linux",
+]
+
+dependencies = [
+  "gymnasium>=0.29",
+  "numpy>=1.26",
+  "torch>=2.8",
+  "torchvision>=0.23",
+  "tyro>=0.8.5",
+  "pydantic>=2.7",
+  "rich>=13.7",
+  "scipy>=1.12",
+  "matplotlib>=3.10",
+  "imageio[ffmpeg]",
+  "requests",
+  "tqdm",
+  "h5py",
+  "einops",
+  "decord",
+  "pycocotools",
+  "pyyaml",
+  "omegaconf",
+  "open3d",
+  "pyroki @ git+https://github.com/chungmin99/pyroki.git",
+  "robot_descriptions>=1.16.0",
+  "yourdfpy>=0.0.56",
+  "viser>=0.2.0",
+  "trimesh>=4.4.0",
+  "imageio[ffmpeg]>=0.6.0",
+  "sam3",
+  "msgpack_numpy",
+  "ray==2.48.0",
+  "mediapy>=1.2.5",
+  "uvicorn",
+  "fastapi",
+  "transformers",
+  "openai",
+  "pyrender",
+  "opencv-python-headless",
+  "pillow>=10",
+  "cloudpickle",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-timeout>=2.3",
+  "ruff",
+  "mypy>=1.10",
+  "pillow>=10",
+  "requests>=2.32",
+]
+
+libero = [
+  "libero",
+  "robosuite",
+  "easydict==1.9",
+  "robomimic==0.2.0",
+  "einops==0.4.1",
+  "thop==0.1.1-2209072238",
+  "bddl==1.0.1",
+  "future==0.18.2",
+  "cloudpickle==2.1.0",
+  "gym==0.25.2",
+  "scikit-learn",
+]
+robosuite = [
+  "robosuite"
+]
+molmo = [
+  "torch==2.9.1",
+  "vllm==0.15.0 ; extra == 'molmo'",
+  "tensorflow", 
+  "accelerate"
+]
+curobo = [
+  "nvidia-curobo",
+  "warp-lang>=0.9.0",
+  "numpy-quaternion",
+  "scikit-image",
+]
+contactgraspnet = [
+  "contact_graspnet_pytorch",
+  "pyrender",
+  "opencv-python-headless",
+]
+ovdet = [
+  "transformers>=4.41",
+  "pillow>=10",
+  "requests>=2.32",
+]
+[tool.uv.sources]
+robosuite = [
+  { path = "cap/third_party/robosuite", extra = "robosuite", editable = true},
+  { path = "cap/third_party/libero_dependencies/robosuite", extra = "libero", editable = true },
+]
+libero = [
+  { path = "cap/third_party/LIBERO-PRO", extra = "libero", editable = true},
+]
+contact_graspnet_pytorch = { path = "cap/third_party/contact_graspnet_pytorch", editable = true }
+sam3 = { path = "cap/third_party/sam3", editable = true}
+nvidia-curobo = { path = "cap/third_party/curobo", editable = true}
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.uv]
+environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'"
+]
+override-dependencies = [
+    "transformers<5.0",
+    # Both pinned Robosuite forks use the pre-3.10 mj_fullM Python API.
+    "mujoco==3.3.0",
+    "PyOpenGL==3.1.6",
+    "PyOpenGL-accelerate==3.1.6",
+    "numpy==1.26.4",
+    "opencv-python-headless<4.13",
+    "opencv-python ; sys_platform == 'never'",
+    "jax<0.4.30",
+    "jaxlib<0.4.30"
+]
+conflicts = [
+  [
+    { extra = "robosuite" },
+    { extra = "libero" },
+  ],
+    [
+    { extra = "molmo" },
+    { extra = "robosuite" },
+  ],
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["../.."]
+include = ["aspire", "aspire.sim", "aspire.sim.*"]
+exclude = [
+  "aspire.real*",
+  "aspire.sim.tests*",
+  "aspire.sim.docs*",
+  "aspire.sim.cap.third_party*",
+]
+
+[tool.uv.extra-build-dependencies]
+egl-probe = ["cmake<3.27"]
+pointnet2 = ["torch"]
+knn = ["torch"]
+contact-graspnet-pytorch = ["numpy"]
+nvidia-curobo = ["torch"]
+
+[tool.uv.workspace]
+exclude = [
+    "cap/third_party/b1k",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM"]
+ignore = ["N803", "UP047", "N806", "F401", "E501"]
+force-exclude = true
+extend-exclude = [
+  "cap/third_party/**",
+  "third_party/**",
+  "tests/**",
+  "scripts/**",
+  "outputs/**",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"cap/third_party/**" = ["ALL"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [
+  ".venv",
+  ".venv-*",
+  "cap/third_party",
+  "third_party",
+  "outputs",
+]
+markers = [
+  "integration: tests that require external services, models, or optional simulator dependencies",
+]

@@ -1,0 +1,39 @@
+# Python/cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+.uv-cache/
+
+# Local runtime configuration and secrets
+.forge_env
+.forge_env.*
+!.forge_env.example
+*.env
+*.env.*
+robot/local_station.toml
+
+# Logs and local run outputs
+logs/
+*.log
+*.pid
+.TimeRecord
+
+# Private/vendor runtime assets
+third_party/
+tools/anygrasp_identity/
+license_*.zip
+checkpoint_detection.tar
+*.ckpt
+*.pth
+*.pt
+*.onnx
+bundlesdf-*.tar.gz
+
+# Build artifacts
+build/
+dist/
+*.so

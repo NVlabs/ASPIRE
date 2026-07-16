@@ -1,0 +1,117 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: YAM Recovery <recovery@example.invalid>
+Date: Thu, 2 Jul 2026 15:38:32 -0700
+Subject: [PATCH] YAM workstation changes for pyroki
+
+---
+ pyproject.toml                                |  1 +
+ .../_residuals/_pose_residual_analytic_jac.py |  2 +-
+ .../_pose_residual_numerical_jac.py           |  2 +-
+ src/pyroki/costs.py                           | 36 +++++++++----------
+ 4 files changed, 21 insertions(+), 20 deletions(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index bbcc52e..48f3948 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -31,6 +31,7 @@ dependencies = [
+     "trimesh",
+     "viser",
+     "pyliblzfse",  # Need for viser.extras import in viser==0.2.23 
++    "pyroki",
+ ]
+ 
+ [project.optional-dependencies]
+diff --git a/src/pyroki/_residuals/_pose_residual_analytic_jac.py b/src/pyroki/_residuals/_pose_residual_analytic_jac.py
+index 0eee1e0..18e51a4 100644
+--- a/src/pyroki/_residuals/_pose_residual_analytic_jac.py
++++ b/src/pyroki/_residuals/_pose_residual_analytic_jac.py
+@@ -229,7 +229,7 @@ def _pose_cost_jac(
+     return jac * weights[:, None]
+ 
+ 
+-@jaxls.Cost.factory(jac_custom_with_cache_fn=_pose_cost_jac)
++@jaxls.Cost.create_factory(jac_custom_with_cache_fn=_pose_cost_jac)
+ def _pose_cost_analytical_jac(
+     vals: jaxls.VarValues,
+     robot: Robot,
+diff --git a/src/pyroki/_residuals/_pose_residual_numerical_jac.py b/src/pyroki/_residuals/_pose_residual_numerical_jac.py
+index 31d987b..5dc7b35 100644
+--- a/src/pyroki/_residuals/_pose_residual_numerical_jac.py
++++ b/src/pyroki/_residuals/_pose_residual_numerical_jac.py
+@@ -50,7 +50,7 @@ def _pose_cost_jac(
+     return jac * jnp.array([pos_weight] * 3 + [ori_weight] * 3)[:, None]
+ 
+ 
+-@jaxls.Cost.factory(jac_custom_with_cache_fn=_pose_cost_jac)
++@jaxls.Cost.create_factory(jac_custom_with_cache_fn=_pose_cost_jac)
+ def pose_cost_numerical_jac(
+     vals: jaxls.VarValues,
+     robot: Robot,
+diff --git a/src/pyroki/costs.py b/src/pyroki/costs.py
+index 9670619..387757c 100644
+--- a/src/pyroki/costs.py
++++ b/src/pyroki/costs.py
+@@ -3,7 +3,7 @@
+ Costs are soft penalties (minimized via least squares).
+ Constraints use augmented Lagrangian method (iteratively tightened penalties).
+ 
+-All factories are created by wrapping residual functions with Cost.factory.
++All factories are created by wrapping residual functions with Cost.create_factory.
+ """
+ 
+ from jaxls import Cost
+@@ -31,36 +31,36 @@ from ._residuals._pose_residual_numerical_jac import (
+ )
+ 
+ # Pose costs
+-pose_cost = Cost.factory(pose_residual)
+-pose_cost_with_base = Cost.factory(pose_with_base_residual)
++pose_cost = Cost.create_factory(pose_residual)
++pose_cost_with_base = Cost.create_factory(pose_with_base_residual)
+ 
+ # Limit costs
+-limit_cost = Cost.factory(limit_residual)
+-limit_velocity_cost = Cost.factory(limit_velocity_residual)
++limit_cost = Cost.create_factory(limit_residual)
++limit_velocity_cost = Cost.create_factory(limit_velocity_residual)
+ 
+ # Regularization costs
+-rest_cost = Cost.factory(rest_residual)
+-rest_with_base_cost = Cost.factory(rest_with_base_residual)
+-smoothness_cost = Cost.factory(smoothness_residual)
++rest_cost = Cost.create_factory(rest_residual)
++rest_with_base_cost = Cost.create_factory(rest_with_base_residual)
++smoothness_cost = Cost.create_factory(smoothness_residual)
+ 
+ # Manipulability cost
+-manipulability_cost = Cost.factory(manipulability_residual)
++manipulability_cost = Cost.create_factory(manipulability_residual)
+ 
+ # Collision costs
+-self_collision_cost = Cost.factory(self_collision_residual)
+-world_collision_cost = Cost.factory(world_collision_residual)
++self_collision_cost = Cost.create_factory(self_collision_residual)
++world_collision_cost = Cost.create_factory(world_collision_residual)
+ 
+ # Finite difference costs
+-five_point_velocity_cost = Cost.factory(five_point_velocity_residual)
+-five_point_acceleration_cost = Cost.factory(five_point_acceleration_residual)
+-five_point_jerk_cost = Cost.factory(five_point_jerk_residual)
++five_point_velocity_cost = Cost.create_factory(five_point_velocity_residual)
++five_point_acceleration_cost = Cost.create_factory(five_point_acceleration_residual)
++five_point_jerk_cost = Cost.create_factory(five_point_jerk_residual)
+ 
+ # Constraint factories (augmented Lagrangian penalties)
+-# These use kind="constraint_leq_zero" which enforces residual <= 0
+-limit_constraint = Cost.factory(kind="constraint_leq_zero")(limit_residual)
+-limit_velocity_constraint = Cost.factory(kind="constraint_leq_zero")(
++# These enforce residual <= 0 (handled by the solver)
++limit_constraint = Cost.create_factory(limit_residual)
++limit_velocity_constraint = Cost.create_factory(
+     limit_velocity_residual
+ )
+-world_collision_constraint = Cost.factory(kind="constraint_leq_zero")(
++world_collision_constraint = Cost.create_factory(
+     world_collision_residual
+ )

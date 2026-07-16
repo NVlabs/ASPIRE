@@ -1,154 +1,94 @@
-# __NVIDIA_OSS__ Standard Repo Template
+![How ASPIRE works](assets/media/how-aspire-works.gif)
 
-This README file is from the NVIDIA_OSS standard repo template of [PLC-OSS-Template](https://github.com/NVIDIA-GitHub-Management/PLC-OSS-Template?tab=readme-ov-file). It provides a list of files in the PLC-OSS-Template and guidelines on how to use (clone and customize) them.
+# ASPIRE: Agentic Skills Discovery for Robotics
 
-**Upon completing the customization for the project repo, the repo admin should replace this README template with the project specific README file.**
+[Project Page](https://research.nvidia.com/labs/gear/aspire/) &ensp;
 
-- Files (org-wide templates in the NVIDIA .github org repo; per-repo overrides allowed) in [PLC-OSS-Template](https://github.com/NVIDIA-GitHub-Management/PLC-OSS-Template?tab=readme-ov-file)
+**Runyu Lu<sup>1,2,&#42;,&dagger;</sup>, Yubo Wu<sup>1,3,&#42;</sup>, Ethan Kou<sup>1,4,&#42;</sup>,
+Letian Fu<sup>1,4</sup>, Wenli Xiao<sup>1,5</sup>, Ajay Mandlekar<sup>1</sup>, Yinzhen Xu<sup>1</sup>,
+Guanya Shi<sup>5</sup>, Ken Goldberg<sup>4</sup>, Ang Chen<sup>2</sup>, Mosharaf Chowdhury<sup>2</sup>,
+Yuke Zhu<sup>1,&dagger;</sup>, Linxi "Jim" Fan<sup>1,&dagger;</sup>, Guanzhi Wang<sup>1,&dagger;</sup>**
 
-   - Root 
-     - README.md skeleton (CTA + Quickstart + Support/Security/Governance links) 
-     - LICENSE (Apache 2.0 by default)
-        - For other licenses, see the [Confluence page](https://confluence.nvidia.com/pages/viewpage.action?pageId=788418816) for other licenses
-        - CLA.md file (delete if not using MIT or BSD licenses)
-     - CODE_OF_CONDUCT.md 
-     - SECURITY.md (vuln reporting path) 
-     - CONTRIBUTING.md (base; repo can add specifics)
-     - SUPPORT.md (Support levels/channels)
-     - GOVERNANCE.md (baseline; repo may extend)
-     - CITATION.md (for projects that need citation)
+<sup>1</sup>NVIDIA &ensp; <sup>2</sup>University of Michigan &ensp; <sup>3</sup>University of Illinois Urbana-Champaign &ensp; <sup>4</sup>UC Berkeley &ensp; <sup>5</sup>Carnegie Mellon University
 
-   - .github/ 
-     - ISSUE_TEMPLATE/ (<https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository>)
-       - bug.yml, feature.yml, task.yml, config.yml 
-     - PULL_REQUEST_TEMPLATE.md (<https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/creating-a-pull-request-template-for-your-repository>)
-     - workflows/
-     - Note: workflow-templates/ for starter workflows should live in the org-level .github repo, not per-repo
+<sup>&#42;</sup>Equal contribution &ensp; <sup>&dagger;</sup>Project leads
 
-   - Repo-specific (not org-template, maintained by the team)
-     - CODEOWNERS (place at .github/CODEOWNERS or repo root)
-     - CHANGELOG.md (or RELEASE.md) 
-     - ROADMAP.md 
-     - MAINTAINERS.md 
-     - NOTICE or THIRD_PARTY_NOTICES / THIRD_PARTY_LICENSES (dependency specific)
-     - Build/package files (CMake, pyproject, Dockerfile, etc.)
+---
 
-   - Recommended structure and hygiene
-     - docs/
-     - examples/
-     - tests/
-     - scripts/
-     - Container/dev env: Dockerfile, docker/, .devcontainer/ (optional)
-     - Build/package (language-specific):
-       - Python: pyproject.toml, setup.cfg/setup.py, requirements.txt, environment.yml
-       - C++: CMakeLists.txt, cmake/, vcpkg.json
-     - Repo hygiene: .gitignore, .gitattributes, .editorconfig, .pre-commit-config.yaml, .clang-format
+## Abstract
 
+Traditional robot programming is notoriously challenging: it requires orchestrating multimodal perception, managing complex physical contact dynamics, and handling diverse environment configurations and execution failures. We introduce **Aspire (Agentic Skill Programming through Iterative Robot Exploration)**, a continual learning system for robotics that autonomously writes and refines robot control programs in a code-as-policy paradigm while compounding experience into a reusable skill library. Aspire enables automated discovery of reusable skills that persist across multiple tasks, simulation and real-world settings, and different embodiments.
 
-## Usage of [PLC-OSS-Template](https://github.com/NVIDIA-GitHub-Management/PLC-OSS-Template?tab=readme-ov-file) for NEW NVIDIA OSS repos
+Rather than relying on fixed, human-engineered pipelines, Aspire operates in an open-ended learning loop consisting of three key components: (1) a closed-loop robot execution engine that exposes fine-grained multimodal traces, such as perception overlays, grasp candidates, motion trajectories, and collision feedback, enabling the agent to autonomously diagnose failures, synthesize repairs, and validate outcomes; (2) a continually expanding skill library that distills validated fixes into reusable, transferable robotic knowledge; and (3) an evolutionary search procedure that generates diverse task sequences and control programs, systematically debugging them to explore beyond single-trajectory refinement.
 
-1. Clone the [PLC-OSS-Template](https://github.com/NVIDIA-GitHub-Management/PLC-OSS-Template?tab=readme-ov-file)
-2. Find/replace all in the clone of `___PROJECT___` and `__PROJECT_NAME__` with the name of the specific project.
-3. Inspect all files to make sure all replacements work and update text as needed
+As Aspire encounters more tasks, its growing skill library enables increasingly rapid adaptation. Consequently, Aspire surpasses prior methods by up to **77%** on manipulation tasks under perturbation (LIBERO-Pro), **72%** on Robosuite's bimanual handover task, and up to **32%** on long-horizon household tasks (BEHAVIOR-1K). The accumulated skill library further enables strong zero-shot generalization: on representative unseen long-horizon tasks (LIBERO-Pro Long), Aspire achieves **31%** success, substantially outperforming the **4%** success rate of prior methods despite their heavy reliance on test-time reasoning and retries. Finally, skills discovered in simulation provide initial evidence of sim-to-real transfer, substantially reducing real-robot programming effort despite different embodiments and robot APIs.
 
+## Repository Layout
 
-**What you can reuse immediately**
-- CODE_OF_CONDUCT.md
-- SECURITY.md
-- CONTRIBUTING.md (base)
-- .github/ISSUE_TEMPLATE/.yml (bug/feature/task + config.yml)
-- .github/PULL_REQUEST_TEMPLATE.md
-- Reusable workflows 
+| Area | Purpose |
+| ---- | ------- |
+| [`aspire/sim/`](aspire/sim/README.md) | Simulation workspace for LIBERO-PRO, Robosuite, and BEHAVIOR-1K setup, configs, scripts, tests, agent runbooks, and outputs. |
+| [`aspire/sim/cap/`](aspire/sim/cap/) | Code-as-policy simulation package imported as `aspire.sim.cap.*`. |
+| [`aspire/real/`](aspire/real/README.md) | Real-station deployment code, operator workflows, and YAM robot integrations. |
 
-**What you must customize per repo**
-- README.md: copy the skeleton and fill in product-specific details (Quickstart, Requirements, Usage, Support level, links)
-- LICENSE: check file is correct, update year, consult Confluence for alternatives https://confluence.nvidia.com/pages/viewpage.action?pageId=788418816, add CLA.md only if your license/process requires it
-- CODEOWNERS: replace <TEAM> with your GitHub team handle(s). Place at .github/CODEOWNERS (or repo root)
-- MAINTAINERS.md: list maintainers names/roles, escalation path
-- CHANGELOG.md (or RELEASE.md): track releases/changes
-- SUPPORT.md: Update for your project
-- ROADMAP.md (optional): upcoming milestones
-- NOTICE / THIRD_PARTY_NOTICES (if you ship third‑party content)
-- Build/package files (CMake/pyproject/Dockerfile/etc.), tests/, docs/, examples/, scripts/ as appropriate
-- Workflows: Edit if you need custom behavior 
+## Security and Safety
 
+ASPIRE's code-as-policy executors run Python generated by language models with
+full import access. Simulator trial isolation and watchdogs are reliability
+mechanisms, **not a security sandbox**. Treat generated code as untrusted: run
+experiments in an isolated environment without host secrets or sensitive
+mounts, restrict network access, and keep provider credentials in the separate
+loopback-only proxy. Review generated code before granting it access to real
+hardware; follow the real-robot operator controls before enabling motion.
+Report potential security vulnerabilities privately by following
+[`SECURITY.md`](SECURITY.md); do not disclose them through a public GitHub
+issue or pull request.
 
-4. Change git origin to point to new repo and push
-5. Remove the line break below and everything above it
+## Setup
 
-## Usage for existing NVIDIA OSS repos
+Simulation setup lives in [`aspire/sim/README.md`](aspire/sim/README.md). Start there for venv creation, submodule initialization, suite-specific setup, smoke tests, and experiment runbooks:
 
-1. Follow the steps above, but add the files to your existing repo and merge
-
-<!-- REMOVE THE LINE BELOW AND EVERYTHING ABOVE -->
------------------------------------------
-# [Project Title]
-One-sentence value proposition for users. Who is it for, and why it matters. 
-
-# Overview
-What the project does? Why the project is useful?
-Provide a brief overview, highlighting key features or problem-solving capabilities.
-
-# Getting Started
-Guide users on how they can get started with the project. This should include basic installation step, quick-start examples 
 ```bash
-# Option A: Package manager (pip/conda/npm/etc.)
-<copy-paste install>
-
-# Option B: Container
-docker run <image> <args>
-
-# Verify (hello world)
-<one-liner or ~10-line example>
+cd aspire/sim
 ```
-# Requirements
-Include a list of pre-requisites. 
-- OS/Arch: <summary or link to full matrix>
-- Runtime/Compiler: <versions>
-- GPU/Drivers (if applicable): CUDA <ver>, driver <ver>, etc.
 
-# Usage
+Real-robot deployment and operator instructions live in [`aspire/real/README.md`](aspire/real/README.md), with fresh-machine requirements and the workstation recovery checklist in [`aspire/real/SETUP.md`](aspire/real/SETUP.md). Treat that directory as the working root for YAM commands:
+
 ```bash
-# Minimal runnable snippet (≤20 lines)
-<code>
+cd aspire/real
+bash tools/yam_demo_preflight.sh
+bash tmux/launch_yam_demo_services.sh --no-attach
 ```
-- More examples/tutorials: <link>
-- API reference: <link>
 
-# Performance (Optional)
-Summary of benchmarks; link to detailed results and hardware used.
+The focused launcher starts only the arm, camera, SAM3, and BundleSDF services
+used by the canonical saved demo. See the real-workspace README before enabling
+physical motion.
 
-## Releases & Roadmap 
-- Releases/Changelog: <link>
-- (Optional) Next milestones or link to `ROADMAP.md`.
-  
-# Contribution Guidelines
-- Start here: `CONTRIBUTING.md`
-- Code of Conduct: `CODE_OF_CONDUCT.md`
-- Development quickstart (build/test):
-```bash
-<clone> && <deps> && <build/test>
-```
-## Governance & Maintainers
-- Governance: `GOVERNANCE.md`
-- Maintainers: <team/handles>
-- Labeling/triage policy: <link>
+## Agent Guides
 
-## Security
-- Vulnerability disclosure: `SECURITY.md`
-- Do not file public issues for security reports.
+- Simulation agents: [`aspire/sim/CLAUDE.md`](aspire/sim/CLAUDE.md) and [`aspire/sim/.claude/README.md`](aspire/sim/.claude/README.md)
+- Real-robot agent contract: [`aspire/real/AGENTS.md`](aspire/real/AGENTS.md)
+- Real-robot skills: [`aspire/real/.agents/skills/`](aspire/real/.agents/skills/)
 
-## Support
-- Level: <Experimental | Maintained | Stable>
-- How to get help: Issues/Discussions/<channel link>
-- Response expectations (if any).
+The simulation and real-robot workspaces intentionally keep separate commands,
+dependencies, runtime artifacts, and agent instructions. The
+`yam-simulation-transfer` skill links strategy knowledge across them without
+reusing simulator coordinates or APIs on the physical robot.
 
-# Community
-Provide the channel for community communications.
+## Contribution Guidelines
 
-# References
-Provide a list of related references
+Start with [CONTRIBUTING.md](CONTRIBUTING.md). Third-party contributions must
+include a Developer Certificate of Origin sign-off.
 
-# License
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-- License: <link>
+## License
+
+ASPIRE material owned by NVIDIA or contributed under the project license is
+available under the [Apache License 2.0](LICENSE). This repository also
+contains inherited code, modified third-party code, dependency patches, Git
+submodules, models, datasets, robot descriptions, and assets that retain their
+original terms. See [NOTICE](NOTICE),
+[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md),
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [LICENSES/](LICENSES/)
+before using or redistributing the full stack.
+
+The root Apache-2.0 license does not override those component-specific terms.

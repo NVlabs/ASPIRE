@@ -1,0 +1,124 @@
+# Repo-owned cuRobo config for true dual-arm YAM planning.
+# This follows the upstream multi-arm pattern used by dual_ur10e.yml.
+# The collision spheres are a conservative starter model, not a final Lula fit.
+robot_cfg:
+  kinematics:
+    use_usd_kinematics: false
+    usd_path: "robot/models/station/curobo/station_dual.usd"
+    usd_robot_root: "/robot"
+    isaac_usd_path: ""
+    usd_flip_joints: {}
+    usd_flip_joint_limits: []
+
+    urdf_path: "robot/models/station/station_physics.urdf"
+    asset_root_path: "robot/models/station"
+
+    base_link: "base_link"
+    ee_link: "left_grasp"
+    link_names: ["left_grasp", "right_grasp"]
+    lock_joints:
+      left_left_finger_joint: 0.0
+      left_right_finger_joint: 0.0
+      right_left_finger_joint: 0.0
+      right_right_finger_joint: 0.0
+    extra_links: null
+
+    collision_link_names:
+      - left_arm
+      - left_link_1
+      - left_link_2
+      - left_link_3
+      - left_link_4
+      - left_link_5
+      - left_link_6
+      - right_arm
+      - right_link_1
+      - right_link_2
+      - right_link_3
+      - right_link_4
+      - right_link_5
+      - right_link_6
+      - right_left_link_finger
+    collision_spheres: "spheres/yam_dual.yml"
+    collision_sphere_buffer: 0.005
+    extra_collision_spheres: {}
+    self_collision_ignore:
+      left_arm: [left_link_1]
+      left_link_1: [left_link_2]
+      left_link_2: [left_link_3]
+      left_link_3: [left_link_4]
+      left_link_4: [left_link_5]
+      left_link_5: [left_link_6]
+      right_arm: [right_link_1]
+      right_link_1: [right_link_2]
+      right_link_2: [right_link_3]
+      right_link_3: [right_link_4]
+      right_link_4: [right_link_5]
+      right_link_5: [right_link_6]
+      right_link_6: [right_left_link_finger]
+    self_collision_buffer:
+      left_arm: 0.0
+      left_link_1: 0.0
+      left_link_2: 0.0
+      left_link_3: 0.0
+      left_link_4: 0.0
+      left_link_5: 0.0
+      left_link_6: 0.0
+      right_arm: 0.0
+      right_link_1: 0.0
+      right_link_2: 0.0
+      right_link_3: 0.0
+      right_link_4: 0.0
+      right_link_5: 0.0
+      right_link_6: 0.0
+      right_left_link_finger: 0.0
+
+    use_global_cumul: true
+    mesh_link_names:
+      - left_arm
+      - left_link_1
+      - left_link_2
+      - left_link_3
+      - left_link_4
+      - left_link_5
+      - left_link_6
+      - right_arm
+      - right_link_1
+      - right_link_2
+      - right_link_3
+      - right_link_4
+      - right_link_5
+      - right_link_6
+      - right_left_link_finger
+
+    cspace:
+      joint_names:
+        - left_joint1
+        - left_joint2
+        - left_joint3
+        - left_joint4
+        - left_joint5
+        - left_joint6
+        - right_joint1
+        - right_joint2
+        - right_joint3
+        - right_joint4
+        - right_joint5
+        - right_joint6
+      retract_config:
+        - -0.3
+        - 1.35
+        - 1.6
+        - -0.8
+        - 0.3
+        - -0.25
+        - 0.3
+        - 1.35
+        - 1.6
+        - -0.8
+        - -0.3
+        - 0.25
+      null_space_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      cspace_distance_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      max_jerk: 500.0
+      max_acceleration: 15.0

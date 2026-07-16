@@ -1,0 +1,51 @@
+# Base config — structured config defaults from AgentConfig dataclass,
+# with env var fallbacks for backward compatibility.
+#
+# Usage:
+#   uv run python run_agent.py experiment=pick_place_sink_to_counter
+#   uv run python run_agent.py experiment=pick_place_sink_to_counter env.seed=99
+#   uv run python run_agent.py experiment=pick_place_sink_to_counter llm=cloud
+#   uv run python run_agent.py experiment=pick_place_sink_to_counter llm=bridge_openai
+defaults:
+  - base_config
+  - infra: ports
+  - optional robot: null
+  - llm: bridge_claude
+  - agent: defaults
+  - reflection: gemini
+  - reward: oracle
+  - _self_
+  - optional experiment: null
+
+# Env var fallbacks (override structured config defaults).
+# Experiment configs override these when they set the same fields.
+env:
+  layout_id: ${oc.env:ROBOCASA_LAYOUT_ID,-3}
+  style_id: ${oc.env:ROBOCASA_STYLE_ID,-3}
+
+execution:
+  n_gpus: ${oc.env:CAP_N_RENDER_GPUS,0}  # 0 = auto-detect via nvidia-smi
+
+runtime:
+  agent_name: ${oc.env:CAP_AGENT_NAME,""}
+
+skill_reflection:
+  enabled: false
+  cameras: [top, wrist]
+  vlm_backend: nvidia
+  vlm_model: null
+  max_workers: 4
+
+
+# Suppress Hydra's output directory management — we use AgentRunSession.
+# Console only shows warnings; INFO goes to log file only.
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job_logging:
+    root:
+      level: WARNING
+    handlers:
+      console:
+        level: WARNING

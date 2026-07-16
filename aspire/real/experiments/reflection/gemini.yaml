@@ -1,0 +1,10 @@
+# @package _global_
+# Gemini direct (Google cloud API).
+# Requires GEMINI_API_KEY env var.
+#
+# Used by both the self_reflection pipeline step AND the per-seed visual
+# analysis inside SubprocessExecutorStep.
+
+reflection:
+  vlm_backend: "gemini"
+  vlm_model: null  # null → GEMINI_VL_MODEL (default: gemini-2.5-flash)

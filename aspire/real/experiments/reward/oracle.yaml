@@ -1,0 +1,13 @@
+# @package _global_
+# Oracle reward evaluator — reconstructs every sub-predicate of the task's
+# `_check_success` method from `result.json.details` using per-task
+# hardcoded recipes (see cap/reward/oracle_reward.py).
+#
+# Runs before Phase A per-seed VLM reflection and injects structured
+# ground-truth diagnostics into both the per-seed VLM prompt and the
+# cross-seed synthesis prompt.
+
+reward:
+  evaluator: "oracle"
+  task: null  # null → use cfg.env.name
+  inject_into_per_seed_vlm: true

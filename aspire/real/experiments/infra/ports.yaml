@@ -1,0 +1,43 @@
+# @package _global_
+# Infrastructure port configuration — shared across all experiments.
+# All service hosts & ports in one place.
+#
+# For a different machine, copy this file (e.g. cloud_gpu.yaml) and
+# run with: uv run python run_agent.py infra=cloud_gpu
+
+runtime:
+  # cuRobo motion planner (remote GPU) — base port; parallel seeds use 9400+i
+  curobo_host: 127.0.0.1
+  curobo_port: 9400
+
+  # Pyroki IK / trajopt service — one per node, HTTP JSON.
+  # Launched via: uv run python scripts/launch_pyroki_server.py --port 9600
+  pyroki_host: 127.0.0.1
+  pyroki_port: 9600
+
+  # MPPI navigation planner
+  mppi_host: 127.0.0.1
+  mppi_port: 0
+
+  # AnyGrasp grasp planner
+  anygrasp_host: localhost
+  anygrasp_port: 9300
+
+  # SAM3 segmentation — base port; parallel seeds use 9500+i
+  sam3_host: localhost
+  sam3_port: 9500
+
+  # BundleSDF 6-DOF tracking
+  bundlesdf_host: localhost
+  bundlesdf_port: 8119
+
+  # Viser 3D visualization
+  viser_port: 8080
+
+  # Agent bridge (WebSocket)
+  bridge_host: localhost
+  bridge_port: 8201
+
+  # Voice I/O
+  voice_host: localhost
+  voice_port: 8202

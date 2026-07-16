@@ -1,0 +1,1 @@
+"""Shared CAP constants."""

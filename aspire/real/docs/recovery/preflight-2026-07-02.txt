@@ -1,0 +1,48 @@
+
+[safety]
+physical_motion=disabled
+arm_rpc_queries=disabled
+can_transmit=disabled
+
+[host]
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+VERSION_ID="22.04"
+Linux 6.8.0-85-generic x86_64 GNU/Linux
+Python 3.11.13
+uv 0.9.1
+
+[gpu_cuda]
+NVIDIA GeForce RTX 5090, 580.82.09, 32607 MiB
+Build cuda_12.8.r12.8/compiler.35583870_0
+
+[realsense]
+pyrealsense2=2.56.5.9235
+device_count=4
+device[0].name=Intel RealSense D405 firmware=5.12.14.100 recommended_firmware=5.17.0.10
+device[1].name=Intel RealSense D405 firmware=5.12.14.100 recommended_firmware=5.17.0.10
+device[2].name=Intel RealSense D405 firmware=5.12.14.100 recommended_firmware=5.17.0.10
+device[3].name=Intel RealSense D405 firmware=5.12.14.100 recommended_firmware=5.17.0.10
+
+[zed]
+pyzed=5.2
+native_sdk=unavailable (ImportError: libsl_zed.so: cannot open shared object file: No such file or directory)
+
+[arm_software]
+damiao-motor=1.0.7b1
+i2rt=0.0.1
+python-can=4.5.0
+motor_firmware=not_queried_non_motion_policy
+
+[can_mapping]
+can_follow_l=up
+can_follow_r=up
+can_leader_l=up
+can_leader_r=up
+expected_bitrate=1000000
+
+[local_rules]
+99-can.rules=present
+99-realsense.rules=present
+
+[result]
+preflight_complete=true

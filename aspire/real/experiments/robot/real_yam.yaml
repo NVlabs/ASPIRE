@@ -1,0 +1,25 @@
+# @package _global_
+robot:
+  adapter:
+    _target_: cap.agent.robot_adapters.real_yam.RealYamAdapter
+  script_backend:
+    _target_: cap.agent.script_backends.RealYamBackend
+  dashboard: true
+  await_exit: true
+  go_home_on_exit: true
+
+# Real-YAM deployments use the local SSH tunnel to remote serving.
+# Override per run with runtime.*_host/runtime.*_port if needed.
+runtime:
+  sam3_host: 127.0.0.1
+  sam3_port: 6767
+  anygrasp_host: 127.0.0.1
+  anygrasp_port: 8122
+  bundlesdf_host: 127.0.0.1
+  bundlesdf_port: 8119
+  curobo_host: 127.0.0.1
+  curobo_port: 8611
+
+recording:
+  enabled: true
+  cameras: [top, left, right, bottom]

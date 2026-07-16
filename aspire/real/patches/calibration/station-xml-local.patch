@@ -1,0 +1,31 @@
+diff --git a/base_robot_description/station_fello_gripper_with_top_camera.xml b/base_robot_description/station_fello_gripper_with_top_camera.xml
+index 8f8aed5..58e9d58 100644
+--- a/base_robot_description/station_fello_gripper_with_top_camera.xml
++++ b/base_robot_description/station_fello_gripper_with_top_camera.xml
+@@ -178,7 +178,7 @@
+                       </body>
+                     </body>
+                   </body>
+-                  <body name="left_camera_d405" pos="-0.00095839 0.07304378 0.07261411" quat="-0.00721207 0.00256552 -0.20700398 0.97831015">
++                  <body name="left_camera_d405" pos="-0.00502134 0.06607775 0.07455658" quat="-0.01024085 0.00563676 -0.22450353 0.97440316">
+                     <geom class="camera_visual" mass="0" rgba="0.792157 0.819608 0.933333 1" mesh="camera_d405" />
+                     <geom class="camera_collision" mesh="camera_d405" />
+                     <body name="left_camera_frame" pos="0.009 0 0" quat="0 0 0 1">
+@@ -287,7 +287,7 @@
+                       </body>
+                     </body>
+                   </body>
+-                  <body name="right_camera_d405" pos="-0.00110545 0.07166514 0.07436089" quat="-0.01490860 0.00256436 -0.22410432 0.97444775">
++                  <body name="right_camera_d405" pos="-0.00214162 0.07033914 0.07496186" quat="-0.00582227 0.00196737 -0.21651388 0.97626020">
+                     <geom class="camera_visual" mass="0" rgba="0.792157 0.819608 0.933333 1" mesh="camera_d405" />
+                     <geom class="camera_collision" mesh="camera_d405" />
+                     <body name="right_camera_frame" pos="0.009 0 0" quat="0 0 0 1">
+@@ -301,7 +301,7 @@
+         </body>
+       </body>
+     </body>
+-    <body name="top_camera_d405" pos="0.29227768 0.01362269 1.32846064" quat="0.21959078 -0.67316593 0.67531515 -0.20634189">
++    <body name="top_camera_d405" pos="0.08871890 0.01175269 1.69176679" quat="0.17999775 -0.67920531 0.68660347 -0.18669931">
+       <site name="top_camera_site" pos="0 0 0" size="0.01" rgba="0 1 1 1" />
+       <geom type="mesh" mesh="camera_d405" contype="0" conaffinity="0" rgba="0.2 0.2 0.2 1" />
+       <camera name="top_camera_d405" pos="0 0 0" quat="1 0 0 0" fovy="58.0869" resolution="1280 720" />
