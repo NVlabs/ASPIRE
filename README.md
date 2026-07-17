@@ -1,4 +1,4 @@
-![ASPIRE robot demonstrations](assets/media/mainvideoclip-2.gif)
+<img src="assets/media/mainvideoclip-2.gif" alt="ASPIRE robot demonstrations" width="100%">
 
 # ASPIRE: Agentic /Skills Discovery for Robotics
 [Project Page](https://research.nvidia.com/labs/gear/aspire/) &ensp;|&ensp; [Paper](https://arxiv.org/abs/2607.00272)
@@ -85,8 +85,6 @@ If you find ASPIRE useful in your research, please cite:
              Ang Chen and Mosharaf Chowdhury and Yuke Zhu and Linxi Fan and Guanzhi Wang},
   year    = {2026},
   journal = {arXiv preprint arXiv:2607.00272},
-  eprint  = {2607.00272},
-  archivePrefix = {arXiv},
   url     = {https://arxiv.org/abs/2607.00272}
 }
 ```
