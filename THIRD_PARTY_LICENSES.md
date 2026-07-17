@@ -70,4 +70,3 @@ an item here is not permission to use or distribute it.
 | Unidentified YAM starter code | `aspire/real/robot/yam/_base_yam_env.py` and `yam_sim_env.py` | Identify the starter source and retain its license, or rewrite the adapted portions. |
 | SAM 3 visualization helper | `aspire/sim/cap/integrations/vision/sam3.py` | Identify the referenced `visualize_sam3.py` source and apply its terms. |
 | Contact-GraspNet weights and test data | Pinned Contact-GraspNet submodule | The source-code license does not by itself establish rights for the included weights and data. |
-| Project media | `assets/media/how-aspire-works.gif` | Confirm publication rights and any required logo, screenshot, or third-party credits. |

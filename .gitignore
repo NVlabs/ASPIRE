@@ -43,6 +43,7 @@ wandb/
 *.png
 *.jpeg
 *.gif
+!assets/media/mainvideoclip-2.gif
 *.bmp
 *.tiff
 *.ico

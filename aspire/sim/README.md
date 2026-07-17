@@ -79,8 +79,8 @@ committed files.
 From a fresh clone:
 
 ```bash
-git clone https://github.com/LRY89757/Holos.git
-cd Holos/aspire/sim
+git clone https://github.com/NVlabs/ASPIRE.git
+cd ASPIRE/aspire/sim
 ```
 
 From an existing checkout at the repository root:
