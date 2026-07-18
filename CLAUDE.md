@@ -1,5 +1,10 @@
 # Top-Level Agent Guide
 
+> **Claude Code:** Read and follow [`AGENTS.md`](AGENTS.md) first. It is the
+> repository-wide, model-neutral request-routing and safety contract. This file
+> adds workspace guidance for Claude Code; `AGENTS.md` governs when the two
+> overlap.
+
 This repository is split into a lightweight project root, a simulation
 workspace, and a real-robot workspace.
 

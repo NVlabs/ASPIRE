@@ -1,22 +1,67 @@
-<img src="assets/media/mainvideoclip-2.gif" alt="ASPIRE robot demonstrations" width="100%">
+# ASPIRE
 
-# ASPIRE: Agentic /Skills Discovery for Robotics
+### Agentic /Skills Discovery for Robotics
+
 [Project Page](https://research.nvidia.com/labs/gear/aspire/) &ensp;|&ensp; [Paper](https://arxiv.org/abs/2607.00272)
 
-**Runyu Lu<sup>1,2,&#42;,&dagger;</sup>, Yubo Wu<sup>1,3,&#42;</sup>, Ethan Kou<sup>1,4,&#42;</sup>,
-Letian Fu<sup>1,4</sup>, Wenli Xiao<sup>1,5</sup>, Ajay Mandlekar<sup>1</sup>, Yinzhen Xu<sup>1</sup>,
-Guanya Shi<sup>5</sup>, Ken Goldberg<sup>4</sup>, Ang Chen<sup>2</sup>, Mosharaf Chowdhury<sup>2</sup>,
-Yuke Zhu<sup>1,&dagger;</sup>, Linxi "Jim" Fan<sup>1,&dagger;</sup>, Guanzhi Wang<sup>1,&dagger;</sup>**
+<img src="assets/media/mainvideoclip-2.gif" alt="ASPIRE robot demonstrations" width="100%">
 
-<sup>1</sup>NVIDIA &ensp; <sup>2</sup>University of Michigan &ensp; <sup>3</sup>University of Illinois Urbana-Champaign &ensp; <sup>4</sup>UC Berkeley &ensp; <sup>5</sup>Carnegie Mellon University
+ASPIRE is a continual-learning robotics system that autonomously writes, debugs, and distills robot-control programs into reusable skills across simulation and real-world settings.
 
-<sup>&#42;</sup>Equal contribution &ensp; <sup>&dagger;</sup>Project leads
+## Quick Start
 
----
+### Run with a coding agent
+
+ASPIRE includes repository instructions for coding agents such as Codex and Claude Code. Clone the repository, open the agent at the repository root, and give it this request:
+
+```text
+Read AGENTS.md and run the ASPIRE LIBERO-Pro Goal-Swap Quick Start for
+put_the_wine_bottle_on_top_of_the_cabinet.
+
+Before executing, report the required GPUs, credentials, gated weights,
+services, expected runtime, seed partitions, and output paths. Wait for
+my confirmation before launching. Do not access real-robot code or push
+repository changes.
+```
+
+This Quick Start runs one complete LIBERO-Pro Fix Loop task rather than a short demo:
+
+- **Suite and task:** `libero_goal_swap/put_the_wine_bottle_on_top_of_the_cabinet`
+- **Development:** seeds 51–65 for initial code generation and repair
+- **Held-out evaluation:** seeds 1–50 using the selected fix
+- **Reference GPU topology:** SAM3, GraspNet, and PyRoKi on GPUs 0–2; task execution on GPU 3
+- **Runtime:** potentially several hours; failed trials can run for approximately 6–7 minutes each
+- **Completion:** a selected `fix_code.py`, reusable findings, traces and videos, and an immutable 50-seed validation manifest and pass rate—not a guaranteed success threshold
+
+The canonical procedure is [`aspire/sim/.claude/libero/fix-loop/QUICKSTART.md`](aspire/sim/.claude/libero/fix-loop/QUICKSTART.md). The agent must complete preflight and wait for confirmation before installing dependencies, starting services, or launching trials.
+
+### Choose another paper experiment
+
+For any experiment other than the canonical Quick Start, name the suite and experiment explicitly. If neither is named, the agent should present this table and stop for selection.
+
+| Suite | Experiment | Runbook |
+| ----- | ---------- | ------- |
+| LIBERO-Pro | Fix Loop | [`libero/fix-loop/`](aspire/sim/.claude/libero/fix-loop/INSTRUCTIONS.md) |
+| LIBERO-Pro | Fix Loop + Evolutionary Search | [`libero/evosearch/`](aspire/sim/.claude/libero/evosearch/INSTRUCTIONS.md) |
+| LIBERO | Zero-Shot Transfer | [`libero/zeroshot-transfer/`](aspire/sim/.claude/libero/zeroshot-transfer/INSTRUCTIONS.md) |
+| LIBERO-Long-Pro | Library-Size Scaling | [`libero/library-size-scaling/`](aspire/sim/.claude/libero/library-size-scaling/INSTRUCTIONS.md) |
+| LIBERO-Long-Pro | Inference-Time Scaling | [`libero/inference-time-scaling/`](aspire/sim/.claude/libero/inference-time-scaling/INSTRUCTIONS.md) |
+| Robosuite | Fix Loop | [`robosuite/fix-loop/`](aspire/sim/.claude/robosuite/fix-loop/INSTRUCTIONS.md) |
+| Robosuite | Training Law | [`robosuite/training-law/`](aspire/sim/.claude/robosuite/training-law/INSTRUCTIONS.md) |
+| BEHAVIOR-1K | Fix Loop | [`behavior/fix-loop/`](aspire/sim/.claude/behavior/fix-loop/INSTRUCTIONS.md) |
+
+Before a paper-scale launch, the agent must report the selected tasks, seed schedule, expected trial count and runtime, GPU and credential requirements, services, and output paths, then wait for explicit confirmation.
+
+### Manual setup
+
+- Simulation installation, suite-specific environments, smoke tests, and troubleshooting: [`aspire/sim/README.md`](aspire/sim/README.md)
+- Simulation experiment registry and runbooks: [`aspire/sim/.claude/README.md`](aspire/sim/.claude/README.md)
+- Real-robot setup and operator-controlled workflows: [`aspire/real/README.md`](aspire/real/README.md)
+
+> [!WARNING]
+> ASPIRE executes language-model-generated Python with full import access. Trial processes and watchdogs are not a security sandbox. Run generated code on an isolated host without credentials or sensitive mounts, restrict network access, and never grant a simulation agent access to physical hardware. Real-robot work requires the controls in [`aspire/real/AGENTS.md`](aspire/real/AGENTS.md) and separate operator authorization.
 
 ## Repository Layout
-
-ASPIRE is a continual-learning robotics system that autonomously writes, debugs, and distills robot control programs into reusable skills across simulation and real-world settings.
 
 | Area | Purpose |
 | ---- | ------- |
@@ -24,52 +69,15 @@ ASPIRE is a continual-learning robotics system that autonomously writes, debugs,
 | [`aspire/sim/cap/`](aspire/sim/cap/) | Code-as-policy simulation package imported as `aspire.sim.cap.*`. |
 | [`aspire/real/`](aspire/real/README.md) | Real-station deployment code, operator workflows, and YAM robot integrations. |
 
-## Setup
-
-Simulation setup lives in [`aspire/sim/README.md`](aspire/sim/README.md). Start there for venv creation, submodule initialization, suite-specific setup, smoke tests, and experiment runbooks:
-
-```bash
-cd aspire/sim
-```
-
-Real-robot deployment and operator instructions live in [`aspire/real/README.md`](aspire/real/README.md), with fresh-machine requirements and the workstation recovery checklist in [`aspire/real/SETUP.md`](aspire/real/SETUP.md). Treat that directory as the working root for YAM commands:
-
-```bash
-cd aspire/real
-bash tools/yam_demo_preflight.sh
-bash tmux/launch_yam_demo_services.sh --no-attach
-```
-
-The focused launcher starts only the arm, camera, SAM3, and BundleSDF services
-used by the canonical saved demo. See the real-workspace README before enabling
-physical motion.
-
-## Agent Guides
-
-- Simulation agents: [`aspire/sim/CLAUDE.md`](aspire/sim/CLAUDE.md) and [`aspire/sim/.claude/README.md`](aspire/sim/.claude/README.md)
-- Real-robot agent contract: [`aspire/real/AGENTS.md`](aspire/real/AGENTS.md)
-- Real-robot skills: [`aspire/real/.agents/skills/`](aspire/real/.agents/skills/)
-
-The simulation and real-robot workspaces intentionally keep separate commands,
-dependencies, runtime artifacts, and agent instructions. The
-`yam-simulation-transfer` skill links strategy knowledge across them without
-reusing simulator coordinates or APIs on the physical robot.
+The simulation and real-robot workspaces intentionally keep separate commands, dependencies, runtime artifacts, and safety contracts. The `yam-simulation-transfer` skill links strategy knowledge across them without reusing simulator coordinates or APIs on the physical robot.
 
 ## Contribution Guidelines
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md). Third-party contributions must
-include a Developer Certificate of Origin sign-off.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md). Third-party contributions must include a Developer Certificate of Origin sign-off.
 
 ## License
 
-ASPIRE material owned by NVIDIA or contributed under the project license is
-available under the [Apache License 2.0](LICENSE). This repository also
-contains inherited code, modified third-party code, dependency patches, Git
-submodules, models, datasets, robot descriptions, and assets that retain their
-original terms. See [NOTICE](NOTICE),
-[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md),
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [LICENSES/](LICENSES/)
-before using or redistributing the full stack.
+ASPIRE material owned by NVIDIA or contributed under the project license is available under the [Apache License 2.0](LICENSE). This repository also contains inherited code, modified third-party code, dependency patches, Git submodules, models, datasets, robot descriptions, and assets that retain their original terms. See [NOTICE](NOTICE), [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [LICENSES/](LICENSES/) before using or redistributing the full stack.
 
 The root Apache-2.0 license does not override those component-specific terms.
 
@@ -80,7 +88,7 @@ If you find ASPIRE useful in your research, please cite:
 ```bibtex
 @article{lu2026aspire,
   title   = {ASPIRE: Agentic /Skills Discovery for Robotics},
-  author  = {Runyu Lu and Yubo Wu and Ethan Kou and Max Fu and Wenli Xiao and
+  author  = {Runyu Lu and Yubo Wu and Ethan Kou and Letian Fu and Wenli Xiao and
              Ajay Mandlekar and Yinzhen Xu and Guanya Shi and Ken Goldberg and
              Ang Chen and Mosharaf Chowdhury and Yuke Zhu and Linxi Fan and Guanzhi Wang},
   year    = {2026},
@@ -88,3 +96,5 @@ If you find ASPIRE useful in your research, please cite:
   url     = {https://arxiv.org/abs/2607.00272}
 }
 ```
+
+ASPIRE was developed by researchers from NVIDIA, the University of Michigan, the University of Illinois Urbana-Champaign, UC Berkeley, and Carnegie Mellon University.
