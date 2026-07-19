@@ -1,6 +1,4 @@
-# ASPIRE
-
-### Agentic /Skills Discovery for Robotics
+# ASPIRE: Agentic /Skills Discovery for Robotics
 
 [Project Page](https://research.nvidia.com/labs/gear/aspire/) &ensp;|&ensp; [Paper](https://arxiv.org/abs/2607.00272)
 
@@ -13,6 +11,8 @@ ASPIRE is a continual-learning robotics system that autonomously writes, debugs,
 ### Run with a coding agent
 
 ASPIRE includes repository instructions for coding agents such as Codex and Claude Code. Clone the repository, open the agent at the repository root, and give it this request:
+
+**Reference agent environments:** ASPIRE is coding-agent agnostic. Our simulation workflow is packaged for reproduction with Claude Code, while the real-robot agent experiments were conducted with Codex. Other coding agents can follow the model-neutral instructions in [`AGENTS.md`](AGENTS.md), although orchestration behavior may differ.
 
 ```text
 Read AGENTS.md and run the ASPIRE LIBERO-Pro Goal-Swap Quick Start for
