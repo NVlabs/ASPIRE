@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """No-motion AnyGrasp plan for chocolate-in-bowl handoff and trash release.
 
 This is a planning/debug script only. It refuses physical motion, observes the
@@ -591,7 +594,10 @@ def _run() -> dict[str, Any]:
             return result
         if result["anygrasp_health"].get("mock") or "mock" in str(result["anygrasp_health"]).lower():
             result["why_stopped"] = "refusing mock AnyGrasp for YAM planning"
-            result["next_recommendation"] = "Start real tools/vision/serve_anygrasp.py."
+            result["next_recommendation"] = (
+                "Start an authorized external AnyGrasp service and configure "
+                "ANYGRASP_SERVICE_URL."
+            )
             return result
 
         scene = capture_scene(

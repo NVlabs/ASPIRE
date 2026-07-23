@@ -1,7 +1,15 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: YAM Recovery <recovery@example.invalid>
+From: Runyu Lu <runyul@nvidia.com>
 Date: Thu, 2 Jul 2026 15:38:32 -0700
 Subject: [PATCH] YAM workstation changes for pyroki
+
+Developed by the NVIDIA ASPIRE Team.
+
+Upstream: https://github.com/chungmin99/pyroki.git
+Base: 95afccc22658c461ab1042a048ae4e9c24bc2a47
+Upstream-License: MIT
+
+Signed-off-by: Runyu Lu <runyul@nvidia.com>
 
 ---
  pyproject.toml                                |  1 +

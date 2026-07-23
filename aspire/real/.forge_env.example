@@ -26,8 +26,11 @@ export CAP_TOP_CAMERA_NEEDS_OPTICAL_FLIP="0"
 # Perception assets. BundleSDF is required by the canonical saved demo;
 # AnyGrasp is optional and is not used by yam_demo.sh full. Licensed vendor
 # files must remain local.
-# export ANYGRASP_REPO_CHECKPOINT_PATH="/path/to/checkpoint_detection.tar"
-# export ANYGRASP_REPO_LICENSE_ZIP="/path/to/authorized_anygrasp_license.zip"
+# ASPIRE does not redistribute the AnyGrasp server, model, or machine license.
+# Point the client at an authorized external service. The optional command is
+# used only by tools/vision/launch_anygrasp_server.sh to start your local install.
+# export ANYGRASP_SERVICE_URL="http://127.0.0.1:8122"
+# export ANYGRASP_SERVER_COMMAND="/absolute/path/to/authorized/start-anygrasp.sh"
 # export BUNDLESDF_REPO_LIB_DIR="/path/to/bundlesdf/libs"
 # export BUNDLESDF_RUNTIME_LIB_DIR="/path/to/bundlesdf/runtime/libs"
 

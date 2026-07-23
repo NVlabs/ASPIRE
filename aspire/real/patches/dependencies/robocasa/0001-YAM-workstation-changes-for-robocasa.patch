@@ -1,7 +1,15 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: YAM Recovery <recovery@example.invalid>
+From: Runyu Lu <runyul@nvidia.com>
 Date: Thu, 2 Jul 2026 15:38:36 -0700
 Subject: [PATCH] YAM workstation changes for robocasa
+
+Developed by the NVIDIA ASPIRE Team.
+
+Upstream: https://github.com/robocasa/robocasa.git
+Base: 9a3a78680443734786c9784ab661413edb87067b
+Upstream-License: MIT
+
+Signed-off-by: Runyu Lu <runyul@nvidia.com>
 
 ---
  robocasa/__init__.py                          |  8 ----

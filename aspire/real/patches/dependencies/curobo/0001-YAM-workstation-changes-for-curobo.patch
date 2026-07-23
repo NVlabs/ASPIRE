@@ -1,7 +1,15 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: YAM Recovery <recovery@example.invalid>
+From: Runyu Lu <runyul@nvidia.com>
 Date: Thu, 2 Jul 2026 15:38:35 -0700
 Subject: [PATCH] YAM workstation changes for curobo
+
+Developed by the NVIDIA ASPIRE Team.
+
+Upstream: https://github.com/NVlabs/curobo.git
+Base: d64c4b005459db10c5dd867d8b30a87d5bda9bdb (v0.7.8)
+Upstream-License: NVIDIA License for cuRobo
+
+Signed-off-by: Runyu Lu <runyul@nvidia.com>
 
 ---
  reference/curobo_api.py                       | 1319 +++++++++++++++++

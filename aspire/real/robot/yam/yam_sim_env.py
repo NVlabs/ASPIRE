@@ -1,8 +1,7 @@
-"""
-MuJoCo simulation environment for YAM bimanual robot station.
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
 
-Adapted from `yam_env.py` in the starter code.
-"""
+"""ASPIRE MuJoCo environment for the YAM bimanual robot station."""
 
 import time
 from dataclasses import dataclass

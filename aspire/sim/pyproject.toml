@@ -94,7 +94,6 @@ curobo = [
   "scikit-image",
 ]
 contactgraspnet = [
-  "contact_graspnet_pytorch",
   "pyrender",
   "opencv-python-headless",
 ]
@@ -111,7 +110,6 @@ robosuite = [
 libero = [
   { path = "cap/third_party/LIBERO-PRO", extra = "libero", editable = true},
 ]
-contact_graspnet_pytorch = { path = "cap/third_party/contact_graspnet_pytorch", editable = true }
 sam3 = { path = "cap/third_party/sam3", editable = true}
 nvidia-curobo = { path = "cap/third_party/curobo", editable = true}
 torch = { index = "pytorch-cu126" }
@@ -167,7 +165,6 @@ exclude = [
 egl-probe = ["cmake<3.27"]
 pointnet2 = ["torch"]
 knn = ["torch"]
-contact-graspnet-pytorch = ["numpy"]
 nvidia-curobo = ["torch"]
 
 [tool.uv.workspace]

@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Max Fu
+# SPDX-License-Identifier: MIT
+#
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 from __future__ import annotations
 
 import io
@@ -15,15 +21,14 @@ def test_graspnet_real_depth_to_grasps() -> None:
         pytest.skip("Set ASPIRE_INTEGRATION_REAL=1 to run real GraspNet test")
 
     from aspire.sim.cap.integrations.vision.graspnet import init_contact_graspnet
-    # Skip gracefully if the PointNet2 CUDA extension is not available
+    # The source-only Contact-GraspNet installation is external to ASPIRE.
+    # Skip gracefully if its PointNet2 CUDA extension is unavailable.
     try:
-        import sys as _sys
-
-        # try vendored path first
-        _sys.path.append("cap/third_party/contact_graspnet_pytorch/pointnet2")
         import pointnet2._ext  # type: ignore  # noqa: F401
     except Exception:
-        pytest.skip("pointnet2._ext not built for current env; skipping GraspNet test")
+        pytest.skip(
+            "external Contact-GraspNet pointnet2._ext is not installed for this environment"
+        )
 
     # Init model (optional checkpoint path via env)
     ckpt = os.environ.get("ASPIRE_GRASPNET_CKPT", "") or None

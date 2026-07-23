@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 
 if [[ "${_RUNTIME_ENV_SH_SOURCED:-0}" == "1" ]]; then
   return 0 2>/dev/null || exit 0
@@ -131,8 +134,7 @@ source_user_runtime_env_file() {
 
 export_repo_runtime_defaults() {
   export BUNDLESDF_REPO_LIB_DIR="$PROJECT_ROOT/third_party/bundlesdf/libs"
-  export ANYGRASP_REPO_CHECKPOINT_PATH="$PROJECT_ROOT/checkpoint_detection.tar"
-  export ANYGRASP_REPO_LICENSE_ZIP="${ANYGRASP_REPO_LICENSE_ZIP:-}"
+  export ANYGRASP_SERVICE_URL="${ANYGRASP_SERVICE_URL:-http://127.0.0.1:8122}"
   export CAP_CUROBO_REMOTE_PORT="${CAP_CUROBO_REMOTE_PORT:-8611}"
   export CAP_CUROBO_SSH_TARGET="${CAP_CUROBO_SSH_TARGET:-}"
   local preferred_hf_home=""
@@ -148,7 +150,6 @@ export_repo_runtime_defaults() {
     export TMPDIR="${TMPDIR:-$RUNTIME_TMP_ROOT}"
     export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$RUNTIME_TMP_ROOT/.cache}"
     export UV_CACHE_DIR="${UV_CACHE_DIR:-$RUNTIME_TMP_ROOT/uv-cache}"
-    export ANYGRASP_RUNTIME_DIR="${ANYGRASP_RUNTIME_DIR:-$RUNTIME_TMP_ROOT/anygrasp_sdk_runtime}"
     preferred_hf_home="$(detect_hf_home "$RUNTIME_TMP_ROOT")"
     export HF_HOME="${HF_HOME:-$preferred_hf_home}"
     export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-$HF_HOME/hub}"

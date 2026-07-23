@@ -12,11 +12,12 @@ The 2026-07-02 workstation handoff has been reviewed and partially integrated:
 - dependency patch series are under `patches/dependencies/`;
 - the installer is under `install/`;
 - BundleSDF build locks are under `install/locks/bundlesdf/`;
-- the calibration patch and provenance are under `patches/calibration/`; and
+- site calibration remains operator-local through `YAM_STATION_CALIBRATED_XML`; and
 - the non-motion hardware preflight is `tools/non_motion_preflight.sh`.
 
-Restricted BundleSDF source, AnyGrasp payloads, calibration/CAD files, opaque
-runtime binaries, caches, and recovery archives were deliberately not copied.
+Restricted BundleSDF source, AnyGrasp server/model/license payloads,
+site-specific calibration files, opaque runtime binaries, caches, and recovery
+archives were deliberately not copied.
 This document remains useful for recollecting or independently verifying the
 inputs.
 

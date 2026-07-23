@@ -1,8 +1,7 @@
-"""
-Base class for YAM bimanual robot station. Contains code shared between simulation and real environments.
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
 
-Mostly adapted from `yam_env.py` in the starter code.
-"""
+"""ASPIRE base class shared by the simulated and real YAM environments."""
 
 from typing import Literal
 

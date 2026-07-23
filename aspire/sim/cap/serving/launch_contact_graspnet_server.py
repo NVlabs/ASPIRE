@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Max Fu
+# SPDX-License-Identifier: MIT
+#
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 import asyncio
 import base64
 import contextlib
@@ -506,42 +512,74 @@ async def plan_evenly_endpoint(req: PlanEvenlyRequest):
         )
 
 
-def main(device: str = "cuda", port: int = 8115, host: str = "127.0.0.1"):
+def main(
+    device: str = "cuda",
+    port: int = 8115,
+    host: str = "127.0.0.1",
+    vendor_root: Path | None = None,
+    checkpoint_dir: Path | None = None,
+):
     global _GRASP_ESTIMATOR, _DEVICE
     _DEVICE = device
 
     # --- Setup Paths & Import ---
 
-    here = os.path.dirname(os.path.abspath(__file__))
-    # Assume cap/serving -> go up to aspire/sim -> go to third_party
-    vendor_root = os.path.normpath(
-        os.path.join(here, "..", "third_party", "contact_graspnet_pytorch")
-    )
+    if vendor_root is None:
+        configured_root = os.environ.get("CONTACT_GRASPNET_ROOT")
+        if configured_root:
+            vendor_root = Path(configured_root)
+    if vendor_root is None:
+        raise RuntimeError(
+            "Contact-GraspNet is not redistributed with ASPIRE. Pass --vendor-root "
+            "or set CONTACT_GRASPNET_ROOT to a separately obtained source-only checkout."
+        )
 
-    pointnet_root = os.path.join(vendor_root, "Pointnet_Pointnet2_pytorch")
-    if pointnet_root not in sys.path:
-        sys.path.append(pointnet_root)
-    sys.path.append(vendor_root)
+    vendor_root = vendor_root.expanduser().resolve()
+    if not vendor_root.is_dir():
+        raise FileNotFoundError(f"Contact-GraspNet source root not found: {vendor_root}")
+
+    pointnet_root = vendor_root / "Pointnet_Pointnet2_pytorch"
+    if str(pointnet_root) not in sys.path:
+        sys.path.append(str(pointnet_root))
+    sys.path.append(str(vendor_root))
 
     try:
         from contact_graspnet_pytorch.checkpoints import CheckpointIO
         from contact_graspnet_pytorch.contact_grasp_estimator import GraspEstimator
     except ImportError:
         logger.error(
-            f"Could not import contact_graspnet_pytorch. Verified vendor_root: {vendor_root}"
+            "Could not import the separately installed contact_graspnet_pytorch "
+            f"source from {vendor_root}"
         )
         raise
 
-    model_checkpoint_dir = os.path.join(vendor_root, "checkpoints/contact_graspnet/checkpoints")
+    if checkpoint_dir is None:
+        configured_checkpoint = os.environ.get("CONTACT_GRASPNET_CHECKPOINT_DIR")
+        if configured_checkpoint:
+            checkpoint_dir = Path(configured_checkpoint)
+    if checkpoint_dir is None:
+        raise RuntimeError(
+            "Contact-GraspNet weights are not redistributed with ASPIRE. Pass "
+            "--checkpoint-dir or set CONTACT_GRASPNET_CHECKPOINT_DIR to an "
+            "authorized, separately obtained checkpoint directory."
+        )
+
+    model_checkpoint_dir = checkpoint_dir.expanduser().resolve()
+    if not model_checkpoint_dir.is_dir():
+        raise FileNotFoundError(
+            f"Contact-GraspNet checkpoint directory not found: {model_checkpoint_dir}"
+        )
 
     logger.info(f"Loading GraspNet config from {model_checkpoint_dir}")
-    global_config = load_contact_graspnet_config(Path(model_checkpoint_dir).parent)
+    global_config = load_contact_graspnet_config(model_checkpoint_dir.parent)
 
     logger.info("Building GraspNet model...")
     _GRASP_ESTIMATOR = GraspEstimator(global_config)
 
     logger.info(f"Loading weights from {model_checkpoint_dir}")
-    checkpoint_io = CheckpointIO(checkpoint_dir=model_checkpoint_dir, model=_GRASP_ESTIMATOR.model)
+    checkpoint_io = CheckpointIO(
+        checkpoint_dir=str(model_checkpoint_dir), model=_GRASP_ESTIMATOR.model
+    )
     try:
         checkpoint_io.load("model.pt")
     except FileExistsError:

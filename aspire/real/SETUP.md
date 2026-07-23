@@ -60,10 +60,10 @@ public repository.
 | robosuite | `third_party/robosuite` | Optional simulation/robocasa dependency | Reuse an approved public source or remove the unused real-workspace dependency |
 | robocasa | `third_party/robocasa` | Optional robocasa dependency | Add a public source or remove the unused dependency |
 | cuRobo | `third_party/curobo` | Motion planning | Add a public submodule/package source and document the tested revision |
-| AnyGrasp runtime | `third_party/anygrasp_sdk` | Grasp generation | Document vendor installation separately; verify redistribution terms |
+| AnyGrasp service | Operator-supplied `ANYGRASP_SERVICE_URL` | Grasp generation | Obtain and run the vendor service separately; ASPIRE distributes only its client protocol |
 | BundleSDF runtime libraries | `third_party/bundlesdf_5090` | Current launcher library path | Replace with a reproducible build/install or document how it is produced |
-| AnyGrasp checkpoint | `checkpoint_detection.tar` | AnyGrasp inference | Document the official download; do not redistribute without permission |
-| AnyGrasp license archive | `license_*.zip` | Vendor runtime authorization | Keep private and document how an authorized user supplies it |
+| AnyGrasp checkpoint | External vendor installation | AnyGrasp inference | Obtain through the authorized vendor workflow; do not place it in this repository |
+| AnyGrasp license archive | External vendor installation | Vendor runtime authorization | Keep private; do not place it in this repository |
 | Unreferenced invalid mesh | `robot/models/station/assets/model2__1.stl` | Historical CAD export | The invalid HTML file was removed; the active calibrated XML does not reference it, so it is not an installation blocker |
 | Demo media | `media/aspire_yam_station_real_demo.mp4` | README demo link | Add approved media or remove the placeholder section |
 

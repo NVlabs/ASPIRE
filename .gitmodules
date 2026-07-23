@@ -4,9 +4,6 @@
 [submodule "aspire/sim/cap/third_party/robosuite"]
 	path = aspire/sim/cap/third_party/robosuite
 	url = https://github.com/uynitsuj/robosuite
-[submodule "aspire/sim/cap/third_party/contact_graspnet_pytorch"]
-	path = aspire/sim/cap/third_party/contact_graspnet_pytorch
-	url = https://github.com/uynitsuj/contact_graspnet_pytorch
 [submodule "aspire/sim/cap/third_party/libero_dependencies/robosuite"]
 	path = aspire/sim/cap/third_party/libero_dependencies/robosuite
 	url = https://github.com/Max-Fu/robosuite

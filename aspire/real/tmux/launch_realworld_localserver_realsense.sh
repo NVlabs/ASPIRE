@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # launch_realworld_localserver_realsense.sh
 #
 # Launch every CAP service that is NOT cap_server / cap_agent / cap_ui:
@@ -8,8 +11,8 @@
 #   │ serve_bundlesdf  (+ SAM2)  │ serve_sam3                 │
 #   │ :8119                      │ :6767                      │
 #   ├────────────────────────────┼────────────────────────────┤
-#   │ serve_anygrasp             │ serve_curobo (portal RPC)  │
-#   │ :8122                      │ :8611                      │
+#   │ external AnyGrasp status   │ serve_curobo (portal RPC)  │
+#   │ :8122 (not redistributed)  │ :8611                      │
 #   └────────────────────────────┴────────────────────────────┘
 #
 #   Tmux window "LLM/VLM serving"
@@ -47,9 +50,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Pick up OpenSSL 1.1 (AnyGrasp), node/npm (cap/ui), API keys (NVIDIA, Gemini,
-# ElevenLabs), and SETUPTOOLS_SCM_PRETEND_VERSION_FOR_NVIDIA_CUROBO — all
-# written by install/install_cap.sh.
+# Pick up node/npm (cap/ui), API keys (NVIDIA, Gemini, ElevenLabs), and
+# SETUPTOOLS_SCM_PRETEND_VERSION_FOR_NVIDIA_CUROBO — all written by
+# install/install_cap.sh. AnyGrasp, when used, is an external licensed service.
 [[ -f "$PROJECT_DIR/.forge_env" ]] && source "$PROJECT_DIR/.forge_env"
 
 # ── Defaults ───────────────────────────────────────────────────────────────
@@ -127,7 +130,8 @@ stop_ssh_port_forward_tunnels() {
 
 stop_ssh_port_forward_tunnels
 kill_listener "$SAM3_PORT"
-kill_listener "$ANYGRASP_PORT"
+# Do not stop the AnyGrasp port: ASPIRE does not own or redistribute that
+# service, and an authorized operator may already be running it externally.
 $START_BUNDLESDF && kill_listener "$BUNDLESDF_PORT"
 $START_CUROBO    && kill_listener "$CUROBO_PORT"
 $START_PYROKI    && kill_listener "$PYROKI_PORT"
@@ -183,9 +187,10 @@ FORGE_ENV_CMD="[ -f $PROJECT_DIR/.forge_env ] && source $PROJECT_DIR/.forge_env"
 tmux send-keys -t "$SAM3_PANE" \
     "$FORGE_ENV_CMD; HF_HUB_DISABLE_TELEMETRY=1 HF_HUB_VERBOSITY=error TRANSFORMERS_VERBOSITY=error uv run python tools/vision/serve_sam3.py --port $SAM3_PORT --preload" Enter
 
-# AnyGrasp
+# AnyGrasp is external. This pane reports status and gives the operator an
+# actionable configuration message; it never launches copied vendor code.
 tmux send-keys -t "$ANYGRASP_PANE" \
-    "$FORGE_ENV_CMD; ANYGRASP_PORT=$ANYGRASP_PORT bash ./tools/vision/launch_anygrasp_server.sh" Enter
+    "$FORGE_ENV_CMD; ANYGRASP_PORT=$ANYGRASP_PORT ANYGRASP_SERVICE_URL=$ANYGRASP_URL bash ./tools/vision/launch_anygrasp_server.sh" Enter
 
 # BundleSDF
 if $START_BUNDLESDF; then
@@ -225,7 +230,7 @@ echo ""
 echo "  [realworld] windows added to tmux session '$SESSION':"
 echo "    '$PCS_WIN_NAME':"
 echo "      serve_sam3       :$SAM3_PORT"
-echo "      serve_anygrasp   :$ANYGRASP_PORT"
+echo "      external AnyGrasp:$ANYGRASP_PORT (operator supplied)"
 $START_BUNDLESDF && echo "      serve_bundlesdf  :$BUNDLESDF_PORT"
 $START_CUROBO    && echo "      serve_curobo     :$CUROBO_PORT  (portal RPC)"
 $START_PYROKI    && echo "      serve_pyroki     :$PYROKI_PORT  (HTTP)"

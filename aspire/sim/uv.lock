@@ -299,7 +299,6 @@ dependencies = [
 
 [package.optional-dependencies]
 contactgraspnet = [
-    { name = "contact-graspnet-pytorch", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux') or (platform_machine != 'x86_64' and extra == 'extra-6-aspire-libero' and extra == 'extra-6-aspire-robosuite') or (platform_machine != 'x86_64' and extra == 'extra-6-aspire-molmo' and extra == 'extra-6-aspire-robosuite') or (sys_platform != 'linux' and extra == 'extra-6-aspire-libero' and extra == 'extra-6-aspire-robosuite') or (sys_platform != 'linux' and extra == 'extra-6-aspire-molmo' and extra == 'extra-6-aspire-robosuite')" },
     { name = "opencv-python-headless", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux') or (platform_machine != 'x86_64' and extra == 'extra-6-aspire-libero' and extra == 'extra-6-aspire-robosuite') or (platform_machine != 'x86_64' and extra == 'extra-6-aspire-molmo' and extra == 'extra-6-aspire-robosuite') or (sys_platform != 'linux' and extra == 'extra-6-aspire-libero' and extra == 'extra-6-aspire-robosuite') or (sys_platform != 'linux' and extra == 'extra-6-aspire-molmo' and extra == 'extra-6-aspire-robosuite')" },
     { name = "pyrender", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux') or (platform_machine != 'x86_64' and extra == 'extra-6-aspire-libero' and extra == 'extra-6-aspire-robosuite') or (platform_machine != 'x86_64' and extra == 'extra-6-aspire-molmo' and extra == 'extra-6-aspire-robosuite') or (sys_platform != 'linux' and extra == 'extra-6-aspire-libero' and extra == 'extra-6-aspire-robosuite') or (sys_platform != 'linux' and extra == 'extra-6-aspire-molmo' and extra == 'extra-6-aspire-robosuite')" },
 ]
@@ -353,7 +352,6 @@ requires-dist = [
     { name = "bddl", marker = "extra == 'libero'", specifier = "==1.0.1" },
     { name = "cloudpickle" },
     { name = "cloudpickle", marker = "extra == 'libero'", specifier = "==2.1.0" },
-    { name = "contact-graspnet-pytorch", marker = "extra == 'contactgraspnet'", editable = "cap/third_party/contact_graspnet_pytorch" },
     { name = "decord" },
     { name = "easydict", marker = "extra == 'libero'", specifier = "==1.9" },
     { name = "einops" },
@@ -800,11 +798,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/3f/0b/30328302903c55218
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fe/19/3ba5e1b0bcc7b91aeab6c258afd70e4907d220fed3972febe38feb40db30/configargparse-1.7.5-py3-none-any.whl", hash = "sha256:1e63fdffedf94da9cd435fc13a1cd24777e76879dd2343912c1f871d4ac8c592", size = 27692, upload-time = "2026-03-11T02:19:36.442Z" },
 ]
-
-[[package]]
-name = "contact-graspnet-pytorch"
-version = "0.0.0"
-source = { editable = "cap/third_party/contact_graspnet_pytorch" }
 
 [[package]]
 name = "contourpy"
