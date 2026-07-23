@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Run the bottle dry-pour rehearsal, then the bottle rack placement.
 
 This is a thin composition entrypoint for one ``run_script.py`` invocation.

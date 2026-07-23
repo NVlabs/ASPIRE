@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Protocol definitions for the CAP env layer.
 
 All protocols use ``typing.Protocol`` for structural subtyping — env

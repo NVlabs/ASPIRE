@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Run Stage 2 token-scaling eval for a single (suite, task) pair.
 
 Given a completed Stage 1, selects code versions at 0/25/50/75/100% of

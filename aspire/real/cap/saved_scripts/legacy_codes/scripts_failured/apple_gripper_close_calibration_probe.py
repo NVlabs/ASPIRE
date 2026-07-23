@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Read-only evidence probe for apple width-limited gripper close.
 
 This script never commands arm or gripper motion. It collects repo/model

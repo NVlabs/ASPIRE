@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Start SAM3, GraspNet, PyRoKi, and optionally Molmo perception servers.
 # Safe to re-run: kills existing server processes first.
 #

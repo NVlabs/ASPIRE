@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """One-command live bottle grasp/lift/place-to-rack loop for YAM.
 
 This script is intentionally independent from the existing bottle lift script:

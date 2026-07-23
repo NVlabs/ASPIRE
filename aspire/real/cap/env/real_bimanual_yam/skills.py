@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Direct-env tool namespace for real bimanual YAM.
 
 This module is intentionally a thin shim: user-facing tool behavior lives in

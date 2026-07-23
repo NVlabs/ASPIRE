@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Dish/plate rim-grasp no-motion planner for YAM.
 
 This entrypoint keeps the canonical plate planner reusable while giving the

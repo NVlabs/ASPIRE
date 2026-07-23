@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Safely put down and release a bottle after a bounded lift attempt.
 
 This recovery script is intentionally narrow. It reads the selected grasp pose

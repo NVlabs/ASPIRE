@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # install_cap.sh — One-shot installer for the CAP family of services.
 #
 # Run from the repo root:  bash install/install_cap.sh

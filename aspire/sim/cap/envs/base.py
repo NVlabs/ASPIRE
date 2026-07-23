@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Max Fu
+# SPDX-License-Identifier: MIT
+
 from collections.abc import Callable
 from functools import lru_cache
 from typing import Any, SupportsFloat, TypeVar, abstractmethod

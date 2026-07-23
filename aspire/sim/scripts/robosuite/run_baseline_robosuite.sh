@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Run the traced multimodel-ensemble baseline across the 7 robosuite tasks (M4 tier).
 #
 # Reads NVIDIA API keys from two protected files: one for code-gen (ensemble +

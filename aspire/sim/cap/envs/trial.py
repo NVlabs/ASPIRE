@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Max Fu
+# SPDX-License-Identifier: MIT
+#
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Single-trial execution for ASPIRE environments.
 
 This module handles single trial execution including code generation,

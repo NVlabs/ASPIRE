@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """One-command observe/plan/grasp/lift loop for simple YAM objects.
 
 This helper intentionally uses lower-level YAM tools directly.  It does not use

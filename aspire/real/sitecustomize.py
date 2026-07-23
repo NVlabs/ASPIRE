@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Optional NumPy compatibility shims for legacy third-party dependencies.
 
 Python auto-imports ``sitecustomize`` for every process started from the repo

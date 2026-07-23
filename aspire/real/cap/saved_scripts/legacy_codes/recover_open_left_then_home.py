@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Recovery-only: open the left gripper in place, then go home.
 
 Use after a failed left-arm grasp attempt where the gripper may be near an

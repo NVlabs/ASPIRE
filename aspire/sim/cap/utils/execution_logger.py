@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Max Fu
+# SPDX-License-Identifier: MIT
+#
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Execution logger for detailed code execution feedback.
 
 This module provides functions to log execution steps during code execution.

@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Max Fu
+# SPDX-License-Identifier: MIT
+#
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Function extraction utilities for the evolving skill library.
 
 Uses the same regex patterns as scripts/common/skill_library_compilation/parse_outputs.py

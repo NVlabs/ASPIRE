@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Lightweight SAM3-only segmentation server.
 
 Accepts a base64-encoded RGB image + text prompt, runs SAM3 segmentation,

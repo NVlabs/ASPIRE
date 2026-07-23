@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Node-level NVIDIA provider daemon and dashboard.
 
 Run one daemon per node or egress IP, then point CAP jobs at it with

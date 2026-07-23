@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """AnyGrasp grasp planning tool for the CAP agent.
 
 This tool exposes ``sample_grasp_pose_anygrasp`` with the world-frame +

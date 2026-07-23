@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """No-motion first planner for opening the green refrigerator and placing a box.
 
 This script intentionally has no physical execution branch yet.  It observes

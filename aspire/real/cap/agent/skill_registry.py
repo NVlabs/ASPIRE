@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Episodic agent skill library — registry, profiling, and decorator.
 
 SkillProfile tracks execution logs for a single versioned skill function.

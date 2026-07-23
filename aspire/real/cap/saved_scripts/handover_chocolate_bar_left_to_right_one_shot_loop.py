@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Focused KitKat/red-wrapper handover for real YAM.
 
 This is intentionally a single-path script, not the long experiment notebook it

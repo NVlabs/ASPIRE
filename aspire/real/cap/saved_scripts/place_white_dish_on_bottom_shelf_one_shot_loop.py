@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """White-dish bottom-shelf rack entrypoint for real YAM.
 
 This script configures a fresh live pickup for an 8 inch wide, 2 inch deep

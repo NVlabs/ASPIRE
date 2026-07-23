@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 from skill_library.constants.manipulation import MAX_NO_PROGRESS_ROUNDS
 from skill_library.constants.planning import BATCH_SOLVER_SPEED, BATCH_TOP_K
 from skill_library.constants.sorting import SORT_VLM_CONFIG, TABLE_SORT_RUN_CONFIG

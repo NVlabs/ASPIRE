@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Replay or interactively debug one BEHAVIOR-1K trial.
 
 This is a small CLI facade over ``aspire.sim.cap.envs.launch_b1k``. It avoids the LIBERO

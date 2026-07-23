@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """After-analysis guarded white-bowl pickup/lift script for real YAM.
 
 The script always starts with fresh live perception and a no-motion pickup

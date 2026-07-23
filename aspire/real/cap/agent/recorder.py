@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Video recorder for cap scripts and agent runs.
 
 ScriptRecorder writes camera frames to MP4 files, then re-encodes to H.264.

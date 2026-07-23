@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Build per-task success rate table for all snapshots on LIBERO-10.
 Rows = swap/task variants of 10 tasks (20 total) + suite averages + overall.

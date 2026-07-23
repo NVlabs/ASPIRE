@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Plot cumulative solved-task fraction for the LIBERO-90 scaling build.
 
 This is a capability-coverage view: after each batch of 5 attempted tasks, what

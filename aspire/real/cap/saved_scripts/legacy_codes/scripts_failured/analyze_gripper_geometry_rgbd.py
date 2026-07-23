@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """No-motion RGB-D gripper geometry analysis for YAM plate work.
 
 This script does not move hardware.  It reads live RGB/depth/intrinsics/

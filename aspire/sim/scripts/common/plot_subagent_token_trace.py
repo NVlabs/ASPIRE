@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Two token-usage plots.
 
 1. outputs/plots/token_usage_lines2.png  — daily totals, all models merged, 4 token-type lines

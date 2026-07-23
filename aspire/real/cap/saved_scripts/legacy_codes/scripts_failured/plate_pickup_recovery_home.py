@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Guarded recovery/home helper for the YAM plate-pickup task.
 
 Default mode is no-motion validation: it records current state and refuses to

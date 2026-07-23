@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Plot per-task and cumulative tokens/iter vs success rate (iters 1–25 only).
 
 Correctly accounts for multiple subagent dispatches per task by merging

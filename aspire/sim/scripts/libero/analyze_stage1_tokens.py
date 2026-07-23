@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Analyze per-iteration token usage for a LIBERO-Long-Pro Stage 1 debug agent run.
 
 Reads the agent JSONL transcript and code-version file timestamps to bucket

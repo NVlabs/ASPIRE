@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Evaluate all libero_90 task_code.py programs on seeds 1-50, no video.
 # Skips tasks without task_code.py (BLOCKED). Skips already-completed trials.
 #

@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Run Stage 2 token-scaling eval for multiple (suite, task) pairs across GPUs.
 # Usage: bash scripts/libero/run_stage2_batch.sh <worktree> <snapshot> <gpu_list> <suite1:task1> <suite2:task2> ...
 # Example: bash scripts/libero/run_stage2_batch.sh /path/to/worktree snapshot-N90 "3,4,5,6,7" \

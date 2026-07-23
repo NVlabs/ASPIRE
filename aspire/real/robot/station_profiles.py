@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Named per-machine CAN (and related) presets for shared checkouts.
 
 **Naming:** Every committed profile key MUST be an MCU *Avengers*-saga character

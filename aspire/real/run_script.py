@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Run a saved script against a RoboCasa env (direct mode, no CapServer).
 
 Uses the same Hydra config as run_agent.py (AgentConfig + experiments/config.yaml).

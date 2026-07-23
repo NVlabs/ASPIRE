@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Plot average task SR across checkpoint_eval token-usage checkpoints.
 
 This summarizes the five LIBERO-Long-Pro debug_eval tasks for snapshot-N5 and

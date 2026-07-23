@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Infrastructure-level profiling for CAP tool callables.
 
 Wraps each callable with timing that prints duration and idle gaps

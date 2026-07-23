@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Place the orange bowl onto the white dish/bowl already in the lower shelf.
 
 This keeps the orange right-arm rim pickup behavior, including the post-lift

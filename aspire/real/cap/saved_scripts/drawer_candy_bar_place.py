@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Open the top drawer, place a yellow candy bar inside, and close it.
 
 This composes the validated drawer pull/push primitive with a focused

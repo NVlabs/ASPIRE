@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Structured live debug event logging for run_script.py.
 
 The writer appends one JSON object per line to ``debug_events.jsonl`` inside a

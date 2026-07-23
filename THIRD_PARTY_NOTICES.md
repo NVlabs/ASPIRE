@@ -52,7 +52,9 @@ This repository contains modifications of or dependencies on:
   affiliates.
 - Dependency patches under `aspire/real/patches/dependencies/` contain upstream
   context and modified material from PyRoKi, RoboCasa, cuRobo v0.7.8, and a
-  reconstructed i2rt tree. Their upstream terms apply independently.
+  public MIT-licensed i2rt tree. Their upstream terms apply independently;
+  the patch metadata identifies Runyu Lu as author of the NVIDIA ASPIRE
+  modifications and records an exact upstream base.
 - The Franka meshes and modified MJCF under
   `aspire/sim/cap/envs/assets/franka_pick_place/` derive from the Apache-2.0
   Franka model in the pinned MuJoCo Menagerie tree. The local README and XML
@@ -68,19 +70,24 @@ This repository contains modifications of or dependencies on:
 
 ## Git submodules and external components
 
-The parent repository stores seven gitlinks. Initializing them fetches source,
+The parent repository stores six gitlinks. Initializing them fetches source,
 models, test data, and assets governed by their own licenses. In particular,
-the pinned Contact-GraspNet and cuRobo versions are limited to noncommercial
-research or evaluation for public recipients; SAM 3 uses the Meta SAM License;
-and the pinned `b1k` tree contains mixed terms, including a Pixar asset that
-prohibits redistribution without written authorization.
+the pinned cuRobo version is limited to noncommercial research or evaluation
+for public recipients; SAM 3 uses the Meta SAM License; and the pinned `b1k`
+tree contains mixed terms, including a Pixar asset that prohibits
+redistribution without written authorization.
 
-BundleSDF source and checkpoints, AnyGrasp vendor payloads, SAM model weights,
-and Stereolabs ZED SDK material are intentionally external and retain their
-vendor or upstream terms. SAM 2.1 is Apache-2.0; SAM 3 uses the custom SAM
-License and gated-access conditions.
+BundleSDF source and checkpoints, AnyGrasp vendor source/server/model/license
+material, Contact-GraspNet source and checkpoints, SAM model weights, and
+Stereolabs ZED SDK material are intentionally external and retain their vendor
+or upstream terms. SAM 2.1 is Apache-2.0; SAM 3 uses the custom SAM License and
+gated-access conditions.
 
 For exact paths, revisions, immutable license links, and provenance that is not
 yet cleared for redistribution, see
 [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md). Listing uncleared material
 is not permission to use or distribute it.
+
+The exact source-file ownership boundary, including unchanged CaP-X source,
+CaP-X source modified by NVIDIA, and NVIDIA-authored source, is recorded in
+[`SOURCE_PROVENANCE.md`](SOURCE_PROVENANCE.md).

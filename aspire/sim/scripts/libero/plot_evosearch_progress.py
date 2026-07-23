@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Plot Evolutionary Search-Claude pipeline progress for a given run directory.
 Produces a single line chart (no matrix) showing best and mean success rate per iteration.

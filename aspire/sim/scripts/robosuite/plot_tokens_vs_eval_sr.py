@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Plot cumulative tokens (x) vs eval success rate (y) per iteration for each task.
 
 Finds each task's subagent JSONL by grepping for the config stem, computes

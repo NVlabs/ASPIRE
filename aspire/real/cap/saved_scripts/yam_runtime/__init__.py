@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Compact helpers for YAM saved scripts.
 
 These helpers sit above the raw ``run_script.py`` tool namespace.  They do not

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Robot pose defaults shared by saved-script skills."""
 
 LEFT_HOME_XYZ = [0.4975, 0.31, 0.914]

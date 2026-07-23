@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Observe the top drawer, pull/push it with the left arm, then observe again.
 
 This is the canonical drawer practice entrypoint. When executed by

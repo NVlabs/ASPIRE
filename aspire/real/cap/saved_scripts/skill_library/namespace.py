@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # namespace.py — auto-generated at run start, do not edit
 # Names listed in __all__ are also registered on the live
 # skill_library.namespace module in sys.modules for real imports.

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Key remapping utilities for observation/action mapping between environment and policy formats."""
 
 from typing import Any, Dict, Literal

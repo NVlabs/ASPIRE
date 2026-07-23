@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """No-motion robustness sweep for KitKat trash waypoints.
 
 This script does not execute robot motion. It samples fixed offsets relative to

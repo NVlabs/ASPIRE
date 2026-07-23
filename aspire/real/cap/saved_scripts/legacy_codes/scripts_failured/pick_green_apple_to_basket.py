@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Pick the green apple and place it in the basket on real YAM.
 
 This entrypoint is stage-gated for block-by-block robot debugging. By default

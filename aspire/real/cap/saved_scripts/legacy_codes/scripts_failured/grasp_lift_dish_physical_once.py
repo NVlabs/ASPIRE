@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Guarded one-attempt physical wrapper for dish/plate pickup on YAM.
 
 The wrapper always runs the committed no-motion dish planner first with fresh

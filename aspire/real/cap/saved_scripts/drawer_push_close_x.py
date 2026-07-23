@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Close an already-open top drawer with the left arm.
 
 This is the close-only companion to ``drawer_observe_pull_open_x.py``. It

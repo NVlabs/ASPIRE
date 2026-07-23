@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Offline trial analysis — diagnose grasp success/failure from trace.json.
 
 Reads trace.json (+ optional keyframe arrays) and produces a structured

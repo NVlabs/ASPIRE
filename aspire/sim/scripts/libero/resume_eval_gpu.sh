@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # resume_eval_gpu.sh — per-GPU resume helper for Phase 2 of the two-phase
 # LIBERO-Long-Pro eval. Runs every not-yet-completed seed (1..SEEDS) for ONE
 # task's pre-written code.py on a single GPU, skipping seeds that already have a

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Per-task success-rate chart: Baseline (gemini /15) vs ASPIRE-Fix (/50) vs ASPIRE-Evolutionary Search (/50).
 
 A new version of `plot_baseline_vs_fix_v2.py` that adds a third bar per task using

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Max Fu
+# SPDX-License-Identifier: MIT
+
 """Shared utilities for Franka control APIs.
 
 This module centralizes code patterns that were duplicated across many API files:

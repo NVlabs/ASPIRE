@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Guarded dry bottle-to-cup pour rehearsal for YAM.
 
 This is a single-arm script: the left arm grasps/lifts the dry bottle using the

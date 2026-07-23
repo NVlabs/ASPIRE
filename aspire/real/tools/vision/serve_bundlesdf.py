@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """BundleSDF multi-object tracking sidecar for CAP.
 
 Pulls RGB+depth frames from cap_server via Portal RPC, feeds them into

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Guarded orange-bowl-into-white-bowl stacking script for real YAM.
 
 This script is independent from the rack scripts. It reuses the top-down orange

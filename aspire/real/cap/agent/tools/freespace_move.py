@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Collision-free free-space movement via motion planning.
 
 Defaults to cuRobo via ``experimental.portal_motion_planner.PortalMotionPlanner``.

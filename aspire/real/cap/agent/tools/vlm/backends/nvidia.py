@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """NVIDIA inference gateway — OpenAI-compatible, routes to Gemini / Bedrock
 Claude / Azure GPT / etc. based on the ``model`` string.
 

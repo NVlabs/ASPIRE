@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Plot cumulative seen-task SR for the LIBERO-90 scaling build.
 
 The x-axis is curriculum progress in batches of 5 attempted tasks. The y-axis

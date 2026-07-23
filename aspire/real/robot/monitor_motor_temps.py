@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Live motor temperature monitor for robot arm servers.
 
 Queries arm servers over Portal RPC (`get_motor_temperatures`) and prints a

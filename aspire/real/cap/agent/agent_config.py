@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Hydra structured configs for the agent pipeline.
 
 All experiment configuration lives here as dataclasses. Hydra validates

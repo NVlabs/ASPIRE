@@ -1,0 +1,402 @@
+path	provenance	license	header_owners	source_reference
+aspire/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/.agents/skills/yam-simulation-transfer/references/robosuite_two_arm_handover.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/agent_config.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/debug_events.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/profiler.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/providers/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/providers/nvidia.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/providers/nvidia_server.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/recorder.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/robot_adapters/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/robot_adapters/base.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/robot_adapters/real_yam.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/script_backends.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/skill_registry.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tool_handle.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/_artifact_log.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/base.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/detection.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/freespace_move.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/grasp_anygrasp.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/native.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/vlm/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/vlm/backends/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/vlm/backends/nvidia.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/vlm/transport.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/agent/tools/vlm_query.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/config.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/constants/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/constants/planning.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/debug_ui/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/debug_ui/app.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/env/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/env/base.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/env/base/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/env/base/profile.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/env/base/protocols.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/env/real_bimanual_yam/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/env/real_bimanual_yam/dashboard.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/env/real_bimanual_yam/env.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/env/real_bimanual_yam/skills.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/integrations/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/integrations/motion/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/integrations/motion/pyroki_snippets/__init__.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/integrations/motion/pyroki_snippets/_online_planning.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/integrations/motion/pyroki_snippets/_solve_ik.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/integrations/motion/pyroki_snippets/_solve_ik_vel_cost.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/integrations/motion/pyroki_snippets/_solve_ik_with_base.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/integrations/motion/pyroki_snippets/_solve_ik_with_collision.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/integrations/motion/pyroki_snippets/_solve_ik_with_manipulability.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_solve_ik_with_manipulability.py
+aspire/real/cap/integrations/motion/pyroki_snippets/_solve_ik_with_multiple_targets.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/integrations/motion/pyroki_snippets/_solve_ik_with_multiple_targets_vel_cost.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/integrations/motion/pyroki_snippets/_solve_ik_with_rest_cost.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/integrations/motion/pyroki_snippets/_trajopt.py	PyRoKi through CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	PyRoKi + CaP-X + NVIDIA	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; ASPIRE real integration
+aspire/real/cap/saved_scripts/bowl_lower_rack_common.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/debug_observation_smoke.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/drawer_candy_bar_place.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/drawer_observe_pull_open_x.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/drawer_push_close_x.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/full_demo_speed.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/grasp_lift_place_bottle_rack_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/handover_chocolate_bar_left_to_right_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/anygrasp_chocolate_handoff_trash_no_motion_plan.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/anygrasp_orange_bowl_topdown_reference_no_motion.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/bimanual_lift_white_dish_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/bottle.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/bottle_fixed_pour_waypoint_robustness_sweep.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/bottle_pour_then_rack_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/bottle_rack_waypoint_robustness_sweep.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/calibrate_gripper_geometry_top_camera.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/close_gripper_api_smoke.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/dry_bimanual_bottle_to_can_pour.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/dry_bottle_to_cup_pour_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/grasp_lift_bottle_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/grasp_lift_can_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/grasp_lift_cyan_cup_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/gripper_api_smoke.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/gripper_open_close_api_smoke.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/kitkat_handover_clearance_waypoint_sweep.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/kitkat_trash_waypoint_robustness_sweep.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/pick_can_place_on_white_plate_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/pick_cyan_cup_place_on_wooden_rack_top_shelf_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/place_orange_bowl_on_lower_rack_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/place_orange_bowl_on_rack_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/place_white_bowl_on_lower_rack_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/place_white_bowl_on_rack_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/place_white_bowl_on_rack_one_shot_loop_after_analysis.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/preview_bottle_rack_recovery_waypoints.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/probe_cup_rack_place_poses.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/put_down_open_bottle_from_lift_run.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/recover_held_bottle_to_rack.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/recover_open_both_then_home.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/recover_open_left_then_home.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/recover_open_right_then_home.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/reset_open_robot.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/reset_robot_pose_go_home.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/run_bottle_pour_then_rack.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/run_real_yam.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/analyze_gripper_geometry_rgbd.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/analyze_two_dishes_no_motion.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/apple_gripper_close_calibration_probe.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/drawer_pull_push.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/grasp_lift_dish_no_motion_plan.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/grasp_lift_dish_physical_once.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/grasp_lift_dish_rim_pinch_no_motion_plan.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/manual_realtime_console.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/one_shot_pick_place_apple_to_basket.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/open_green_refrigerator_put_box_inside.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/open_green_refrigerator_put_box_inside_physical.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/pick_green_apple_from_basket_to_plate.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/pick_green_apple_to_basket.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/plate_pickup_recovery_home.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/pour_bottle_to_green_cup.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/visualization_long_run.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/scripts_failured/yam_runtime_smoke.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/stack_orange_bowl_into_white_bowl_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/legacy_codes/table_bussing/nclass_sorting_nvidiagemini.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/open_grippers_return_home.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/pick_can_place_in_trash_can_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/pick_plate_no_motion_plan.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/place_orange_bowl_on_white_bowl_lower_rack_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/place_white_dish_on_bottom_shelf_one_shot_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/shell_scripts/bottle_rack.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/shell_scripts/dish_bowl_rack.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/shell_scripts/drawer_candy_bar_place.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/shell_scripts/drawer_observe_pull_open_x.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/shell_scripts/drawer_push_close_x.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/shell_scripts/home.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/shell_scripts/run_kitkat_handover.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/shell_scripts/speed_scale.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/constants/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/constants/manipulation.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/constants/planning.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/constants/robot.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/constants/sorting.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/constants/vision.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/debug_observation.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/grasp_geometry.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/namespace.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/pick_place.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/simple_grasp_lift_loop.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/skill_library/vlm_classification.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/yam_demo.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/yam_runtime/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/yam_runtime/artifacts.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/yam_runtime/execution.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/yam_runtime/gripper.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/yam_runtime/observation.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/yam_runtime/planning.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/saved_scripts/yam_runtime/verification.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/cap/utils/image.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/experimental/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/experimental/curobo_depth_world.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/experimental/embodiment_tags.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/experimental/key_remapping_utils.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/experimental/motion_planner.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/experimental/motion_planner_curobo.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/experimental/portal_motion_planner.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/experimental/serve_portal_motion_planner.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/install/build_zed_sdk.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/install/compile_bundlesdf.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/install/install_cap.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/launch.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/camera_factory.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/constants.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/models/station/curobo/build_fixed_finger_urdf.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/models/station/curobo/build_station_physics_urdf.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/models/station/paths.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/monitor_motor_temps.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/realsense.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/station_profiles.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/yam/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/yam/_base_yam_env.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/yam/arm_server.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/yam/kinematics.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/yam/yam_controller.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/yam/yam_real_env.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/yam/yam_sim_env.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/robot/zed.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/run_script.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/scripts/launch_pyroki_server.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/sitecustomize.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tmux/launch_realworld_localserver_realsense.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tmux/launch_yam_demo_services.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tmux/run_script.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/_bootstrap.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/non_motion_preflight.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/run_yam_demo_service.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/runtime_env.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/vision/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/vision/launch_anygrasp_server.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/vision/serve_anygrasp_mock.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/vision/serve_bundlesdf.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/vision/serve_real_yam_camera_portal.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/vision/serve_sam3.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/real/tools/yam_demo_preflight.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/__init__.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/cap/__init__.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/__init__.py
+aspire/sim/cap/envs/__init__.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/__init__.py
+aspire/sim/cap/envs/adapters/__init__.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/adapters/__init__.py
+aspire/sim/cap/envs/adapters/libero_wrapper.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/adapters/libero_wrapper.py
+aspire/sim/cap/envs/adapters/robosuite_wrapper.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/adapters/robosuite_wrapper.py
+aspire/sim/cap/envs/base.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/base.py
+aspire/sim/cap/envs/configs/instantiate.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/configs/instantiate.py
+aspire/sim/cap/envs/configs/loader.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/configs/loader.py
+aspire/sim/cap/envs/launch.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/launch.py
+aspire/sim/cap/envs/launch_b1k.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/cap/envs/runner.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/runner.py
+aspire/sim/cap/envs/scripts/__init__.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/scripts/__init__.py
+aspire/sim/cap/envs/scripts/run_libero_batch.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/scripts/run_libero_batch.py
+aspire/sim/cap/envs/scripts/run_robosuite_batch.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/cap/envs/simulators/__init__.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/__init__.py
+aspire/sim/cap/envs/simulators/libero.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/libero.py
+aspire/sim/cap/envs/simulators/r1pro_b1k.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/r1pro_b1k.py
+aspire/sim/cap/envs/simulators/robosuite_base.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/robosuite_base.py
+aspire/sim/cap/envs/simulators/robosuite_cube_lift.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/robosuite_cube_lift.py
+aspire/sim/cap/envs/simulators/robosuite_cubes.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/robosuite_cubes.py
+aspire/sim/cap/envs/simulators/robosuite_cubes_restack.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/robosuite_cubes_restack.py
+aspire/sim/cap/envs/simulators/robosuite_handover.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/robosuite_handover.py
+aspire/sim/cap/envs/simulators/robosuite_nut_assembly.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/robosuite_nut_assembly.py
+aspire/sim/cap/envs/simulators/robosuite_spill_wipe.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/robosuite_spill_wipe.py
+aspire/sim/cap/envs/simulators/robosuite_two_arm_lift.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/simulators/robosuite_two_arm_lift.py
+aspire/sim/cap/envs/tasks/__init__.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/__init__.py
+aspire/sim/cap/envs/tasks/base.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/base.py
+aspire/sim/cap/envs/tasks/franka/__init__.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/franka/__init__.py
+aspire/sim/cap/envs/tasks/franka/franka_cube_restack.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/franka/franka_cube_restack.py
+aspire/sim/cap/envs/tasks/franka/franka_libero_env.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/franka/franka_libero_env.py
+aspire/sim/cap/envs/tasks/franka/franka_lift.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/franka/franka_lift.py
+aspire/sim/cap/envs/tasks/franka/franka_nut_assembly.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/franka/franka_nut_assembly.py
+aspire/sim/cap/envs/tasks/franka/franka_pick_place.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/franka/franka_pick_place.py
+aspire/sim/cap/envs/tasks/franka/franka_spill_wipe.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/franka/franka_spill_wipe.py
+aspire/sim/cap/envs/tasks/franka/two_arm_handover.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/franka/two_arm_handover.py
+aspire/sim/cap/envs/tasks/franka/two_arm_lift.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/franka/two_arm_lift.py
+aspire/sim/cap/envs/tasks/r1pro/__init__.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/r1pro/__init__.py
+aspire/sim/cap/envs/tasks/r1pro/r1pro_behavior.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/r1pro/r1pro_behavior.py
+aspire/sim/cap/envs/tasks/r1pro/r1pro_pickup_radio.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/r1pro/r1pro_pickup_radio.py
+aspire/sim/cap/envs/tasks/r1pro/r1pro_pickup_trash.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/tasks/r1pro/r1pro_pickup_trash.py
+aspire/sim/cap/envs/trial.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/envs/trial.py
+aspire/sim/cap/integrations/__init__.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/__init__.py
+aspire/sim/cap/integrations/base_api.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/base_api.py
+aspire/sim/cap/integrations/franka/__init__.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/__init__.py
+aspire/sim/cap/integrations/franka/common.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/common.py
+aspire/sim/cap/integrations/franka/control.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/control.py
+aspire/sim/cap/integrations/franka/control_privileged.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/control_privileged.py
+aspire/sim/cap/integrations/franka/control_reduced.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/control_reduced.py
+aspire/sim/cap/integrations/franka/control_reduced_exampleless.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/control_reduced_exampleless.py
+aspire/sim/cap/integrations/franka/control_reduced_skill_library.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/control_reduced_skill_library.py
+aspire/sim/cap/integrations/franka/handover.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/handover.py
+aspire/sim/cap/integrations/franka/handover_privileged.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/handover_privileged.py
+aspire/sim/cap/integrations/franka/handover_reduced.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/handover_reduced.py
+aspire/sim/cap/integrations/franka/handover_reduced_exampleless.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/handover_reduced_exampleless.py
+aspire/sim/cap/integrations/franka/libero.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/libero.py
+aspire/sim/cap/integrations/franka/libero_privileged.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/libero_privileged.py
+aspire/sim/cap/integrations/franka/libero_reduced.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/libero_reduced.py
+aspire/sim/cap/integrations/franka/libero_reduced_skill_library.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/libero_reduced_skill_library.py
+aspire/sim/cap/integrations/franka/nut_assembly_privileged.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/nut_assembly_privileged.py
+aspire/sim/cap/integrations/franka/nut_assembly_visual.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/nut_assembly_visual.py
+aspire/sim/cap/integrations/franka/spill_wipe.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/spill_wipe.py
+aspire/sim/cap/integrations/franka/spill_wipe_privileged.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/spill_wipe_privileged.py
+aspire/sim/cap/integrations/franka/two_arm_lift.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/two_arm_lift.py
+aspire/sim/cap/integrations/franka/two_arm_lift_privileged.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/franka/two_arm_lift_privileged.py
+aspire/sim/cap/integrations/libero/__init__.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/libero/__init__.py
+aspire/sim/cap/integrations/libero_trace_logger.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/cap/integrations/motion/__init__.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/__init__.py
+aspire/sim/cap/integrations/motion/curobo.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/curobo.py
+aspire/sim/cap/integrations/motion/curobo_api.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/curobo_api.py
+aspire/sim/cap/integrations/motion/pyroki.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki.py
+aspire/sim/cap/integrations/motion/pyroki_context.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_context.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/__init__.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/__init__.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_online_planning.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_online_planning.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_solve_ik.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_solve_ik.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_solve_ik_vel_cost.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_solve_ik_vel_cost.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_solve_ik_with_base.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_solve_ik_with_base.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_solve_ik_with_collision.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_solve_ik_with_collision.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_solve_ik_with_manipulability.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_solve_ik_with_manipulability.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_solve_ik_with_multiple_targets.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_solve_ik_with_multiple_targets.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_solve_ik_with_multiple_targets_vel_cost.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_solve_ik_with_multiple_targets_vel_cost.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_solve_ik_with_rest_cost.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_solve_ik_with_rest_cost.py
+aspire/sim/cap/integrations/motion/pyroki_snippets/_trajopt.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/motion/pyroki_snippets/_trajopt.py
+aspire/sim/cap/integrations/r1pro/__init__.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/r1pro/__init__.py
+aspire/sim/cap/integrations/r1pro/control.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/r1pro/control.py
+aspire/sim/cap/integrations/r1pro/utils.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/r1pro/utils.py
+aspire/sim/cap/integrations/robosuite_trace_logger.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/cap/integrations/trace_logger.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/cap/integrations/vision/__init__.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/vision/__init__.py
+aspire/sim/cap/integrations/vision/graspnet.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/vision/graspnet.py
+aspire/sim/cap/integrations/vision/molmo.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/vision/molmo.py
+aspire/sim/cap/integrations/vision/owlvit.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/vision/owlvit.py
+aspire/sim/cap/integrations/vision/sam2.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/vision/sam2.py
+aspire/sim/cap/integrations/vision/sam3.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/integrations/vision/sam3.py
+aspire/sim/cap/llm/__init__.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/llm/__init__.py
+aspire/sim/cap/llm/client.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/llm/client.py
+aspire/sim/cap/serving/__init__.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/__init__.py
+aspire/sim/cap/serving/launch_contact_graspnet_server.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/launch_contact_graspnet_server.py
+aspire/sim/cap/serving/launch_curobo_server.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/launch_curobo_server.py
+aspire/sim/cap/serving/launch_owlvit_server.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/launch_owlvit_server.py
+aspire/sim/cap/serving/launch_pyroki_server.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/launch_pyroki_server.py
+aspire/sim/cap/serving/launch_sam2_server.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/launch_sam2_server.py
+aspire/sim/cap/serving/launch_sam3_server.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/launch_sam3_server.py
+aspire/sim/cap/serving/launch_servers.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/launch_servers.py
+aspire/sim/cap/serving/openrouter_server.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/openrouter_server.py
+aspire/sim/cap/serving/vllm_server.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/serving/vllm_server.py
+aspire/sim/cap/skills/__init__.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/skills/__init__.py
+aspire/sim/cap/skills/claude_integration.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/skills/claude_integration.py
+aspire/sim/cap/skills/extractor.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/skills/extractor.py
+aspire/sim/cap/skills/library.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/skills/library.py
+aspire/sim/cap/third_party/pyroki_snippets/__init__.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/third_party/pyroki_snippets/__init__.py
+aspire/sim/cap/third_party/pyroki_snippets/pyroki_snippets/__init__.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/third_party/pyroki_snippets/pyroki_snippets/__init__.py
+aspire/sim/cap/third_party/pyroki_snippets/pyroki_snippets/_online_planning.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/third_party/pyroki_snippets/pyroki_snippets/_online_planning.py
+aspire/sim/cap/third_party/pyroki_snippets/pyroki_snippets/_solve_ik.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/third_party/pyroki_snippets/pyroki_snippets/_solve_ik.py
+aspire/sim/cap/third_party/pyroki_snippets/pyroki_snippets/_solve_ik_with_base.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/third_party/pyroki_snippets/pyroki_snippets/_solve_ik_with_base.py
+aspire/sim/cap/third_party/pyroki_snippets/pyroki_snippets/_solve_ik_with_collision.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/third_party/pyroki_snippets/pyroki_snippets/_solve_ik_with_collision.py
+aspire/sim/cap/third_party/pyroki_snippets/pyroki_snippets/_solve_ik_with_manipulability.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/third_party/pyroki_snippets/pyroki_snippets/_solve_ik_with_manipulability.py
+aspire/sim/cap/third_party/pyroki_snippets/pyroki_snippets/_solve_ik_with_multiple_targets.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/third_party/pyroki_snippets/pyroki_snippets/_solve_ik_with_multiple_targets.py
+aspire/sim/cap/third_party/pyroki_snippets/pyroki_snippets/_trajopt.py	PyRoKi through CaP-X	MIT	PyRoKi + CaP-X	chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47; LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/third_party/pyroki_snippets/pyroki_snippets/_trajopt.py
+aspire/sim/cap/utils/__init__.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/__init__.py
+aspire/sim/cap/utils/camera_utils.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/camera_utils.py
+aspire/sim/cap/utils/depth_utils.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/depth_utils.py
+aspire/sim/cap/utils/eval_utils.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/eval_utils.py
+aspire/sim/cap/utils/execution_logger.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/execution_logger.py
+aspire/sim/cap/utils/graspnet_utils.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/graspnet_utils.py
+aspire/sim/cap/utils/launch_utils.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/launch_utils.py
+aspire/sim/cap/utils/msgpack_server_client_utils.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/msgpack_server_client_utils.py
+aspire/sim/cap/utils/parallel_eval.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/parallel_eval.py
+aspire/sim/cap/utils/serve_utils.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/serve_utils.py
+aspire/sim/cap/utils/video_utils.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/video_utils.py
+aspire/sim/cap/utils/visualization_utils.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/visualization_utils.py
+aspire/sim/scripts/behavior/replay_trial_b1k.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/analyze_trial.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/chunk_tokens.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/plot_subagent_token_trace.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/plot_token_usage.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/scan_progress.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/skill_library_compilation/compile_skill_library.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/skill_library_compilation/eval_dir_to_code.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/skill_library_compilation/parse_outputs.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/skill_library_compilation/summarize_analysis.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/skill_library_compilation/trial_folder_rename.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/start_perception_servers.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/analyze_evosearch_traces.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/analyze_stage1_tokens.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/annotate_snapshot_tokens.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/eval_checkpoint_n5.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/eval_checkpoint_n50.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/eval_libero90_held_out.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/eval_run_seeds.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/eval_setup_worktree.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/eval_snapshot.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/evosearch_eval.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/gen_progress.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/gen_progress_90.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/gen_progress_long.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/gen_progress_scaling.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/generate_ordering.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/make_libero_pro_master_table.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/make_snapshot_table.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/plot_baseline_vs_fix.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/plot_baseline_vs_fix_v3_evosearch.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/plot_checkpoint_sr_pareto.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/plot_evosearch_progress.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/plot_libero90_all_task_sr.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/plot_libero90_seen_task_sr.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/plot_libero90_solved_fraction.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/plot_method_comparison_v5.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/plot_suite_summary.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/replay_trial.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/resume_eval_gpu.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/run_fix_loop_validation.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/run_stage2_batch.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/run_stage2_token_scaling.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/run_validation_comparison.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/libero/scene_snapshot.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/gen_progress_robosuite.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/plot_tokens_vs_debug_sr.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/plot_tokens_vs_eval_sr.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/plot_tokens_vs_sr_v2.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/replay_trial_robosuite.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/run_baseline_robosuite.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/run_debug_fix_code.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/run_eval_fix_code.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/run_eval_training_law.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/robosuite/run_iteration.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/tests/integrations/test_grasp_graspnet.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_grasp_graspnet.py
+aspire/sim/tests/integrations/test_libero_integration.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_libero_integration.py
+aspire/sim/tests/integrations/test_molmo_integration.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_molmo_integration.py
+aspire/sim/tests/integrations/test_owlvit_integration.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_owlvit_integration.py
+aspire/sim/tests/integrations/test_owlvit_visualization.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_owlvit_visualization.py
+aspire/sim/tests/integrations/test_pyroki_integration.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_pyroki_integration.py
+aspire/sim/tests/integrations/test_ransac_visualization.py	unchanged CaP-X	MIT	CaP-X	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_ransac_visualization.py
+aspire/sim/tests/integrations/test_sam2_integration.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_sam2_integration.py
+aspire/sim/tests/integrations/test_sam2_visualization.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_sam2_visualization.py
+aspire/sim/tests/integrations/test_sam3_visualization.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/integrations/test_sam3_visualization.py
+aspire/sim/tests/test_environments.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/test_environments.py
+aspire/sim/tests/test_libero.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/test_libero.py
+aspire/sim/tests/test_libero_fix_loop_pipeline.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/tests/test_robosuite_setup.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	LRY89757/Holos@823fcc5dd3e565b45b414f5785668cf32cba13b4:tests/test_robosuite_setup.py

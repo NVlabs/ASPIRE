@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Plot average SR over all 90 LIBERO tasks during the scaling build.
 
 Unlike the seen-task chart, this treats tasks that have not yet entered the

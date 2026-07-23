@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Rerun Stage 1 (debug seeds 101-125) for 4 tasks with 5 workers each
 # Usage: bash scripts/robosuite/run_debug_fix_code.sh
 #

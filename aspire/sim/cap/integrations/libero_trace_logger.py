@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """LIBERO traced API wrappers.
 
 Kept separate from robosuite traced wrappers so `.venv-libero` can register

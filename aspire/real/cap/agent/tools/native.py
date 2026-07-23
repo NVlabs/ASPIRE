@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Native tools that communicate via Portal RPC or a direct env.
 
 These wrap the low-level robot control primitives: reading state, moving

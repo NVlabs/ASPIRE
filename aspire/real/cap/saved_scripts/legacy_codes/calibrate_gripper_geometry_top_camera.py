@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Recorded gripper-geometry calibration for YAM top-camera plate work.
 
 Default mode is no-motion: capture current gripper geometry with live SAM3 /

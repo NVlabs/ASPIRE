@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # compile_bundlesdf.sh — Build BundleSDF from source against a reviewed
 # conda-forge dependency stack, producing a transferable third_party/bundlesdf_5090/.
 #

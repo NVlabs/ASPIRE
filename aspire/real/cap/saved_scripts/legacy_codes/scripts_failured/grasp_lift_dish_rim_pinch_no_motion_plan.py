@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Dish/plate asymmetric rim-pinch no-motion planner for YAM.
 
 This entrypoint uses the canonical plate planner but requests the under/over

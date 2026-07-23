@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Recorded no-motion planner for picking up a plate on YAM.
 
 This script is intentionally observe/plan only.  It uses fresh live plate

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Interactive, whitelisted real-YAM command console.
 
 This is for supervised bench-side checks. It intentionally does not expose

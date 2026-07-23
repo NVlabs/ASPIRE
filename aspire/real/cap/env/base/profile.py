@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Robot profile abstraction for CAP server.
 
 Encapsulates all robot-specific constants (DOF, joint limits, motor gains,

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Recovery-only: open both grippers in place, then go home.
 
 Use after a failed bimanual hold where either gripper may be near or holding an

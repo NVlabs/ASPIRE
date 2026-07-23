@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Execution Trace Logger for ASPIRE API calls.
 
 Wraps any ApiBase subclass to log every API function call with inputs, outputs,

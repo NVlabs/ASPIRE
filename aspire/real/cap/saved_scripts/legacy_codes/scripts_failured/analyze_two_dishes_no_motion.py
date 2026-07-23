@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Recorded no-motion geometry analysis for two dish/plate candidates on YAM.
 
 This script does not move hardware. It captures fresh live detections and

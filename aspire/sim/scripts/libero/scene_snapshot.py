@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Capture dual-camera scene snapshots and optionally validate SAM3 prompts.
 
 Set ``SNAPSHOT_DIR`` to choose the artifact directory. Set

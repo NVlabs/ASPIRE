@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """No-motion robustness sweep for KitKat handover clearance waypoints.
 
 This script does not command the robot. It plans directly through the cuRobo

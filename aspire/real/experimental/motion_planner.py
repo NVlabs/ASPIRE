@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """RRTConnect EE-pose motion planner for the YAM bimanual robot.
 
 Takes end-effector pose targets and uses MuJoCo's built-in collision

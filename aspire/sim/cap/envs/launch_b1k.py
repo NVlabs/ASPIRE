@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """BEHAVIOR-1K launcher with exact-trial, replay, and REPL modes.
 
 This module is a thin B1K-specific wrapper around the standard

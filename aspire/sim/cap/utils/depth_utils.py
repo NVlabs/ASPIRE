@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Max Fu
+# SPDX-License-Identifier: MIT
+
 import numpy as np
 import numpy.typing as npt
 from matplotlib import cm

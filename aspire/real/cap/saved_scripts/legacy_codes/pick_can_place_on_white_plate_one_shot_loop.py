@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Pick up a can and place it into/on a white plate on real YAM.
 
 High-level transfer from ``can-libero-transfer.md`` only:

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # build_zed_sdk.sh — Install the Stereolabs ZED SDK so the project's locked
 # pyzed wheel can load `libsl_zed.so` and talk to a connected ZED 2i.
 #

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Evaluate 25% and 50% output-token-budget checkpoint code versions for snapshot-N5.
 # Outputs go to: stage1/checkpoint_eval/{25pct,50pct}/ — NEVER touches stage2/.
 # Seeds 1-50, no video, parallel across GPUs.

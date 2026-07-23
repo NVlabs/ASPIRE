@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Dry bimanual bottle-to-can pour rehearsal planner.
 
 By default this saved script is preview-only.  With a valid ticket and

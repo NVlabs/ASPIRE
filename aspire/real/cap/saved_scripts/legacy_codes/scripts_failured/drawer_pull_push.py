@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-gated drawer handle pull-open / push-close planning for YAM.
 
 This first implementation is intentionally no-motion-first.  It can observe,

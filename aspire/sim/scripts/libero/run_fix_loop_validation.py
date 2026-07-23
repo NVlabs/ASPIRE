@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Run an immutable, resumable LIBERO Fix Loop held-out validation.
 
 A run identity hashes the code, config, suite, task, and requested seeds. Results

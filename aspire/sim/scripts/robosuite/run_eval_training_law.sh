@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Eval seeds 1–100 for every intermediate code version in code_versions/ (training-law).
 #
 # Unlike run_eval_fix_code.sh (final fix_code.py only), this replays each

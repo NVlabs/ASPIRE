@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """One-command YAM reset/open script.
 
 Physical motion is refused unless OPENFORGE_ALLOW_PHYSICAL_MOTION=1 is set by a

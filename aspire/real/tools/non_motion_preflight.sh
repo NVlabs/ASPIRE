@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Read-only YAM workstation inventory. This script does not start services,
 # connect to arm RPC endpoints, bring CAN links up/down, or send CAN frames.
 

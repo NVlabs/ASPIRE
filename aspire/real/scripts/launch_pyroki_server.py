@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Pyroki IK / trajectory service — HTTP at ``host:port`` (default 127.0.0.1:9600).
 
 Runs one FastAPI server that loads the PandaOmron (or any URDF you ask for)

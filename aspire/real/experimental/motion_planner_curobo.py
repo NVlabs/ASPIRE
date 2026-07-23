@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """cuRobo motion planner for the YAM bimanual station.
 
 This module mirrors the public API of ``experimental.motion_planner.YamMotionPlanner``

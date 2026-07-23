@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 """Evaluate all candidate programs in an Evolutionary Search iteration directory.
 
 Uses a persistent multiprocessing worker pool: each worker initializes the

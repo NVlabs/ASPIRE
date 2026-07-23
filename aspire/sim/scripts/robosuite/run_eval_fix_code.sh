@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Rerun Stage 2 for 5 tasks with 5 workers each (25 total, 5 per GPU)
 # Usage: bash scripts/robosuite/run_eval_fix_code.sh
 #
