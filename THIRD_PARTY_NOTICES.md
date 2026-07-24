@@ -63,9 +63,12 @@ This repository contains modifications of or dependencies on:
   and `d405.stl` is from the BSD-3-Clause Trossen ALOHA model. Their complete
   notices are retained in [`LICENSES/`](LICENSES/).
 - The local YAM station XML files are modified from the pinned MIT-licensed
-  Robosuite fork. The independent origin and redistribution grant for the
-  underlying vendor CAD still require confirmation. The fork's complete MIT
-  and MuJoCo attribution notice is retained in
+  Robosuite fork. The retained `base_visual_gate.stl`, `gripper.stl`, and
+  `gripper_finger.stl` assets are NVIDIA-owned and internally developed. The
+  former Stereolabs ZED 2i vendor mesh is not redistributed; the station models
+  use an NVIDIA-authored box proxy, and the detailed vendor CAD is available
+  from the [official Stereolabs 3D-model page](https://www.stereolabs.com/3dmodels).
+  The fork's complete MIT and MuJoCo attribution notice is retained in
   [`LICENSES/MIT-Robosuite.txt`](LICENSES/MIT-Robosuite.txt).
 
 ## Git submodules and external components
@@ -78,15 +81,13 @@ tree contains mixed terms, including a Pixar asset that prohibits
 redistribution without written authorization.
 
 BundleSDF source and checkpoints, AnyGrasp vendor source/server/model/license
-material, Contact-GraspNet source and checkpoints, SAM model weights, and
-Stereolabs ZED SDK material are intentionally external and retain their vendor
-or upstream terms. SAM 2.1 is Apache-2.0; SAM 3 uses the custom SAM License and
-gated-access conditions.
+material, Contact-GraspNet source and checkpoints, SAM model weights,
+Stereolabs ZED SDK material, and the detailed Stereolabs ZED 2i reference CAD
+are intentionally external and retain their vendor or upstream terms. SAM 2.1
+is Apache-2.0; SAM 3 uses the custom SAM License and gated-access conditions.
 
-For exact paths, revisions, immutable license links, and provenance that is not
-yet cleared for redistribution, see
-[`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md). Listing uncleared material
-is not permission to use or distribute it.
+For exact paths, revisions, immutable license links, and component distribution
+boundaries, see [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
 
 The exact source-file ownership boundary, including unchanged CaP-X source,
 CaP-X source modified by NVIDIA, and NVIDIA-authored source, is recorded in

@@ -24,11 +24,14 @@
   </joint>
   <!-- ZED 2i top camera: calibrated extrinsics (T_base_from_camera via left arm, daniilidis, 21 samples)
        Camera in station frame: (0.101166, 0.039843, 1.732867)
-       Relative to top_bar_center (0, 0, 1.665): (0.101166, 0.039843, 0.067867): (0.097582, 0.048694, 0.063005) -->
+       Relative to top_bar_center (0, 0, 1.665): (0.101166, 0.039843, 0.067867): (0.097582, 0.048694, 0.063005)
+       NVIDIA-authored box proxy matches the official ZED 2i CAD bounds.
+       Reference CAD: https://www.stereolabs.com/3dmodels -->
   <link name="top_camera_zed2i">
     <visual>
+      <origin xyz="0.06 0 -0.022051" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="assets/zed2i.stl"/>
+        <box size="0.175232 0.030251 0.044102"/>
       </geometry>
       <material name="light_grey_top_cam">
         <color rgba="0.792157 0.819608 0.933333 1"/>

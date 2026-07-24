@@ -6,3 +6,8 @@ This product includes software developed by NVIDIA Corporation and the ASPIRE
 contributors. Copyright, attribution, and license notices for inherited and
 third-party material are retained in THIRD_PARTY_NOTICES.md,
 THIRD_PARTY_LICENSES.md, SOURCE_PROVENANCE.md, and LICENSES/.
+
+NVIDIA-authored YAM station assets include base_visual_gate.stl, gripper.stl,
+and gripper_finger.stl. The Stereolabs ZED 2i vendor CAD is not redistributed;
+ASPIRE uses an NVIDIA-authored primitive proxy and links to the official vendor
+CAD only for reference.

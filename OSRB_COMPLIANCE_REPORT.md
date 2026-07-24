@@ -88,16 +88,18 @@ both project and lock data. No GPU, simulator, hardware, or physical-robot test
 was run: the changed integration behavior is limited to refusing bundled
 payloads and requiring explicitly supplied external services and paths.
 
-## Open Release Gates
+## YAM CAD Resolution
 
-This report does **not** declare the public release cleared. Written source,
-owner, and redistribution confirmation is still required for:
+The four previously open YAM CAD items are resolved:
 
-- `aspire/real/robot/models/station/assets/base_visual_gate.stl`
-- `aspire/real/robot/models/station/assets/gripper.stl`
-- `aspire/real/robot/models/station/assets/gripper_finger.stl`
-- `aspire/real/robot/models/station/assets/zed2i.stl`
+- `base_visual_gate.stl` and `gripper.stl` were developed internally by NVIDIA.
+- `gripper_finger.stl` was exported from the NVIDIA-owned, internally developed
+  Fello gripper.
+- The Stereolabs `zed2i.stl` file was removed. Both ZED station XML variants and
+  the ZED station URDF now use an NVIDIA-authored box proxy matching the removed
+  mesh's axis-aligned bounds. Camera pose, optical frame, and calibration are
+  unchanged. The detailed vendor CAD is referenced only through the
+  [official Stereolabs download page](https://www.stereolabs.com/3dmodels).
 
-If confirmation is unavailable, those meshes must be removed, externalized,
-or replaced before release. The closest-VP approval in the OSRB bug is a
-separate external gate.
+No tracked YAM CAD remains in the unresolved redistribution category. Final
+OSRB acceptance and closest-VP approval remain separate external release gates.

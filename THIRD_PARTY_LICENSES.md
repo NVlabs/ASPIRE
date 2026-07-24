@@ -53,18 +53,17 @@ them separately, and their vendor or upstream terms apply.
 | AnyGrasp SDK, server, and checkpoint | Vendor source, demo-derived server code, model, credentials, and machine license are intentionally excluded; ASPIRE retains only its client protocol and external-service launcher | Vendor terms apply. The separately installed `graspnetAPI` package is MIT, but that license does not cover the AnyGrasp SDK, demo, server, or model. |
 | Contact-GraspNet source and checkpoints | The former recursive submodule is removed; users supply source and checkpoints separately through `CONTACT_GRASPNET_ROOT` and `CONTACT_GRASPNET_CHECKPOINT_DIR` | The custom [NVIDIA Source Code License for Contact-GraspNet](https://github.com/NVlabs/contact_graspnet/blob/master/License.pdf) applies to source. No checkpoint or test-data redistribution right is asserted by ASPIRE. |
 | Stereolabs ZED SDK and `pyzed` | Downloaded from Stereolabs during workstation setup | Proprietary [Stereolabs Software and Services License Agreement](https://www.stereolabs.com/legal) applies. |
+| Stereolabs ZED 2i reference CAD | Not redistributed. ASPIRE uses an NVIDIA-authored box proxy with the same axis-aligned bounds in its station models. | The detailed vendor CAD is available from the [official Stereolabs 3D-model page](https://www.stereolabs.com/3dmodels); Stereolabs terms apply to that separately obtained material. |
 | SAM 2.1 model assets | Downloaded separately from Hugging Face | Apache-2.0; see the [official model repository](https://huggingface.co/facebook/sam2.1-hiera-large). |
 | SAM 3 model assets | Downloaded separately from a gated Hugging Face repository | The custom SAM License and gated-access conditions apply; see the [official model repository](https://huggingface.co/facebook/sam3). |
 
-## Provenance not yet cleared for redistribution
+## Resolved NVIDIA YAM CAD
 
-The following tracked material must not be treated as Apache-2.0 or approved
-for public redistribution until its source and grant are established. Listing
-an item here is not permission to use or distribute it.
-
-| Material | Affected path or record | Open issue |
-| --- | --- | --- |
-| Remaining YAM CAD | `aspire/real/robot/models/station/assets/base_visual_gate.stl`, `gripper.stl`, `gripper_finger.stl`, and `zed2i.stl` | Written source/owner and redistribution confirmation is pending. Confirm the applicable grant or remove, externalize, or replace these meshes before release. |
+`base_visual_gate.stl`, `gripper.stl`, and `gripper_finger.stl` are
+NVIDIA-owned assets developed internally by the team. `gripper_finger.stl` was
+exported from the NVIDIA-owned Fello gripper. They are distributed under this
+project's Apache-2.0 license and NVIDIA copyright notice. See the adjacent
+[station-assets notice](aspire/real/robot/models/station/assets/README.md).
 
 The source-file ownership boundary and exact CaP-X/NVIDIA path mapping are
 recorded in [`SOURCE_PROVENANCE.md`](SOURCE_PROVENANCE.md) and the accompanying

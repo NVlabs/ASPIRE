@@ -92,15 +92,24 @@ The exceptions are identified third-party material:
   `YAM_STATION_CALIBRATED_XML`; the recovered calibration patch is not part of
   the public distribution.
 
-## Remaining Release Gate
+## YAM CAD Resolution
 
-The source-file classification does not clear the provenance of these YAM CAD
-meshes:
+The remaining YAM CAD review is resolved:
 
-- `base_visual_gate.stl`
-- `gripper.stl`
-- `gripper_finger.stl`
-- `zed2i.stl`
+- `base_visual_gate.stl` was developed internally by NVIDIA. The real-station
+  copy and the byte-identical copy in the bundled YAM simulation assets are
+  NVIDIA-owned.
+- `gripper.stl` was developed internally by NVIDIA.
+- `gripper_finger.stl` was exported from the NVIDIA-owned, internally developed
+  Fello gripper and is NVIDIA-owned.
+- The Stereolabs `zed2i.stl` vendor CAD is no longer redistributed. The active
+  ZED station XML and URDF use an NVIDIA-authored axis-aligned box proxy that
+  preserves the original CAD bounds, camera body pose, optical frame, and
+  calibration. The vendor's detailed model remains available from the
+  [official Stereolabs 3D-model page](https://www.stereolabs.com/3dmodels).
 
-They must receive source/owner and redistribution confirmation, or be removed,
-externalized, or replaced before the release is declared cleared.
+The three retained meshes are covered by the project's Apache-2.0 license and
+NVIDIA copyright notice. No tracked YAM CAD remains in the unresolved
+redistribution category. The adjacent
+[`assets/README.md`](aspire/real/robot/models/station/assets/README.md) records
+the asset-level ownership and ZED reference boundary.
