@@ -73,12 +73,31 @@ This repository contains modifications of or dependencies on:
 
 ## Git submodules and external components
 
-The parent repository stores six gitlinks. Initializing them fetches source,
-models, test data, and assets governed by their own licenses. In particular,
-the pinned cuRobo version is limited to noncommercial research or evaluation
-for public recipients; SAM 3 uses the Meta SAM License; and the pinned `b1k`
-tree contains mixed terms, including a Pixar asset that prohibits
-redistribution without written authorization.
+The parent ASPIRE source artifact stores six gitlinks and `.gitmodules`
+metadata only; it does not include populated submodule contents. Initializing
+the gitlinks fetches source, models, test data, robot descriptions, CAD, media,
+and assets separately from their configured repositories.
+
+The populated-tree audit found the following release-relevant conditions:
+
+- the pinned cuRobo version is limited to noncommercial research or evaluation
+  for public recipients and contains assets listed separately in
+  `LICENSE_ASSETS`;
+- SAM 3 uses the custom Meta SAM License; the exact pin contains source and
+  sample/evaluation media but no tracked model weights;
+- the pinned `b1k` tree contains mixed terms and Pixar HumanFemale USD assets
+  whose license prohibits redistribution without written authorization;
+- LIBERO-PRO describes its code as MIT and datasets as CC BY 4.0, but contains
+  object-asset collections, including `turbosquid_objects`, for which no
+  separate per-asset license was found; and
+- both Robosuite forks contain substantial robot-description and CAD/mesh
+  assets whose provenance must be reviewed independently of their
+  repository-level MIT license.
+
+These findings do not place the restricted files in the parent source
+artifact. They do mean that custom-license approval and any procedure that
+recommends or redistributes a populated recursive checkout remain separate
+OSRB/Legal release gates.
 
 BundleSDF source and checkpoints, AnyGrasp vendor source/server/model/license
 material, Contact-GraspNet source and checkpoints, SAM model weights,
@@ -86,8 +105,10 @@ Stereolabs ZED SDK material, and the detailed Stereolabs ZED 2i reference CAD
 are intentionally external and retain their vendor or upstream terms. SAM 2.1
 is Apache-2.0; SAM 3 uses the custom SAM License and gated-access conditions.
 
-For exact paths, revisions, immutable license links, and component distribution
-boundaries, see [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
+For exact paths, revisions, immutable license links, component distribution
+boundaries, license hashes, Git LFS results, and nested-repository findings,
+see [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) and
+[`SUBMODULE_AUDIT.md`](SUBMODULE_AUDIT.md).
 
 The exact source-file ownership boundary, including unchanged CaP-X source,
 CaP-X source modified by NVIDIA, and NVIDIA-authored source, is recorded in

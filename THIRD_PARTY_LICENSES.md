@@ -16,7 +16,7 @@ materials.
 
 | No. | Component | Form and reviewed revision | License | License link |
 | ---: | --- | --- | --- | --- |
-| 1 | CaP-X-derived code | Inherited parent-tree source; original ASPIRE repository baseline `823fcc5dd3e565b45b414f5785668cf32cba13b4` | MIT | [Local license](LICENSES/MIT-CaP-X.txt) |
+| 1 | CaP-X-derived code | Inherited parent-tree source; public `capgym/cap-x` baseline `823fcc5dd3e565b45b414f5785668cf32cba13b4` | MIT | [Local license](LICENSES/MIT-CaP-X.txt), [upstream source](https://github.com/capgym/cap-x/tree/823fcc5dd3e565b45b414f5785668cf32cba13b4) |
 | 2 | PyRoKi | Embedded snippets and assets, plus a dependency patch based on `chungmin99/pyroki@95afccc22658c461ab1042a048ae4e9c24bc2a47` | MIT | [Local license](LICENSES/MIT-PyRoKi.txt), [upstream license](https://github.com/chungmin99/pyroki/blob/95afccc22658c461ab1042a048ae4e9c24bc2a47/LICENSE) |
 | 3 | Hydra | Adapted `_locate` implementation from `facebookresearch/hydra@57690d7c4e8b5e88dad07d67278f613a739e6d13` | MIT | [Local license](LICENSES/MIT-Hydra.txt), [upstream license](https://github.com/facebookresearch/hydra/blob/57690d7c4e8b5e88dad07d67278f613a739e6d13/LICENSE) |
 | 4 | RoboCasa | Dependency patch based on `robocasa/robocasa@9a3a78680443734786c9784ab661413edb87067b` | MIT, with retained DeepMind MuJoCo Apache-2.0 attribution | [Local license](LICENSES/MIT-RoboCasa.txt), [upstream license](https://github.com/robocasa/robocasa/blob/9a3a78680443734786c9784ab661413edb87067b/LICENSE) |
@@ -25,7 +25,7 @@ materials.
 | 7 | Trossen ALOHA D405 model | `d405.stl`, matching `google-deepmind/mujoco_menagerie@4a7015530bd7a4161103ae8f0905a96481e4cc1a/aloha/assets/d405_solid.stl` | BSD-3-Clause | [Local license](LICENSES/BSD-3-Clause-ALOHA.txt), [upstream license](https://github.com/google-deepmind/mujoco_menagerie/blob/4a7015530bd7a4161103ae8f0905a96481e4cc1a/aloha/LICENSE) |
 | 8 | Franka Emika Panda model | Sixty-seven meshes and a modified MJCF derived from `google-deepmind/mujoco_menagerie@4a7015530bd7a4161103ae8f0905a96481e4cc1a/franka_emika_panda` | Apache-2.0 | [Upstream license](https://github.com/google-deepmind/mujoco_menagerie/blob/4a7015530bd7a4161103ae8f0905a96481e4cc1a/franka_emika_panda/LICENSE), [local provenance](aspire/sim/cap/envs/assets/franka_pick_place/README.md) |
 | 9 | cuRobo v0.7.8 | Dependency patch based on `NVlabs/curobo@d64c4b005459db10c5dd867d8b30a87d5bda9bdb` | NVIDIA License; custom/non-OSI, public use limited to noncommercial research or evaluation | [Local license](LICENSES/NVIDIA-cuRobo-v0.7.8.txt), [upstream license](https://github.com/NVlabs/curobo/blob/d64c4b005459db10c5dd867d8b30a87d5bda9bdb/LICENSE) |
-| 10 | YAM station XML | `station.xml` and `loose_limit_version/station.xml`, adapted from `uynitsuj/robosuite@97292732ed909ac3ae116579fb768607034a4dbd/robosuite/models/assets/robots/yam/station.xml` | MIT as distributed by the pinned fork, with DeepMind MuJoCo Apache-2.0 attribution; four referenced CAD meshes remain release-gated | [Local license](LICENSES/MIT-Robosuite.txt), [fork license](https://github.com/uynitsuj/robosuite/blob/97292732ed909ac3ae116579fb768607034a4dbd/LICENSE) |
+| 10 | YAM station XML | `station.xml` and `loose_limit_version/station.xml`, adapted from `uynitsuj/robosuite@97292732ed909ac3ae116579fb768607034a4dbd/robosuite/models/assets/robots/yam/station.xml` | MIT as distributed by the pinned fork, with DeepMind MuJoCo Apache-2.0 attribution; retained NVIDIA-owned meshes and the ZED proxy are described below | [Local license](LICENSES/MIT-Robosuite.txt), [fork license](https://github.com/uynitsuj/robosuite/blob/97292732ed909ac3ae116579fb768607034a4dbd/LICENSE) |
 
 ## Pinned Git submodules
 
@@ -33,14 +33,21 @@ The parent repository records only gitlinks. A recursive clone obtains these
 repositories from their configured remotes, and their own terms govern their
 source, models, datasets, and assets.
 
-| No. | Submodule and exact pin | License | License link |
-| ---: | --- | --- | --- |
-| 1 | `LIBERO-PRO@47aaa8038930bcdc84ab9ea2867e2ffc8039ab4a` | MIT | [License](https://github.com/uynitsuj/LIBERO-PRO/blob/47aaa8038930bcdc84ab9ea2867e2ffc8039ab4a/LICENSE) |
-| 2 | `uynitsuj/robosuite@97292732ed909ac3ae116579fb768607034a4dbd` | MIT, with DeepMind MuJoCo Apache-2.0 attribution | [License](https://github.com/uynitsuj/robosuite/blob/97292732ed909ac3ae116579fb768607034a4dbd/LICENSE) |
-| 3 | `Max-Fu/robosuite@a498b087d4bc5a3981e3d27030d09bc537a537f3` | MIT, with DeepMind MuJoCo Apache-2.0 attribution | [License](https://github.com/Max-Fu/robosuite/blob/a498b087d4bc5a3981e3d27030d09bc537a537f3/LICENSE) |
-| 4 | `sam3@6fe87d64a5beb9084923d7a9e002741178635b09` | SAM License; custom/non-OSI terms covering redistribution, acknowledgment, trade controls, and prohibited uses | [License](https://github.com/Max-Fu/sam3/blob/6fe87d64a5beb9084923d7a9e002741178635b09/LICENSE) |
-| 5 | `curobo@d64c4b005459db10c5dd867d8b30a87d5bda9bdb` | NVIDIA License described above, plus component-specific asset licenses | [License](https://github.com/NVlabs/curobo/blob/d64c4b005459db10c5dd867d8b30a87d5bda9bdb/LICENSE), [asset licenses](https://github.com/NVlabs/curobo/blob/d64c4b005459db10c5dd867d8b30a87d5bda9bdb/LICENSE_ASSETS) |
-| 6 | `b1k@272ec5ca9936453c4a8fd335c4dfba61245e33ca` | Mixed: OmniGibson, BDDL, and JoyLo use MIT; robot assets include Apache-2.0 material; the Pixar HumanFemale asset permits only personal noncommercial USD testing and prohibits redistribution without written authorization | [OmniGibson](https://github.com/qingh097/b1k/blob/272ec5ca9936453c4a8fd335c4dfba61245e33ca/OmniGibson/LICENSE), [BDDL](https://github.com/qingh097/b1k/blob/272ec5ca9936453c4a8fd335c4dfba61245e33ca/bddl3/LICENSE), [JoyLo](https://github.com/qingh097/b1k/blob/272ec5ca9936453c4a8fd335c4dfba61245e33ca/joylo/LICENSE), [Pixar asset](https://github.com/qingh097/b1k/blob/272ec5ca9936453c4a8fd335c4dfba61245e33ca/asset_pipeline/b1k_pipeline/tools/HumanFemale/LICENSE.txt) |
+| No. | Component | Local path | Configured source and exact pin | License | Parent-artifact / recursive-checkout status |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | LIBERO-PRO | `aspire/sim/cap/third_party/LIBERO-PRO` | [`uynitsuj/LIBERO-PRO@47aaa8038930bcdc84ab9ea2867e2ffc8039ab4a`](https://github.com/uynitsuj/LIBERO-PRO/tree/47aaa8038930bcdc84ab9ea2867e2ffc8039ab4a) | Code MIT; upstream README describes datasets as CC BY 4.0 | Parent stores a gitlink only. Recursive checkout fetches datasets and object assets; coverage of all included assets remains for OSRB review. |
+| 2 | Robosuite (YAM fork) | `aspire/sim/cap/third_party/robosuite` | [`uynitsuj/robosuite@97292732ed909ac3ae116579fb768607034a4dbd`](https://github.com/uynitsuj/robosuite/tree/97292732ed909ac3ae116579fb768607034a4dbd) | MIT, with DeepMind MuJoCo Apache-2.0 attribution | Parent stores a gitlink only. Recursive checkout fetches extensive YAM and other robot assets whose provenance remains for OSRB review. |
+| 3 | Robosuite (LIBERO dependency) | `aspire/sim/cap/third_party/libero_dependencies/robosuite` | [`Max-Fu/robosuite@a498b087d4bc5a3981e3d27030d09bc537a537f3`](https://github.com/Max-Fu/robosuite/tree/a498b087d4bc5a3981e3d27030d09bc537a537f3) | MIT, with DeepMind MuJoCo Apache-2.0 attribution | Parent stores a gitlink only. Recursive checkout fetches robot and arena assets whose provenance remains for OSRB review. |
+| 4 | SAM 3 | `aspire/sim/cap/third_party/sam3` | [`Max-Fu/sam3@6fe87d64a5beb9084923d7a9e002741178635b09`](https://github.com/Max-Fu/sam3/tree/6fe87d64a5beb9084923d7a9e002741178635b09) | Custom SAM License covering redistribution, acknowledgment, trade controls, and prohibited uses | Parent stores a gitlink only. The recursive pin contains source and sample/evaluation media but no tracked model weights; custom-license approval is required. |
+| 5 | cuRobo | `aspire/sim/cap/third_party/curobo` | [`NVlabs/curobo@d64c4b005459db10c5dd867d8b30a87d5bda9bdb`](https://github.com/NVlabs/curobo/tree/d64c4b005459db10c5dd867d8b30a87d5bda9bdb) | Custom NVIDIA license, plus [`LICENSE_ASSETS`](https://github.com/NVlabs/curobo/blob/d64c4b005459db10c5dd867d8b30a87d5bda9bdb/LICENSE_ASSETS) | Parent stores a gitlink only. Recursive checkout fetches robot/scene assets; public-recipient use is limited to noncommercial research or evaluation. |
+| 6 | BEHAVIOR-1K bundle (`b1k`) | `aspire/sim/cap/third_party/b1k` | [`qingh097/b1k@272ec5ca9936453c4a8fd335c4dfba61245e33ca`](https://github.com/qingh097/b1k/tree/272ec5ca9936453c4a8fd335c4dfba61245e33ca) | Mixed MIT, Apache-2.0, and asset-specific terms | Parent stores a gitlink only. The recursive pin contains Pixar HumanFemale USD assets that prohibit redistribution without written authorization; recursive redistribution is blocked pending OSRB/Legal confirmation. |
+
+The parent ASPIRE source artifact stores gitlinks only and does not include
+populated submodule contents. Recursive checkout fetches those repositories
+separately under their own terms. The complete populated-tree inventory,
+license hashes, nested-repository findings, Git LFS results, and approval gates
+are in [`SUBMODULE_AUDIT.md`](SUBMODULE_AUDIT.md) and
+[`SUBMODULE_AUDIT.tsv`](SUBMODULE_AUDIT.tsv).
 
 ## External runtime components
 
