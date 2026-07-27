@@ -22,7 +22,10 @@ from robosuite.controllers.composite.composite_controller_factory import (
     load_composite_controller_config,
 )
 
-from aspire.sim.cap.envs.simulators.robosuite_base import RobosuiteBaseEnv
+from aspire.sim.cap.envs.simulators.robosuite_base import (
+    RobosuiteBaseEnv,
+    seed_robosuite_scene,
+)
 
 
 class FrankaRobosuiteCubeLiftLowLevel(RobosuiteBaseEnv):
@@ -112,6 +115,7 @@ class FrankaRobosuiteCubeLiftLowLevel(RobosuiteBaseEnv):
         if seed is not None:
             self._rng = np.random.default_rng(seed)
             np.random.seed(seed)
+            seed_robosuite_scene(self.robosuite_env, seed)
 
         self.robosuite_env.reset()
         # Adjust initial orientation

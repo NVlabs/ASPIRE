@@ -28,6 +28,7 @@ from robosuite.controllers.composite.composite_controller_factory import (
 from robosuite.utils.camera_utils import get_real_depth_map
 
 from aspire.sim.cap.envs.base import BaseEnv
+from aspire.sim.cap.envs.simulators.robosuite_base import seed_robosuite_scene
 from aspire.sim.cap.utils.camera_utils import obs_get_rgb
 from aspire.sim.cap.utils.depth_utils import depth_color_to_pointcloud
 
@@ -183,6 +184,7 @@ class RobosuiteTwoArmLiftEnv(BaseEnv):
         if seed is not None:
             self._rng = np.random.default_rng(seed)
             np.random.seed(seed)
+            seed_robosuite_scene(self.robosuite_env, seed)
 
         self.robosuite_env.reset()
 

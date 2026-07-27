@@ -28,7 +28,10 @@ from robosuite.utils import RandomizationError
 from robosuite.utils.placement_samplers import ObjectPositionSampler
 from robosuite.utils.transform_utils import quat_multiply
 
-from aspire.sim.cap.envs.simulators.robosuite_base import RobosuiteBaseEnv
+from aspire.sim.cap.envs.simulators.robosuite_base import (
+    RobosuiteBaseEnv,
+    seed_robosuite_scene,
+)
 
 
 class StackedObjectRandomSampler(ObjectPositionSampler):
@@ -363,6 +366,7 @@ class FrankaRobosuiteCubesRestackLowLevel(RobosuiteBaseEnv):
         if seed is not None:
             self._rng = np.random.default_rng(seed)
             np.random.seed(seed)
+            seed_robosuite_scene(self.robosuite_env, seed)
 
         self.robosuite_env.reset()
         # Adjust initial orientation

@@ -28,6 +28,36 @@ from aspire.sim.cap.utils.depth_utils import depth_color_to_pointcloud
 os.environ.setdefault("MUJOCO_GL", "egl")
 
 
+def _rebind_sampler_rng(sampler: Any, rng: np.random.Generator) -> None:
+    """Point a placement sampler (and any nested samplers) at ``rng``."""
+    sampler.rng = rng
+    for child in getattr(sampler, "samplers", {}).values():
+        _rebind_sampler_rng(child, rng)
+
+
+def seed_robosuite_scene(robosuite_env: Any, seed: int) -> None:
+    """Make a robosuite env's next ``reset()`` reproducible for ``seed``.
+
+    Robosuite draws object placements (``UniformRandomSampler.rng``) and robot
+    initialization noise (``Robot.reset(rng=env.rng)``) from ``env.rng``, which
+    is built once in ``MujocoEnv.__init__`` and is never touched by a later
+    ``reset()``. Seeding ``np.random`` therefore has no effect on the scene: the
+    same nominal seed yields a different object pose on every run.
+
+    Reseed the existing Generator in place rather than replacing it, so that
+    every holder of the reference observes the new state -- the placement
+    sampler tree is constructed with ``rng=self.rng`` and keeps that object.
+    The rebind below is a safety net for externally supplied samplers, which
+    carry an rng of their own.
+
+    Must be called before ``robosuite_env.reset()``.
+    """
+    robosuite_env.rng.bit_generator.state = np.random.default_rng(seed).bit_generator.state
+    sampler = getattr(robosuite_env, "placement_initializer", None)
+    if sampler is not None:
+        _rebind_sampler_rng(sampler, robosuite_env.rng)
+
+
 class RobosuiteBaseEnv(BaseEnv):
     """Base class for single-arm Robosuite Franka environments.
 

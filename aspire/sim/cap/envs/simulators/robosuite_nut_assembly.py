@@ -27,7 +27,10 @@ from robosuite.utils.camera_utils import get_real_depth_map
 from robot_descriptions.loaders.yourdfpy import load_robot_description
 from viser.extras import ViserUrdf
 
-from aspire.sim.cap.envs.simulators.robosuite_base import RobosuiteBaseEnv
+from aspire.sim.cap.envs.simulators.robosuite_base import (
+    RobosuiteBaseEnv,
+    seed_robosuite_scene,
+)
 from aspire.sim.cap.utils.camera_utils import obs_get_rgb
 from aspire.sim.cap.utils.depth_utils import depth_color_to_pointcloud
 
@@ -162,6 +165,7 @@ class FrankaRobosuiteNutAssembly(RobosuiteBaseEnv):
         if seed is not None:
             self._rng = np.random.default_rng(seed)
             np.random.seed(seed)
+            seed_robosuite_scene(self.robosuite_env, seed)
 
         first_obs = self.robosuite_env.reset()
         self.home_joint_position = np.array(first_obs["robot0_joint_pos"], dtype=np.float64)
