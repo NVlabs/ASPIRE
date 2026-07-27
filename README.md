@@ -81,6 +81,35 @@ ASPIRE material owned by NVIDIA or contributed under the project license is avai
 
 The root Apache-2.0 license does not override those component-specific terms.
 
+### Retained third-party licenses
+
+| Component | Repository path | License | Local license file | Upstream source |
+| --- | --- | --- | --- | --- |
+| Trossen ALOHA D405 model | `aspire/real/robot/models/station/assets/d405.stl` | BSD-3-Clause | [`BSD-3-Clause-ALOHA.txt`](LICENSES/BSD-3-Clause-ALOHA.txt) | [`google-deepmind/mujoco_menagerie`](https://github.com/google-deepmind/mujoco_menagerie/tree/4a7015530bd7a4161103ae8f0905a96481e4cc1a/aloha) |
+| CaP-X | `aspire/sim/cap/` and mapped simulation files | MIT | [`MIT-CaP-X.txt`](LICENSES/MIT-CaP-X.txt) | [`capgym/cap-x`](https://github.com/capgym/cap-x/tree/823fcc5dd3e565b45b414f5785668cf32cba13b4) |
+| Hydra `_locate` utility | `aspire/sim/cap/envs/configs/instantiate.py` | MIT | [`MIT-Hydra.txt`](LICENSES/MIT-Hydra.txt) | [`facebookresearch/hydra`](https://github.com/facebookresearch/hydra/tree/57690d7c4e8b5e88dad07d67278f613a739e6d13) |
+| i2rt YAM model | `aspire/real/robot/models/station/assets/model2*` | MIT | [`MIT-i2rt-YAM.txt`](LICENSES/MIT-i2rt-YAM.txt) | [`google-deepmind/mujoco_menagerie`](https://github.com/google-deepmind/mujoco_menagerie/tree/4a7015530bd7a4161103ae8f0905a96481e4cc1a/i2rt_yam) |
+| i2rt dependency patch | `aspire/real/patches/dependencies/i2rt/` | MIT upstream; NVIDIA modifications under Apache-2.0 | [`MIT-i2rt.txt`](LICENSES/MIT-i2rt.txt) | [`i2rt-robotics/i2rt`](https://github.com/i2rt-robotics/i2rt/tree/98d177bb511d545c80c0e8ec13ffaf227238a8d6) |
+| PyRoKi snippets, assets, and patch | `aspire/**/pyroki_snippets/`, Panda spheres, and dependency patch | MIT | [`MIT-PyRoKi.txt`](LICENSES/MIT-PyRoKi.txt) | [`chungmin99/pyroki`](https://github.com/chungmin99/pyroki/tree/95afccc22658c461ab1042a048ae4e9c24bc2a47) |
+| RoboCasa dependency patch | `aspire/real/patches/dependencies/robocasa/` | MIT, with DeepMind MuJoCo Apache-2.0 attribution | [`MIT-RoboCasa.txt`](LICENSES/MIT-RoboCasa.txt) | [`robocasa/robocasa`](https://github.com/robocasa/robocasa/tree/9a3a78680443734786c9784ab661413edb87067b) |
+| Robosuite-derived YAM XML | `aspire/real/robot/models/station/*.xml` | MIT, with DeepMind MuJoCo Apache-2.0 attribution | [`MIT-Robosuite.txt`](LICENSES/MIT-Robosuite.txt) | [`uynitsuj/robosuite`](https://github.com/uynitsuj/robosuite/tree/97292732ed909ac3ae116579fb768607034a4dbd) |
+| cuRobo v0.7.8 patch and dependency | `aspire/real/patches/dependencies/curobo/` and submodule | Custom NVIDIA license | [`NVIDIA-cuRobo-v0.7.8.txt`](LICENSES/NVIDIA-cuRobo-v0.7.8.txt) | [`NVlabs/curobo`](https://github.com/NVlabs/curobo/tree/d64c4b005459db10c5dd867d8b30a87d5bda9bdb) |
+
+### Git submodules
+
+The parent ASPIRE source artifact stores gitlinks only and does not include populated submodule contents. Recursive checkout fetches those repositories separately under their own terms.
+
+| Submodule | Local path | Source URL | Exact gitlink SHA | License | Distribution status |
+| --- | --- | --- | --- | --- | --- |
+| LIBERO-PRO | `aspire/sim/cap/third_party/LIBERO-PRO` | [`uynitsuj/LIBERO-PRO`](https://github.com/uynitsuj/LIBERO-PRO) | `47aaa8038930bcdc84ab9ea2867e2ffc8039ab4a` | Code MIT; datasets described upstream as CC BY 4.0 | Gitlink only; recursive asset coverage pending OSRB review |
+| Robosuite (YAM fork) | `aspire/sim/cap/third_party/robosuite` | [`uynitsuj/robosuite`](https://github.com/uynitsuj/robosuite) | `97292732ed909ac3ae116579fb768607034a4dbd` | MIT with MuJoCo attribution | Gitlink only; bundled robot/CAD assets pending OSRB review |
+| Robosuite (LIBERO dependency) | `aspire/sim/cap/third_party/libero_dependencies/robosuite` | [`Max-Fu/robosuite`](https://github.com/Max-Fu/robosuite) | `a498b087d4bc5a3981e3d27030d09bc537a537f3` | MIT with MuJoCo attribution | Gitlink only; bundled robot/CAD assets pending OSRB review |
+| SAM 3 | `aspire/sim/cap/third_party/sam3` | [`Max-Fu/sam3`](https://github.com/Max-Fu/sam3) | `6fe87d64a5beb9084923d7a9e002741178635b09` | Custom SAM License | Gitlink only; custom-license approval required |
+| cuRobo | `aspire/sim/cap/third_party/curobo` | [`NVlabs/curobo`](https://github.com/NVlabs/curobo) | `d64c4b005459db10c5dd867d8b30a87d5bda9bdb` | Custom NVIDIA license plus asset terms | Gitlink only; custom-license and asset approval required |
+| BEHAVIOR-1K bundle (`b1k`) | `aspire/sim/cap/third_party/b1k` | [`qingh097/b1k`](https://github.com/qingh097/b1k) | `272ec5ca9936453c4a8fd335c4dfba61245e33ca` | Mixed terms, including a no-redistribution Pixar asset | Gitlink only; recursive redistribution blocked pending OSRB/Legal confirmation |
+
+See the populated-tree [`SUBMODULE_AUDIT.md`](SUBMODULE_AUDIT.md) and machine-readable [`SUBMODULE_AUDIT.tsv`](SUBMODULE_AUDIT.tsv) for license hashes, asset findings, Git LFS results, and open approval gates.
+
 ## Citation
 
 If you find ASPIRE useful in your research, please cite:

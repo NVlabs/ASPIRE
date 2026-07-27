@@ -5,7 +5,15 @@ Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 This product includes software developed by NVIDIA Corporation and the ASPIRE
 contributors. Copyright, attribution, and license notices for inherited and
 third-party material are retained in THIRD_PARTY_NOTICES.md,
-THIRD_PARTY_LICENSES.md, SOURCE_PROVENANCE.md, and LICENSES/.
+THIRD_PARTY_LICENSES.md, SOURCE_PROVENANCE.md, SUBMODULE_AUDIT.md, and
+LICENSES/.
+
+The parent ASPIRE source artifact contains six Git submodule references but no
+populated submodule files. A recursive checkout fetches those repositories
+separately under their own terms. The pinned b1k tree includes a Pixar asset
+that prohibits redistribution without written authorization; SAM 3 and cuRobo
+also use custom licenses. See SUBMODULE_AUDIT.md before recursively packaging
+or redistributing dependency content.
 
 NVIDIA-authored YAM station assets include base_visual_gate.stl, gripper.stl,
 and gripper_finger.stl. The Stereolabs ZED 2i vendor CAD is not redistributed;
