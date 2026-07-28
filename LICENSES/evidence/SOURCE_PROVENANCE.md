@@ -52,8 +52,8 @@ SPDX-License-Identifier: Apache-2.0
 
 An NVIDIA block identifies NVIDIA modifications; it does not replace or
 relicense upstream material. Complete upstream license texts are retained in
-[`LICENSES/`](LICENSES/), and component-level details are in
-[`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
+[`LICENSES/`](../), and component-level details are in
+[`THIRD_PARTY_LICENSES.md`](../THIRD_PARTY_LICENSES.md).
 
 ## CaP-X Boundary and Modification Evidence
 
@@ -160,8 +160,9 @@ The exceptions are identified third-party material:
   modifications.
 - Robot models, CAD, XML, media, model weights, datasets, and external SDKs are
   not covered by the source-file inventory. Their provenance and open release
-  status are tracked in `THIRD_PARTY_LICENSES.md` and
-  `THIRD_PARTY_NOTICES.md`.
+  status are tracked in
+  [`THIRD_PARTY_LICENSES.md`](../THIRD_PARTY_LICENSES.md) and
+  [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md).
 
 ## Externalized Implementations
 
@@ -195,5 +196,5 @@ The remaining YAM CAD review is resolved:
 The three retained meshes are covered by the project's Apache-2.0 license and
 NVIDIA copyright notice. No tracked YAM CAD remains in the unresolved
 redistribution category. The adjacent
-[`assets/README.md`](aspire/real/robot/models/station/assets/README.md) records
+[`assets/README.md`](../../aspire/real/robot/models/station/assets/README.md) records
 the asset-level ownership and ZED reference boundary.

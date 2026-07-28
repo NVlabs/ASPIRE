@@ -125,9 +125,9 @@ ASPIRE-owned real-robot code is available under the project-level
 separately licensed dependency patches, SDK integrations, robot descriptions,
 and assets. Some tracked YAM CAD/calibration provenance remains unresolved and
 must be cleared or removed before public redistribution. Review the
-repository's [third-party notices](../../THIRD_PARTY_NOTICES.md) for the
+repository's [third-party notices](../../LICENSES/THIRD_PARTY_NOTICES.md) for the
 attribution summary, and consult the
-[third-party license catalog](../../THIRD_PARTY_LICENSES.md) for exact
+[third-party license catalog](../../LICENSES/THIRD_PARTY_LICENSES.md) for exact
 revisions, component-specific terms, and release blockers.
 
 The static preflight does not contact arm RPCs or send commands. The
