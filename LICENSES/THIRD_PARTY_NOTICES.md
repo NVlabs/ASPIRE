@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-The Apache License 2.0 in [`LICENSE`](LICENSE) applies to ASPIRE material whose
+The Apache License 2.0 in [`LICENSE`](../LICENSE) applies to ASPIRE material whose
 copyright owners have authorized that license. It does not relicense inherited
 code, modified third-party code, dependency patches, Git submodules, models,
 datasets, robot descriptions, CAD, media, SDKs, or other assets. Those
@@ -40,7 +40,7 @@ This repository contains modifications of or dependencies on:
 
 - Substantial portions of the repository descend from the CaP-X import and
   retain the MIT notice of Max Fu in
-  [`LICENSES/MIT-CaP-X.txt`](LICENSES/MIT-CaP-X.txt).
+  [`MIT-CaP-X.txt`](MIT-CaP-X.txt).
 - PyRoKi-derived snippets and assets are present under
   `aspire/sim/cap/third_party/pyroki_snippets/`,
   `aspire/sim/cap/integrations/motion/pyroki_snippets/`,
@@ -61,7 +61,7 @@ This repository contains modifications of or dependencies on:
   identify the source and ASPIRE modifications.
 - Seventeen `model2*` station meshes are from the MIT-licensed i2rt YAM model,
   and `d405.stl` is from the BSD-3-Clause Trossen ALOHA model. Their complete
-  notices are retained in [`LICENSES/`](LICENSES/).
+  notices are retained in this directory.
 - The local YAM station XML files are modified from the pinned MIT-licensed
   Robosuite fork. The retained `base_visual_gate.stl`, `gripper.stl`, and
   `gripper_finger.stl` assets are NVIDIA-owned and internally developed. The
@@ -69,7 +69,7 @@ This repository contains modifications of or dependencies on:
   use an NVIDIA-authored box proxy, and the detailed vendor CAD is available
   from the [official Stereolabs 3D-model page](https://www.stereolabs.com/3dmodels).
   The fork's complete MIT and MuJoCo attribution notice is retained in
-  [`LICENSES/MIT-Robosuite.txt`](LICENSES/MIT-Robosuite.txt).
+  [`MIT-Robosuite.txt`](MIT-Robosuite.txt).
 
 ## Git submodules and external components
 
@@ -108,8 +108,8 @@ is Apache-2.0; SAM 3 uses the custom SAM License and gated-access conditions.
 For exact paths, revisions, immutable license links, component distribution
 boundaries, license hashes, Git LFS results, and nested-repository findings,
 see [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) and
-[`SUBMODULE_AUDIT.md`](SUBMODULE_AUDIT.md).
+[`SUBMODULE_AUDIT.md`](evidence/SUBMODULE_AUDIT.md).
 
 The exact source-file ownership boundary, including unchanged CaP-X source,
 CaP-X source modified by NVIDIA, and NVIDIA-authored source, is recorded in
-[`SOURCE_PROVENANCE.md`](SOURCE_PROVENANCE.md).
+[`SOURCE_PROVENANCE.md`](evidence/SOURCE_PROVENANCE.md).

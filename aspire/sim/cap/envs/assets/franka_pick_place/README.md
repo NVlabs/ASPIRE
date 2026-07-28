@@ -13,5 +13,5 @@ exclusions. The XML carries a prominent modification notice as required by
 Apache-2.0.
 
 See the repository-root `LICENSE` for the complete Apache License 2.0 text,
-`THIRD_PARTY_LICENSES.md` for the immutable upstream link, and
-`THIRD_PARTY_NOTICES.md` for the wider dependency inventory.
+`LICENSES/THIRD_PARTY_LICENSES.md` for the immutable upstream link, and
+`LICENSES/THIRD_PARTY_NOTICES.md` for the wider dependency inventory.

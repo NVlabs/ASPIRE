@@ -432,6 +432,6 @@ ASPIRE-owned simulation code is available under the project-level
 [Apache License 2.0](../../LICENSE). Inherited code, copied material,
 dependency patches, Git submodules, models, datasets, and assets retain their
 original terms. Review the repository's
-[third-party licenses](../../THIRD_PARTY_LICENSES.md) and
-[third-party notices](../../THIRD_PARTY_NOTICES.md) before using or
+[third-party licenses](../../LICENSES/THIRD_PARTY_LICENSES.md) and
+[third-party notices](../../LICENSES/THIRD_PARTY_NOTICES.md) before using or
 redistributing the full stack.

@@ -18,11 +18,12 @@ parent-source-artifact boundary. It was checked against the OSRB
 `d43a1581523fabf0dde1aef71f663f059c6aa6b3`, including the `Apache2 License`
 and `Developer Certificate of Origin (DCO)` policy pages.
 
-The project [`LICENSE`](LICENSE) contains the complete Apache License 2.0 text
-and the exact 2026 NVIDIA copyright line. [`CONTRIBUTING.md`](CONTRIBUTING.md)
-retains the contribution sign-off procedure and full DCO 1.1 text. Nine
-retained third-party license files are mapped to their components in the root
-[`README.md`](README.md) and [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
+The project [`LICENSE`](../../LICENSE) contains the complete Apache License 2.0
+text and the exact 2026 NVIDIA copyright line.
+[`CONTRIBUTING.md`](../../CONTRIBUTING.md) retains the contribution sign-off
+procedure and full DCO 1.1 text. Nine retained third-party license files are
+mapped to their components in
+[`THIRD_PARTY_LICENSES.md`](../THIRD_PARTY_LICENSES.md).
 
 ## Source Header and History Results
 
