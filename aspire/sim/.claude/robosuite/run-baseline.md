@@ -35,7 +35,7 @@ Every trial records `trace.json` and `keyframes/` via the Traced API classes (re
 3. **Ports**: this baseline script launches local proxies:
    - codegen proxy on `:8110`
    - VDM proxy on `:8111`
-4. **Perception servers**: SAM3 `:8114`, GraspNet `:8115`, and PyRoKi `:8116` are running in a persistent tmux session. SAM3 requires Hugging Face authentication; GraspNet requires `--extra contactgraspnet` in the perception environment.
+4. **Perception servers**: SAM3 `:8114`, GraspNet `:8115`, and PyRoKi `:8116` are running in a persistent tmux session. SAM3 requires Hugging Face authentication; GraspNet requires the pinned Contact-GraspNet submodule, its compatibility patch, and `--extra contactgraspnet` in the perception environment. The common startup script verifies and applies the patch before starting any service.
 
 ---
 

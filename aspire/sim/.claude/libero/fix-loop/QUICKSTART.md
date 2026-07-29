@@ -45,7 +45,9 @@ Before installing dependencies, starting services, dispatching a subagent, runni
 - repository commit and worktree state;
 - Linux, NVIDIA driver, CUDA, and available GPU inventory;
 - proposed GPU ownership matching the table above;
-- required virtual environments and submodule state;
+- required virtual environments and submodule state, including
+  `contact_graspnet_pytorch@2d71da4e50a04aa353352d1cae99f20f7022145b`
+  with the repository compatibility patch applied;
 - SAM3 gated-model access and required inference credentials, without printing secrets;
 - expected ports and current status for SAM3, GraspNet, and PyRoKi;
 - development and held-out seed ranges;

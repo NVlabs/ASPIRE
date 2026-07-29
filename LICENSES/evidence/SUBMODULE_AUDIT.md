@@ -1,10 +1,12 @@
 # Git Submodule Audit
 
-This audit covers every Git submodule declared by the parent ASPIRE repository
-at `f18052e2aeb24ca3a6cb17c4fc007dbe6276535f`. The machine-readable inventory is
+This audit covers every Git submodule declared by the parent ASPIRE
+repository. It extends the review originally recorded at
+`f18052e2aeb24ca3a6cb17c4fc007dbe6276535f` with the pinned
+Contact-GraspNet PyTorch upstream. The machine-readable inventory is
 [`SUBMODULE_AUDIT.tsv`](SUBMODULE_AUDIT.tsv).
 
-The parent ASPIRE source artifact stores `.gitmodules` and six gitlinks only.
+The parent ASPIRE source artifact stores `.gitmodules` and seven gitlinks only.
 It does not contain populated submodule files. Running
 `git submodule update --init --recursive` fetches the repositories separately
 from their configured remotes, and their own licenses govern the fetched
@@ -20,9 +22,10 @@ source, models, datasets, robot descriptions, CAD, media, and other assets.
 | SAM 3 | [`facebookresearch/sam3`](https://github.com/facebookresearch/sam3) | `6fe87d64a5beb9084923d7a9e002741178635b09` | Custom SAM License | The pin contains source, evaluation material, and sample media but no tracked model weights. Redistribution, acknowledgment, trade-control, and prohibited-use terms remain applicable. |
 | cuRobo | [`NVlabs/curobo`](https://github.com/NVlabs/curobo) | `d64c4b005459db10c5dd867d8b30a87d5bda9bdb` (`v0.7.8`) | Custom NVIDIA license; public use limited to noncommercial research or evaluation, plus `LICENSE_ASSETS` | The pin contains robot and scene assets governed by component-specific terms. The current tree contains no Git LFS pointers; historical LFS use does not add payloads to the parent artifact. |
 | BEHAVIOR-1K bundle (`b1k`) | [`qingh097/b1k`](https://github.com/qingh097/b1k) | `272ec5ca9936453c4a8fd335c4dfba61245e33ca` | Mixed MIT, Apache-2.0, and asset-specific terms | Contains Pixar HumanFemale USD assets whose bundled license prohibits redistribution without Pixar's written authorization. Treat recursive distribution as blocked pending OSRB/Legal confirmation. |
+| Contact-GraspNet PyTorch | [`elchun/contact_graspnet_pytorch`](https://github.com/elchun/contact_graspnet_pytorch) | `2d71da4e50a04aa353352d1cae99f20f7022145b` | Custom NVIDIA Contact-GraspNet license; bundled PointNet code is MIT | Contains the checkpoint, test data, and media used by the ASPIRE adapter. ASPIRE applies a separate three-hunk compatibility patch after checkout. |
 
-All six populated working trees resolved to the exact parent gitlink SHA and
-were clean at the time of review.
+All seven populated working trees resolved to the exact parent gitlink SHA.
+They were clean before applying parent-repository dependency patches.
 
 ## License and Asset Findings
 
@@ -91,13 +94,30 @@ were clean at the time of review.
   populated `b1k` checkout must not proceed without OSRB/Legal resolution of
   the Pixar restriction.
 
+### Contact-GraspNet PyTorch
+
+- The exact pin retains the custom
+  [Contact-GraspNet license](https://github.com/elchun/contact_graspnet_pytorch/blob/2d71da4e50a04aa353352d1cae99f20f7022145b/License.pdf)
+  and the bundled PointNet
+  [MIT license](https://github.com/elchun/contact_graspnet_pytorch/blob/2d71da4e50a04aa353352d1cae99f20f7022145b/Pointnet_Pointnet2_pytorch/LICENSE).
+- It contains 145 tracked files and 303,894,462 bytes of Git blob content,
+  including `config.yaml`, `model.pt`, PointNet source, test data, and media.
+- The checkpoint, configuration, and PointNet trees are byte-identical to the
+  previously tested `uynitsuj@da3dcfb2f53e43b186083ee4a9d1e232f73efc98`
+  fork.
+- The parent repository applies
+  [`contact_graspnet_pytorch-compat.patch`](../../aspire/sim/patches/contact_graspnet_pytorch-compat.patch)
+  with exactly three one-line source changes. Generated `build/lib` output
+  from the former fork is intentionally excluded.
+- The pin contains no current or historical Git LFS pointer.
+
 ## Git LFS and Nested-Repository Result
 
 - The parent repository and every current submodule tree contain zero current
   Git LFS entries.
 - cuRobo has historical LFS records, but no pointer is tracked at the pinned
   current tree.
-- The six parent gitlinks are the complete recursive gitlink inventory.
+- The seven parent gitlinks are the complete recursive gitlink inventory.
 - The five URLs declared by `b1k/OmniGibson/.gitmodules` have no gitlinks at
   the pinned commit and therefore are metadata only, not fetched dependencies.
 
@@ -107,14 +127,15 @@ The parent source archive may be released without submodule contents only if
 its manifest makes the gitlink-only boundary explicit. The following remain
 external approval questions:
 
-1. whether gitlink-only references to SAM 3, cuRobo, and `b1k` are acceptable;
+1. whether gitlink-only references to SAM 3, cuRobo, `b1k`, and
+   Contact-GraspNet are acceptable;
 2. whether any release instruction may recommend recursive checkout of `b1k`
    while the pinned tree contains the no-redistribution Pixar asset;
 3. whether the LIBERO-PRO dataset statement covers all included object assets;
 4. whether both Robosuite forks adequately establish terms for their bundled
    CAD and robot-description assets; and
-5. whether custom-license SAM 3 and cuRobo dependencies are approved for the
-   intended release.
+5. whether custom-license SAM 3, cuRobo, and Contact-GraspNet dependencies are
+   approved for the intended release.
 
 If OSRB/Legal rejects a gitlink-only reference, the safe fallback is to remove
 that gitlink, document the tested upstream revision, and require users to

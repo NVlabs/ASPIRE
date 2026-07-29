@@ -78,6 +78,8 @@ elif [[ "$MOLMO_MODE" == "auto" && -x "$VLLM_BIN" ]]; then
   START_MOLMO=true
 fi
 
+bash scripts/common/apply_contact_graspnet_patch.sh
+
 echo "Using perception Python: $PYTHON_BIN"
 if $START_MOLMO; then
   echo "Molmo: enabled"

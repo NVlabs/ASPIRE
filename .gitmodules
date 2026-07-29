@@ -11,6 +11,9 @@
 [submodule "aspire/sim/cap/third_party/sam3"]
 	path = aspire/sim/cap/third_party/sam3
 	url = https://github.com/facebookresearch/sam3.git
+[submodule "aspire/sim/cap/third_party/contact_graspnet_pytorch"]
+	path = aspire/sim/cap/third_party/contact_graspnet_pytorch
+	url = https://github.com/elchun/contact_graspnet_pytorch.git
 [submodule "aspire/sim/cap/third_party/curobo"]
 	path = aspire/sim/cap/third_party/curobo
 	url = https://github.com/NVlabs/curobo.git
