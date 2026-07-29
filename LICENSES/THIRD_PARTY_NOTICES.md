@@ -73,7 +73,7 @@ This repository contains modifications of or dependencies on:
 
 ## Git submodules and external components
 
-The parent ASPIRE source artifact stores six gitlinks and `.gitmodules`
+The parent ASPIRE source artifact stores seven gitlinks and `.gitmodules`
 metadata only; it does not include populated submodule contents. Initializing
 the gitlinks fetches source, models, test data, robot descriptions, CAD, media,
 and assets separately from their configured repositories.
@@ -85,6 +85,9 @@ The populated-tree audit found the following release-relevant conditions:
   `LICENSE_ASSETS`;
 - SAM 3 uses the custom Meta SAM License; the exact pin contains source and
   sample/evaluation media but no tracked model weights;
+- Contact-GraspNet uses the custom NVIDIA source license; its pinned PyTorch
+  upstream includes a checkpoint, test data, and media, and ASPIRE applies the
+  documented three-hunk compatibility patch;
 - the pinned `b1k` tree contains mixed terms and Pixar HumanFemale USD assets
   whose license prohibits redistribution without written authorization;
 - LIBERO-PRO describes its code as MIT and datasets as CC BY 4.0, but contains
@@ -100,7 +103,7 @@ recommends or redistributes a populated recursive checkout remain separate
 OSRB/Legal release gates.
 
 BundleSDF source and checkpoints, AnyGrasp vendor source/server/model/license
-material, Contact-GraspNet source and checkpoints, SAM model weights,
+material, SAM model weights,
 Stereolabs ZED SDK material, and the detailed Stereolabs ZED 2i reference CAD
 are intentionally external and retain their vendor or upstream terms. SAM 2.1
 is Apache-2.0; SAM 3 uses the custom SAM License and gated-access conditions.

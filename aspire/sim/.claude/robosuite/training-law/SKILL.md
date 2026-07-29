@@ -75,7 +75,9 @@ done
 ```
 
 SAM3 uses gated Hugging Face weights; authenticate before startup. GraspNet
-requires the perception environment to include `--extra contactgraspnet`. Keep
+requires the pinned Contact-GraspNet submodule and the perception environment
+to include `--extra contactgraspnet`; the startup script verifies and applies
+the compatibility patch. Keep
 servers in tmux or another persistent terminal; one-off background shells can
 exit and take child server processes down with them.
 

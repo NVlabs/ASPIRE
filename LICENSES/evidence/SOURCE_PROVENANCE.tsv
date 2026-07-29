@@ -333,6 +333,7 @@ aspire/sim/cap/utils/video_utils.py	unchanged CaP-X	MIT	CaP-X	capgym/cap-x@823fc
 aspire/sim/cap/utils/visualization_utils.py	CaP-X with NVIDIA modifications	MIT + Apache-2.0 modifications	CaP-X + NVIDIA	capgym/cap-x@823fcc5dd3e565b45b414f5785668cf32cba13b4:capx/utils/visualization_utils.py
 aspire/sim/scripts/behavior/replay_trial_b1k.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
 aspire/sim/scripts/common/analyze_trial.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
+aspire/sim/scripts/common/apply_contact_graspnet_patch.sh	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE Contact-GraspNet reproducibility remediation
 aspire/sim/scripts/common/chunk_tokens.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
 aspire/sim/scripts/common/plot_subagent_token_trace.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline
 aspire/sim/scripts/common/plot_token_usage.py	NVIDIA-authored	Apache-2.0	NVIDIA	ASPIRE after CaP-X baseline

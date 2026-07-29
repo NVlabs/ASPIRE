@@ -41,10 +41,11 @@ Critical suite rule: `_task` variants remap the language instruction. Always rea
 Use `.venv-libero/bin/python3` for LIBERO eval runners and perception servers. Use `.venv/bin/python3` only for lightweight progress, analysis, and plotting scripts.
 
 The LIBERO environment must be synced with both `--extra libero` and
-`--extra contactgraspnet`, and `~/.libero/config.yaml` must point to the
-checked-out `cap/third_party/LIBERO-PRO` paths. Upstream LIBERO reads this
-user-level config at import time; without it, non-interactive agents can fail on
-an interactive path prompt.
+`--extra contactgraspnet`. Apply the pinned Contact-GraspNet compatibility
+patch, and point `~/.libero/config.yaml` to the checked-out
+`cap/third_party/LIBERO-PRO` paths. Upstream LIBERO reads this user-level
+config at import time; without it, non-interactive agents can fail on an
+interactive path prompt.
 
 Required for replay/eval:
 

@@ -170,9 +170,10 @@ The exceptions are identified third-party material:
   does not redistribute the AnyGrasp SDK, model, machine license, copied vendor
   demo server, or server-only runtime helper. An authorized operator supplies
   the service independently.
-- ASPIRE retains its Contact-GraspNet service adapter but does not recursively
-  distribute the former fork's checkpoints or test data. Source and checkpoint
-  paths must be supplied separately under the Contact-GraspNet terms.
+- ASPIRE pins the clean community Contact-GraspNet PyTorch upstream as a
+  gitlink and applies a three-hunk compatibility patch from the parent
+  repository. A recursive checkout fetches its source, checkpoint, test data,
+  and media separately under the Contact-GraspNet and bundled PointNet terms.
 - Site-specific calibrated station XML is supplied through
   `YAM_STATION_CALIBRATED_XML`; the recovered calibration patch is not part of
   the public distribution.

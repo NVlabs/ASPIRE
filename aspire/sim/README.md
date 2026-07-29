@@ -99,7 +99,10 @@ git submodule update --init \
   cap/third_party/robosuite \
   cap/third_party/libero_dependencies/robosuite \
   cap/third_party/LIBERO-PRO \
+  cap/third_party/contact_graspnet_pytorch \
   cap/third_party/curobo
+
+bash scripts/common/apply_contact_graspnet_patch.sh
 
 # Install uv if needed.
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -125,6 +128,11 @@ Use `uv sync --locked` for normal setup and CI. It fails when `pyproject.toml` a
 should use `uv lock --upgrade` only when intentionally upgrading dependencies,
 then rerun the suite smoke tests and commit both files together.
 
+The Contact-GraspNet patch intentionally modifies exactly three tracked files
+inside that submodule. The patch helper is idempotent and rejects a different
+submodule revision, any additional tracked modification, or patched files that
+do not match the previously tested fork byte-for-byte.
+
 ### Suite Setup: LIBERO
 
 LIBERO-PRO (also includes LIBERO-90, LIBERO-Long) uses a dedicated `.venv-libero` environment because its Robosuite dependency conflicts with the standalone Robosuite stack.
@@ -134,20 +142,16 @@ Run the `source .../activate` and `uv sync --locked --active ...` commands in th
 git submodule update --init \
   cap/third_party/LIBERO-PRO \
   cap/third_party/libero_dependencies/robosuite \
+  cap/third_party/contact_graspnet_pytorch \
   cap/third_party/curobo
+
+bash scripts/common/apply_contact_graspnet_patch.sh
 
 uv venv .venv-libero --python 3.12
 source .venv-libero/bin/activate
-# `contactgraspnet` installs only ASPIRE-side adapter dependencies. Contact-GraspNet
-# source and checkpoints are intentionally external; `dev` provides pytest below.
+# `contactgraspnet` installs the pinned Contact-GraspNet PyTorch dependency;
+# `dev` provides pytest below.
 uv sync --locked --active --extra libero --extra contactgraspnet --extra dev
-
-# Obtain Contact-GraspNet source and checkpoints separately under their applicable
-# terms, then install the source-only checkout into this environment.
-export CONTACT_GRASPNET_ROOT=/absolute/path/to/contact_graspnet_pytorch
-export CONTACT_GRASPNET_CHECKPOINT_DIR=/absolute/path/to/contact_graspnet/checkpoints
-uv pip install --python .venv-libero/bin/python --no-build-isolation \
-  -e "$CONTACT_GRASPNET_ROOT"
 deactivate
 ```
 
@@ -275,8 +279,7 @@ uv run --no-sync --active python -m aspire.sim.cap.envs.launch \
 Robosuite fix-loop and traced replay configs use the same SAM3, GraspNet, and
 PyRoKi perception servers as LIBERO. Start those servers from a persistent tmux
 session before replay/eval; `.venv-libero` can be used as the perception server
-environment after it is synced with `--extra contactgraspnet` and the separately
-obtained Contact-GraspNet source is installed as shown above.
+environment after it is synced with `--extra contactgraspnet`.
 
 ### Setup Troubleshooting
 
@@ -289,16 +292,14 @@ known to require the fallback below in this setup. If Contact-GraspNet reports
 first update uv and retry the locked sync.
 
 If updating uv is not possible, seed the declared build tools into the active
-LIBERO environment and disable build isolation for the affected packages. The
-Contact-GraspNet source path below is external to this repository:
+LIBERO environment and disable build isolation for the affected packages:
 
 ```bash
 source .venv-libero/bin/activate
 uv pip install "numpy==1.26.4" "cmake<3.27" setuptools wheel
 uv sync --locked --active --extra libero --extra contactgraspnet --extra dev \
+  --no-build-isolation-package contact-graspnet-pytorch \
   --no-build-isolation-package egl-probe
-uv pip install --python .venv-libero/bin/python --no-build-isolation \
-  -e "$CONTACT_GRASPNET_ROOT"
 deactivate
 ```
 

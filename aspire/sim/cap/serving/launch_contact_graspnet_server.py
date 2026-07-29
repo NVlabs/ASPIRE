@@ -528,17 +528,22 @@ def main(
         configured_root = os.environ.get("CONTACT_GRASPNET_ROOT")
         if configured_root:
             vendor_root = Path(configured_root)
-    if vendor_root is None:
-        raise RuntimeError(
-            "Contact-GraspNet is not redistributed with ASPIRE. Pass --vendor-root "
-            "or set CONTACT_GRASPNET_ROOT to a separately obtained source-only checkout."
-        )
+        else:
+            vendor_root = Path(__file__).resolve().parents[1] / "third_party" / (
+                "contact_graspnet_pytorch"
+            )
 
     vendor_root = vendor_root.expanduser().resolve()
     if not vendor_root.is_dir():
         raise FileNotFoundError(f"Contact-GraspNet source root not found: {vendor_root}")
 
+    package_root = vendor_root / "contact_graspnet_pytorch"
+    if not package_root.is_dir():
+        raise FileNotFoundError(f"Contact-GraspNet package not found: {package_root}")
+
     pointnet_root = vendor_root / "Pointnet_Pointnet2_pytorch"
+    if not pointnet_root.is_dir():
+        raise FileNotFoundError(f"Contact-GraspNet PointNet tree not found: {pointnet_root}")
     if str(pointnet_root) not in sys.path:
         sys.path.append(str(pointnet_root))
     sys.path.append(str(vendor_root))
@@ -548,8 +553,7 @@ def main(
         from contact_graspnet_pytorch.contact_grasp_estimator import GraspEstimator
     except ImportError:
         logger.error(
-            "Could not import the separately installed contact_graspnet_pytorch "
-            f"source from {vendor_root}"
+            f"Could not import contact_graspnet_pytorch from {vendor_root}"
         )
         raise
 
@@ -557,20 +561,24 @@ def main(
         configured_checkpoint = os.environ.get("CONTACT_GRASPNET_CHECKPOINT_DIR")
         if configured_checkpoint:
             checkpoint_dir = Path(configured_checkpoint)
-    if checkpoint_dir is None:
-        raise RuntimeError(
-            "Contact-GraspNet weights are not redistributed with ASPIRE. Pass "
-            "--checkpoint-dir or set CONTACT_GRASPNET_CHECKPOINT_DIR to an "
-            "authorized, separately obtained checkpoint directory."
-        )
+        else:
+            checkpoint_dir = (
+                vendor_root / "checkpoints" / "contact_graspnet" / "checkpoints"
+            )
 
     model_checkpoint_dir = checkpoint_dir.expanduser().resolve()
     if not model_checkpoint_dir.is_dir():
         raise FileNotFoundError(
             f"Contact-GraspNet checkpoint directory not found: {model_checkpoint_dir}"
         )
+    config_path = model_checkpoint_dir.parent / "config.yaml"
+    model_path = model_checkpoint_dir / "model.pt"
+    if not config_path.is_file():
+        raise FileNotFoundError(f"Contact-GraspNet config not found: {config_path}")
+    if not model_path.is_file():
+        raise FileNotFoundError(f"Contact-GraspNet checkpoint not found: {model_path}")
 
-    logger.info(f"Loading GraspNet config from {model_checkpoint_dir}")
+    logger.info(f"Loading GraspNet config from {config_path}")
     global_config = load_contact_graspnet_config(model_checkpoint_dir.parent)
 
     logger.info("Building GraspNet model...")
@@ -580,12 +588,7 @@ def main(
     checkpoint_io = CheckpointIO(
         checkpoint_dir=str(model_checkpoint_dir), model=_GRASP_ESTIMATOR.model
     )
-    try:
-        checkpoint_io.load("model.pt")
-    except FileExistsError:
-        logger.warning("No model checkpoint found")
-    except Exception as e:
-        logger.error(f"Error loading checkpoint: {e}")
+    checkpoint_io.load("model.pt")
 
     logger.info(f"GraspNet Service initialized on {device}. Starting Uvicorn...")
     uvicorn.run(app, host=host, port=port)
