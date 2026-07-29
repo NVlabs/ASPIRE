@@ -17,7 +17,7 @@ source, models, datasets, robot descriptions, CAD, media, and other assets.
 | LIBERO-PRO | [`uynitsuj/LIBERO-PRO`](https://github.com/uynitsuj/LIBERO-PRO) | `47aaa8038930bcdc84ab9ea2867e2ffc8039ab4a` | Code: MIT; README describes datasets as CC BY 4.0 | Contains LIBERO datasets and object assets, including paths named `turbosquid_objects`; confirm that the upstream dataset statement covers every redistributed asset. |
 | Robosuite (YAM fork) | [`uynitsuj/robosuite`](https://github.com/uynitsuj/robosuite) | `97292732ed909ac3ae116579fb768607034a4dbd` | MIT, with retained DeepMind MuJoCo Apache-2.0 attribution | Contains extensive YAM and other robot meshes/descriptions. Confirm asset provenance and redistribution terms independently of the code-level MIT license. |
 | Robosuite (LIBERO dependency) | [`Max-Fu/robosuite`](https://github.com/Max-Fu/robosuite) | `a498b087d4bc5a3981e3d27030d09bc537a537f3` | MIT, with retained DeepMind MuJoCo Apache-2.0 attribution | Contains robot and arena assets. Confirm that asset terms are covered by the upstream distribution. |
-| SAM 3 | [`Max-Fu/sam3`](https://github.com/Max-Fu/sam3) | `6fe87d64a5beb9084923d7a9e002741178635b09` | Custom SAM License | The pin contains source, evaluation material, and sample media but no tracked model weights. Redistribution, acknowledgment, trade-control, and prohibited-use terms remain applicable. |
+| SAM 3 | [`facebookresearch/sam3`](https://github.com/facebookresearch/sam3) | `6fe87d64a5beb9084923d7a9e002741178635b09` | Custom SAM License | The pin contains source, evaluation material, and sample media but no tracked model weights. Redistribution, acknowledgment, trade-control, and prohibited-use terms remain applicable. |
 | cuRobo | [`NVlabs/curobo`](https://github.com/NVlabs/curobo) | `d64c4b005459db10c5dd867d8b30a87d5bda9bdb` (`v0.7.8`) | Custom NVIDIA license; public use limited to noncommercial research or evaluation, plus `LICENSE_ASSETS` | The pin contains robot and scene assets governed by component-specific terms. The current tree contains no Git LFS pointers; historical LFS use does not add payloads to the parent artifact. |
 | BEHAVIOR-1K bundle (`b1k`) | [`qingh097/b1k`](https://github.com/qingh097/b1k) | `272ec5ca9936453c4a8fd335c4dfba61245e33ca` | Mixed MIT, Apache-2.0, and asset-specific terms | Contains Pixar HumanFemale USD assets whose bundled license prohibits redistribution without Pixar's written authorization. Treat recursive distribution as blocked pending OSRB/Legal confirmation. |
 
@@ -52,7 +52,7 @@ were clean at the time of review.
 
 ### SAM 3
 
-- The exact pin retains the custom [SAM License](https://github.com/Max-Fu/sam3/blob/6fe87d64a5beb9084923d7a9e002741178635b09/LICENSE).
+- The exact pin retains the custom [SAM License](https://github.com/facebookresearch/sam3/blob/6fe87d64a5beb9084923d7a9e002741178635b09/LICENSE).
 - It contains 504 tracked files and approximately 72 MB of Git blob content.
 - No model checkpoint or weight file and no Git LFS pointer is tracked at the
   pin. Gated model assets are obtained separately.
