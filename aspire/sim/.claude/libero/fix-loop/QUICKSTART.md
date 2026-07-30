@@ -66,7 +66,7 @@ After confirmation:
 3. Claim GPU 3 for the task. Do not dispatch work on GPUs 4–7.
 4. Fill `SUITE`, `TASK`, and `GPU=3` in `subagent-prompt.md` and dispatch exactly one Stage 1 subagent.
 5. The subagent explores one observed scene, writes initial code, runs development seeds 51–65, diagnoses failures within the documented replay limits, selects one generalizable `fix_code.py`, and writes `findings.md`.
-6. Confirm that the task reached `stage1-done`. Promote only supported generalizable findings according to `main-agent-prompt.md`.
+6. Confirm that the task reached `stage1-done`. Promote only supported generalizable findings according to `main-agent-prompt.md`, and record the promotion with `scripts/libero/record_skill_promotion.py`.
 7. Run the immutable held-out evaluation on GPU 3:
 
    ```bash
