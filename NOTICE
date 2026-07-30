@@ -7,7 +7,7 @@ contributors. Copyright, attribution, and license notices for inherited and
 third-party material are retained in LICENSES/README.md and the documents it
 indexes.
 
-The parent ASPIRE source artifact contains six Git submodule references but no
+The parent ASPIRE source artifact contains seven Git submodule references but no
 populated submodule files. A recursive checkout fetches those repositories
 separately under their own terms. The pinned b1k tree includes a Pixar asset
 that prohibits redistribution without written authorization; SAM 3 and cuRobo

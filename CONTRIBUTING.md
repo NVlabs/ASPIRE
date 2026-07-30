@@ -1,7 +1,8 @@
 # Contributing to ASPIRE
 
-Thank you for contributing to ASPIRE. Contributions to this repository are accepted under the Apache License, Version 2.0,
-unless a file explicitly states a different license.
+Thank you for contributing to ASPIRE.
+
+This project will only accept contributions under the Apache-2.0 license.
 
 #### Signing Your Work
 
