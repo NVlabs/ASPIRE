@@ -133,6 +133,7 @@ override-dependencies = [
     "PyOpenGL==3.1.6",
     "PyOpenGL-accelerate==3.1.6",
     "numpy==1.26.4",
+    "scipy==1.15.3",
     "opencv-python-headless<4.13",
     "opencv-python ; sys_platform == 'never'",
     "jax<0.4.30",
