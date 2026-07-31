@@ -37,6 +37,8 @@ SUITES = [
 
 DONE_THRESHOLD = 50  # every task must complete the full held-out partition
 
+_METADATA_DIRS = {"skill_promotions"}
+
 # Matches trial_01_sandboxrc_0_reward_1.000_taskcompleted_1 and extracts seed + completed flag
 _TRIAL_RE = re.compile(r"trial_(\d+)_sandboxrc_\d+_reward_[\d.]+_taskcompleted_(\d+)")
 
@@ -219,7 +221,6 @@ def main():
         build_suite_dir = BUILD / suite
         legacy_suite_dir = BASELINE / suite
         tasks = benchmark_tasks[suite]
-        _METADATA_DIRS = {"skill_promotions"}
         for suite_dir in (build_suite_dir, legacy_suite_dir):
             if suite_dir.exists():
                 tasks.update(

@@ -55,6 +55,8 @@ def test_pyroki_imports():
 
 def test_contact_graspnet_imports():
     pytest.importorskip("contact_graspnet_pytorch")
+    from contact_graspnet_pytorch.contact_grasp_estimator import GraspEstimator
+    assert callable(GraspEstimator)
 
 
 def _check_lock_versions(pkg: str, expected: str):
