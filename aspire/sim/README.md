@@ -333,25 +333,23 @@ too old to initialize the locked Torch build.
 
 Use this path for BEHAVIOR-1K / OmniGibson tasks. BEHAVIOR installs its own environment under `cap/third_party/b1k/.venv`.
 
-```bash
-git submodule update --init cap/third_party/b1k cap/third_party/curobo
-
-cd cap/third_party/b1k
-./uv_install.sh --dataset
-cd ../../..
-```
-
-The installer downloads robot assets and BEHAVIOR-1K scene/object assets used by the supported tasks. For non-interactive installation, use `./uv_install.sh --dataset --accept-dataset-tos`.
-
-On headless GPU servers, install the EGL runtime and copy the cuRobo headers needed for first-time JIT compilation:
+On headless GPU servers, install the EGL runtime first, and make sure a CUDA 12.x toolkit with `nvcc` is available (cuRobo compiles CUDA extensions against it):
 
 ```bash
 sudo apt-get update && sudo apt-get install -y libegl1 libgl1
-
-source cap/third_party/b1k/.venv/bin/activate
-cp cap/third_party/curobo/src/curobo/curobolib/cpp/*.h \
-   $(python -c "import sysconfig; print(sysconfig.get_path('purelib'))")/curobo/curobolib/cpp/
 ```
+
+SAM3 weights are gated, so authenticate once, then run the installer:
+
+```bash
+hf auth login
+
+scripts/setup_behavior.sh --accept-dataset-license
+```
+
+`scripts/setup_behavior.sh` initializes the required submodules, creates the Python 3.10 venv, pins the validated stack (Torch 2.6.0+cu124), installs OmniGibson/Isaac Sim through the upstream installer, adds the perception and ASPIRE runtime dependencies, downloads the datasets, and ends with `scripts/verify_behavior.py`. It is idempotent, never deletes downloaded assets, and exits non-zero on any failure.
+
+Do not run `cap/third_party/b1k/uv_install.sh` directly; it does not complete on a clean host. See [`docs/behavior-tasks.md`](docs/behavior-tasks.md) for the tested configuration and troubleshooting, and [`docs/logs/2026-07-31-final-acceptance.md`](docs/logs/2026-07-31-final-acceptance.md) for the independent clean-clone acceptance record.
 
 Do not delete system Vulkan ICD files as a general setup step. If Isaac Sim reports duplicate or invalid ICDs, inspect `/etc/vulkan/icd.d/` and `/usr/share/vulkan/icd.d/`, preserve the original files, and follow the NVIDIA driver guidance for the host before changing system configuration.
 
@@ -368,8 +366,9 @@ uv run --no-sync --active python -m aspire.sim.cap.envs.launch \
 
 This branch ships configs and runbooks for radio pickup and soda-can pickup.
 B1K setup is host-dependent; treat the first run on a new machine as smoke
-testing. See [`docs/behavior-tasks.md`](docs/behavior-tasks.md) for the supported
-configs.
+testing, and start with an oracle config (`use_oracle_code: true`), which needs
+no model endpoint. See [`docs/behavior-tasks.md`](docs/behavior-tasks.md) for the
+supported configs, the tested configuration, and troubleshooting.
 
 Isaac Sim uses `OMNIGIBSON_GPU_ID`, not `CUDA_VISIBLE_DEVICES`, for GPU selection.
 
