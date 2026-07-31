@@ -9,6 +9,11 @@ Use this skill when building or debugging R1Pro BEHAVIOR interactive policies in
 ASPIRE. The policy is written block by block, replayed on the same seed after
 each append, and grown into one long observe-act-observe state machine.
 
+This skill is the per-seed debugging primitive. Use
+[`../aspire-protocol/SKILL.md`](../aspire-protocol/SKILL.md) when the request is
+to run the complete seeds 26-35 development and seeds 1-25 evaluation
+protocol.
+
 ## Read First
 
 - `.claude/behavior/CLAUDE.md`
@@ -45,14 +50,16 @@ pickup.
    `outputs/interactive/fix_code_interactive_radio.py` for radio or
    `outputs/interactive/fix_code_interactive.py` for soda.
 2. Append 5-20 lines of policy code.
-3. Replay the same seed with `scripts/behavior/replay_trial_b1k.py --replay-code` and
-   `--record-video True`.
+3. Replay the same seed with `scripts/behavior/replay_trial_b1k.py --replay-code`
+   and the bare `--record-video` flag.
 4. Inspect `summary.txt`, `trace.json`, `keyframes/`, videos, VDM feedback, and
    saved observations.
 5. Classify the current blocker and append the next block based on evidence.
 6. Repeat until search, approach, grasp, verification, and fallbacks are present.
-7. Validate with the non-traced config and report seed range, success count,
-   and common failure modes.
+7. For an ad hoc shared-policy experiment, validate with the non-traced config
+   and report seed range, success count, and common failure modes. For the
+   canonical campaign, return control to `aspire-protocol`; do not substitute a
+   frozen-policy sweep for its fresh-agent evaluation.
 
 ## Policy Pattern
 

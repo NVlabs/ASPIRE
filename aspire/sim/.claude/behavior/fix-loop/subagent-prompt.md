@@ -4,6 +4,10 @@ You are debugging one BEHAVIOR-1K R1Pro task/config.
 You should propose the next small block for an interactive policy, not a full
 replacement policy unless explicitly asked.
 
+When invoked by the canonical ASPIRE protocol, obey the stage prompt's seed and
+artifact boundaries. Those boundaries override any suggestion here to update
+the repository skill templates directly.
+
 ## Inputs
 
 - Config path under `env_configs/r1pro/`.
@@ -19,7 +23,8 @@ replacement policy unless explicitly asked.
 - Failure classification.
 - Next 5-20 line policy block or a minimal patch to the current block.
 - Evidence from stdout/stderr, saved observations, videos, or trace artifacts.
-- Reusable pattern to add to `.claude/behavior/skills/` if applicable.
+- Reusable pattern to propose for the campaign-owned working skill library if
+  applicable. Only a Stage 1 learning agent may apply it.
 
 ## Debug Rules
 

@@ -9,6 +9,11 @@ This experiment builds closed-loop interactive policies for the supported R1Pro
 BEHAVIOR tasks. The current focus is `pick_up_radio`; `pick_up_trash` is the
 legacy filename for soda-can pickup.
 
+This runbook defines the **inner loop for one seed**. For the canonical
+development/evaluation campaign, including seed boundaries, skill-library
+freezing, and fresh evaluation agents, follow
+[`../aspire-protocol/INSTRUCTIONS.md`](../aspire-protocol/INSTRUCTIONS.md).
+
 Do not write a full policy in one pass. Build one long policy file block by
 block:
 
@@ -38,7 +43,8 @@ Operational rules:
 - One Isaac Sim process per node.
 - Use GPU 2 for the trial runner unless told otherwise.
 - Never run `uv sync` in the B1K virtual environment.
-- Always pass `--record-video True`.
+- Record video on every replay. The helper defaults to recording; use the bare
+  `--record-video` flag when making it explicit.
 - Keep SAM3 and ContactGraspNet alive for the full trial.
 - Do not push from a fix-loop run.
 - If Isaac Sim creates huge `core.*` files and NFS/quota fails, remove only
@@ -100,7 +106,7 @@ OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.
   --replay-code outputs/interactive/fix_code_interactive_radio.py \
   --trial 26 \
   --output-dir outputs/behavior/interactive/radio_trial26 \
-  --record-video True
+  --record-video
 ```
 
 Then inspect the trial output and append the next 5-20 lines. Repeat until the
@@ -151,7 +157,7 @@ OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.
   --replay-code outputs/interactive/fix_code_interactive_radio.py \
   --trial 26 \
   --output-dir outputs/behavior/interactive/radio_trial26 \
-  --record-video True
+  --record-video
 ```
 
 Replay soda policy on one seed:
@@ -162,7 +168,7 @@ OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.
   --replay-code outputs/interactive/fix_code_interactive.py \
   --trial 26 \
   --output-dir outputs/behavior/interactive/soda_trial26 \
-  --record-video True
+  --record-video
 ```
 
 Open an interactive REPL for direct API probing:
@@ -173,7 +179,7 @@ OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.
   --interactive \
   --trial 26 \
   --output-dir outputs/behavior/interactive/radio_repl26 \
-  --record-video True
+  --record-video
 ```
 
 Run exact traced debug seeds when replay is not enough:
@@ -183,13 +189,12 @@ OMNIGIBSON_GPU_ID=2 uv run --no-sync --active python -m aspire.sim.cap.envs.laun
   --config-path env_configs/r1pro/r1pro_pick_up_radio_aspire_traced.yaml \
   --trial-ids 26 27 28 \
   --output-dir outputs/behavior/debug/radio_aspire_traced \
-  --record-video True
+  --record-video
 ```
 
-## 7. Validate
+## 7. Validate A Candidate Outside The Canonical Campaign
 
-After the interactive policy works on debug seeds, validate with non-traced
-configs:
+For an ad hoc shared-policy experiment, validate with non-traced configs:
 
 ```text
 env_configs/r1pro/r1pro_pick_up_radio_aspire.yaml
@@ -198,3 +203,8 @@ env_configs/r1pro/r1pro_pick_up_trash_aspire.yaml
 
 For release reporting, record config path, seed range, success count, common
 failure mode, videos inspected, and reusable strategy.
+
+Do not use this section for the canonical ASPIRE campaign. That protocol does
+not replay one frozen policy over seeds 1-25: each held-out seed gets a fresh
+agent and fresh policy, with within-seed block-by-block adaptation from the
+frozen skill library.

@@ -92,7 +92,8 @@ Operational rules from `.claude/behavior/CLAUDE.md`:
   verified for more.
 - Examples use GPU 2 for the trial runner; choose the correct `OMNIGIBSON_GPU_ID` for the host.
 - Never run `uv sync` inside the B1K virtual environment.
-- Always pass `--record-video True` for trial runs.
+- Record video for trial runs. The B1K Tyro launchers default to recording; use
+  the bare `--record-video` flag when making it explicit.
 - Do not write API keys into YAML or docs.
 - Do not push from an automated fix-loop run.
 
@@ -106,7 +107,7 @@ export OMNIGIBSON_HEADLESS=1
 OMNIGIBSON_GPU_ID=2 uv run --no-sync --active python -m aspire.sim.cap.envs.launch \
   --config-path env_configs/r1pro/r1pro_pick_up_radio_aspire.yaml \
   --output-dir outputs/behavior/validation/radio_aspire \
-  --record-video True
+  --record-video
 ```
 
 Use `python -m aspire.sim.cap.envs.launch_b1k` when you need exact seed control:
@@ -116,7 +117,7 @@ OMNIGIBSON_GPU_ID=2 uv run --no-sync --active python -m aspire.sim.cap.envs.laun
   --config-path env_configs/r1pro/r1pro_pick_up_trash_aspire_traced.yaml \
   --trial-ids 26 27 28 29 30 \
   --output-dir outputs/behavior/debug/soda_aspire_traced \
-  --record-video True
+  --record-video
 ```
 
 ### Replay mode
@@ -130,7 +131,7 @@ OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.
   --replay-code outputs/interactive/fix_code_interactive.py \
   --trial 26 \
   --output-dir outputs/behavior/replay/soda_trial26 \
-  --record-video True
+  --record-video
 ```
 
 Replay parses saved files on `# Code block N` headers. If no headers are found,
@@ -149,7 +150,7 @@ OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.
   --interactive \
   --trial 26 \
   --output-dir outputs/behavior/interactive/radio_trial26 \
-  --record-video True
+  --record-video
 ```
 
 Do not use `scripts/libero/replay_trial.py` for BEHAVIOR; it is LIBERO-specific.
@@ -165,7 +166,7 @@ explicitly when running multiple jobs:
 OMNIGIBSON_GPU_ID=2 OMNIGIBSON_APPDATA_PATH=/tmp/og_appdata_gpu2 \
   uv run --no-sync --active python -m aspire.sim.cap.envs.launch \
     --config-path <config> \
-    --record-video True
+    --record-video
 ```
 
 Isaac Sim is heavy; prefer one active Isaac Sim process per node unless you have
@@ -298,10 +299,11 @@ Traced configs use `R1ProControlApiTraced`, `record_video: true`,
 debug traced configs use `resume_idx: 26`, `trials: 35`, and `num_workers: 1`,
 so their default run covers seeds 26 through 35.
 
-Validation should use the non-traced multi-turn configs unless trace collection
-is part of the experiment. For validation reporting, record config path, seed
-range, success count, common failure mode, and whether the run used traced or
-non-traced API.
+An ad hoc shared-policy validation can use the non-traced multi-turn configs.
+The canonical ASPIRE protocol instead uses traced replay for both stages so a
+fresh external agent can adapt block by block within each seed. For all
+reporting, record config path, seed range, success count, common failure mode,
+and whether the run used traced or non-traced API.
 
 Keep model endpoint details and API keys in CLI args or environment variables.
 Do not write API keys into YAML files or docs.
@@ -353,8 +355,9 @@ to build exact fixes block by block:
    `outputs/interactive/fix_code_interactive.py` for soda.
 2. Append 5-20 lines of code.
 3. Replay the same seed with `scripts/behavior/replay_trial_b1k.py --replay-code` and
-   `--record-video True`.
+   the bare `--record-video` flag.
 4. Inspect `summary.txt`, `trace.json`, `keyframes/`, VDM feedback text, and
    videos for the failed trial.
 5. Append the next block based on observations, not a fixed recipe.
-6. Validate successful patterns with the non-traced multi-turn config.
+6. Return successful patterns to the owning experiment protocol. Do not infer
+   held-out seed rules from this inner-loop reference.

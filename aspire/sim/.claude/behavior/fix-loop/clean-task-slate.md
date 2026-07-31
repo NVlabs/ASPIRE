@@ -1,5 +1,9 @@
 # BEHAVIOR-1K Clean Task Slate
 
+This is the general fix-loop checklist. The canonical campaign adds stricter
+stage and seed isolation in
+[`../aspire-protocol/clean-task-slate.md`](../aspire-protocol/clean-task-slate.md).
+
 Before rerunning a BEHAVIOR config:
 
 - Re-read `.claude/behavior/skills/system-pipeline.md` sections 3, 7, and 8
@@ -15,8 +19,9 @@ Before rerunning a BEHAVIOR config:
 - For interactive-policy runs, expect SAM3 on `8114` and ContactGraspNet on
   `8115`; if a YAML uses different ports, verify that this is intentional
   before launch.
-- Confirm replay commands include `--record-video True`.
-- Move or rename prior output directories if you need a fresh run.
+- Confirm replay commands record video; use the bare `--record-video` flag.
+- Use a new output directory for every attempt. Never move, rename, delete, or
+  overwrite an earlier attempt to make a rerun appear clean.
 - Keep videos and saved observations from failed trials until analysis is done.
 - Keep `trace.json`, `keyframes/`, `differencing_feedback_*.txt`, and
   `prompts_and_responses/` until the failure has been classified.
