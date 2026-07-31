@@ -1,210 +1,141 @@
 ---
 name: behavior/fix-loop/INSTRUCTIONS
-description: Runbook for block-by-block BEHAVIOR-1K R1Pro interactive policy experiments.
+description: Canonical two-stage BEHAVIOR-1K ASPIRE fix-loop protocol.
 ---
 
-# BEHAVIOR-1K Interactive Fix Loop
+# BEHAVIOR-1K ASPIRE Fix Loop
 
-This experiment builds closed-loop interactive policies for the supported R1Pro
-BEHAVIOR tasks. The current focus is `pick_up_radio`; `pick_up_trash` is the
-legacy filename for soda-can pickup.
-
-This runbook defines the **inner loop for one seed**. For the canonical
-development/evaluation campaign, including seed boundaries, skill-library
-freezing, and fresh evaluation agents, follow
-[`../aspire-protocol/INSTRUCTIONS.md`](../aspire-protocol/INSTRUCTIONS.md).
-
-Do not write a full policy in one pass. Build one long policy file block by
-block:
+This is the source of truth for Soda Can and Radio experiments. The measured
+system is:
 
 ```text
-append 5-20 lines -> replay same seed -> inspect observations/traces/videos -> append next block
+frozen skill library + fixed model/prompts/budgets/protocol
+  -> fresh per-seed policy construction and debugging
 ```
 
-The target policy should behave as an adaptive observe-act-observe state
-machine, not a static recipe.
+## Tasks
 
-## 1. Preflight
+| Request | Traced replay config |
+|---|---|
+| Soda Can | `env_configs/r1pro/r1pro_pick_up_trash_aspire_traced.yaml` |
+| Radio | `env_configs/r1pro/r1pro_pick_up_radio_aspire_traced.yaml` |
 
-Read:
+`pick_up_trash` is the historical filename for the blue soda-can task.
 
-- `.claude/memory/MEMORY.md`
-- `.claude/behavior/CLAUDE.md`
-- `.claude/behavior/api-reference.md`
-- `.claude/behavior/skills/system-pipeline.md` sections 1-8
-- `.claude/behavior/skills/README.md`
-- `.claude/behavior/skills/interactive-policy.md`
-- `.claude/behavior/skills/search.md`
-- `.claude/behavior/skills/radio-table-tasks.md` for radio work
-- `docs/behavior-tasks.md`
+## Invariants
 
-Operational rules:
+- Stage 1 uses only development seeds 26-35 to build the skill library. It must
+  never inspect seeds 1-25.
+- After seed 35, freeze the skill library, config, model, prompts, budgets, and
+  protocol. Do **not** freeze a policy.
+- Stage 2 evaluates seeds 1-25. Every seed gets a fresh non-resumed Claude Code
+  context, fresh empty policy, and the frozen skill library.
+- A Stage 2 agent may debug block by block within its seed. It cannot read
+  another evaluation seed, update skills, or pass policy/transcript/lessons to
+  the next agent.
+- Use `scripts/behavior/replay_trial_b1k.py --replay-code` for every trial.
+  External Claude Code is the only model in the loop; do not invoke the built-in
+  ASPIRE `REGENERATE`/`FINISH` loop.
+- Run seeds sequentially with one Isaac Sim process on the node. Preserve every
+  attempt, including failures. Do not push or touch real hardware.
 
-- One Isaac Sim process per node.
-- Use GPU 2 for the trial runner unless told otherwise.
-- Never run `uv sync` in the B1K virtual environment.
-- Record video on every replay. The helper defaults to recording; use the bare
-  `--record-video` flag when making it explicit.
-- Keep SAM3 and ContactGraspNet alive for the full trial.
-- Do not push from a fix-loop run.
-- If Isaac Sim creates huge `core.*` files and NFS/quota fails, remove only
-  those known crash dumps with `rm -f core.*`.
+## Preflight
 
-Activate the B1K environment:
+Before setup changes, services, agents, or trials, report and wait for approval:
 
-```bash
-source cap/third_party/b1k/.venv/bin/activate
-export OMNI_KIT_ACCEPT_EULA=YES
-export OMNIGIBSON_HEADLESS=1
-ulimit -c 0
-```
+- exact commit, task/config, host/GPU, environment and perception-server status;
+- Claude model/context and fixed Stage 1/per-seed replay, time, and agent limits;
+- seed split, fresh campaign path, expected runtime, and unresolved risks.
 
-## 2. Choose Task And Policy File
+Do not invent missing model or budget choices. Cost analysis is out of scope
+unless separately requested.
 
-Radio:
+## Campaign Layout
+
+Create a new path; never reuse an older campaign:
 
 ```text
-config: env_configs/r1pro/r1pro_pick_up_radio_aspire_traced.yaml
-policy: outputs/interactive/fix_code_interactive_radio.py
+outputs/behavior/aspire-campaigns/<task>/<campaign-id>/
+  manifest.md
+  campaign-state.md
+  skill-library-working/
+  skill-library-frozen/
+  frozen-manifest.sha256
+  stage1/seed_26/...seed_35/
+  stage2/seed_01/...seed_25/
+  reports/final-report.md
 ```
 
-Soda can:
+Copy `.claude/behavior/skills/` to `skill-library-working/`. Each seed directory
+contains `policy.py`, `attempts/attempt_NNN/`, and `seed-summary.md`. Only the
+coordinator updates `campaign-state.md`; resume at the first incomplete seed.
 
-```text
-config: env_configs/r1pro/r1pro_pick_up_trash_aspire_traced.yaml
-policy: outputs/interactive/fix_code_interactive.py
-```
+## Per-Seed Inner Loop
 
-The soda configs keep the historical `trash` filename, but the target is a blue
-can of soda.
-
-## 3. Build Block By Block
-
-Start with a short observation block:
-
-```python
-import time
-import numpy as np
-
-START_TIME = time.time()
-TIME_BUDGET = 900
-
-def time_left():
-    return TIME_BUDGET - (time.time() - START_TIME)
-
-rgb, depth = get_env_observation()
-save_current_observation("start")
-robot_pos, _, robot_yaw = get_robot_position()
-print(f"start robot={robot_pos[:2]}, yaw={robot_yaw:.2f}, time_left={time_left():.1f}")
-```
-
-Replay it on one seed:
+Build `policy.py` in small `# Code block N` sections. After each change, reset
+and replay the same seed into a new attempt directory:
 
 ```bash
-OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.py \
-  --config-path env_configs/r1pro/r1pro_pick_up_radio_aspire_traced.yaml \
-  --replay-code outputs/interactive/fix_code_interactive_radio.py \
-  --trial 26 \
-  --output-dir outputs/behavior/interactive/radio_trial26 \
+OMNIGIBSON_GPU_ID=<gpu> uv run --no-sync --active \
+  scripts/behavior/replay_trial_b1k.py \
+  --config-path <traced-config> \
+  --replay-code <seed-dir>/policy.py \
+  --trial <seed> \
+  --output-dir <seed-dir>/attempts/attempt_<NNN> \
   --record-video
 ```
 
-Then inspect the trial output and append the next 5-20 lines. Repeat until the
-policy has search, approach, grasp, verification, and fallback states.
+Inspect only allowed evidence: summary, trace, keyframes, video, saved
+observations, and relevant perception logs. Diagnose the failure, append or
+minimally revise the next block, and stop on success or budget exhaustion.
+Generated code may use only public R1Pro APIs—never simulator internals, BDDL,
+object registries, or reward state.
 
-Replay does not call the LLM, so `--server-url` and API keys are not needed.
+## Stage 1: Learn On Seeds 26-35
 
-## 4. Diagnose Every Replay
+Run seeds 26-35 sequentially with `stage1-skill-acquisition-prompt.md`. The
+learning agent may reuse reasoning and policies across these development seeds.
+After each seed, preserve all attempts, write its summary, and add only
+evidence-backed reusable public-API lessons to `skill-library-working/`. Record
+the source seed and evidence path. Stage 1 produces skills, not an evaluation
+policy.
 
-For each replay, inspect:
+## Freeze
 
-- generated `code.py`;
-- `summary.txt` stdout/stderr;
-- recorded videos;
-- `trace.json` and `keyframes/`;
-- `differencing_feedback_*.txt` from ASPIRE/VDM runs;
-- `prompts_and_responses/` when present;
-- saved observations from `save_current_observation(name)`;
-- SAM3 or ContactGraspNet server logs when perception fails.
+After all ten development seeds are terminal:
 
-Classify the current blocker as perception, search, navigation, grasp planning,
-IK/motion, task sequencing, time budget, or setup.
+1. Stop the Stage 1 agent and simulator.
+2. Copy the working library to `skill-library-frozen/` and make it read-only.
+3. SHA-256 the frozen skills, config, API reference, and prompt files.
+4. Record commit, model/context, budgets, and hashes in `manifest.md`.
 
-## 5. Policy Requirements
+Any later change requires a new campaign.
 
-Every candidate policy should:
+## Stage 2: Evaluate On Seeds 1-25
 
-- observe and save at start;
-- search with prompt alternatives;
-- derive approach from `get_robot_position()` and `get_object_pose()`;
-- avoid hardcoded scene positions unless they came from the current observation;
-- observe after navigation, approach, and grasp;
-- print diagnostics for every decision;
-- try multiple fallback strategies;
-- verify grasps with `check_object_in_hand(arm=0)` and `check_object_in_hand(arm=1)`;
-- stay within public R1Pro API calls only.
+For each seed in order:
 
-Do not read simulator internals, BDDL predicates, object registry ground truth,
-or reward state from generated task code.
+1. Create a fresh seed directory and empty `policy.py`.
+2. Launch a new non-resumed context with `stage2-evaluation-seed-prompt.md`.
+3. Allow block-by-block replay and inspection only within that seed.
+4. End on success or budget exhaustion; do not replace failed episodes.
+5. Record only seed, outcome, replay count, and summary path in campaign state.
 
-## 6. Useful Commands
+Until all 25 seeds finish, the coordinator must not inspect detailed Stage 2
+policies, summaries, traces, observations, or videos. This prevents it from
+becoming a cross-seed information channel. Aggregate details only afterward.
 
-Replay radio policy on one seed:
+An infrastructure restart may continue the same episode only if it preserves
+artifacts and budget. A post-trial Isaac Sim `SIGSEGV` is acceptable only when
+the terminal result, summary, trace, and video were already saved.
 
-```bash
-OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.py \
-  --config-path env_configs/r1pro/r1pro_pick_up_radio_aspire_traced.yaml \
-  --replay-code outputs/interactive/fix_code_interactive_radio.py \
-  --trial 26 \
-  --output-dir outputs/behavior/interactive/radio_trial26 \
-  --record-video
-```
+## Report And Stop Conditions
 
-Replay soda policy on one seed:
+Report provenance, learned skills, all 25 outcomes, success rate over 25,
+replay counts, failures/invalidities, and confirmation of fresh policies,
+isolated agents, replay-only execution, and no hardware use. Never drop failed
+or invalid seeds from the denominator.
 
-```bash
-OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.py \
-  --config-path env_configs/r1pro/r1pro_pick_up_trash_aspire_traced.yaml \
-  --replay-code outputs/interactive/fix_code_interactive.py \
-  --trial 26 \
-  --output-dir outputs/behavior/interactive/soda_trial26 \
-  --record-video
-```
-
-Open an interactive REPL for direct API probing:
-
-```bash
-OMNIGIBSON_GPU_ID=2 uv run --no-sync --active scripts/behavior/replay_trial_b1k.py \
-  --config-path env_configs/r1pro/r1pro_pick_up_radio_aspire_traced.yaml \
-  --interactive \
-  --trial 26 \
-  --output-dir outputs/behavior/interactive/radio_repl26 \
-  --record-video
-```
-
-Run exact traced debug seeds when replay is not enough:
-
-```bash
-OMNIGIBSON_GPU_ID=2 uv run --no-sync --active python -m aspire.sim.cap.envs.launch_b1k \
-  --config-path env_configs/r1pro/r1pro_pick_up_radio_aspire_traced.yaml \
-  --trial-ids 26 27 28 \
-  --output-dir outputs/behavior/debug/radio_aspire_traced \
-  --record-video
-```
-
-## 7. Validate A Candidate Outside The Canonical Campaign
-
-For an ad hoc shared-policy experiment, validate with non-traced configs:
-
-```text
-env_configs/r1pro/r1pro_pick_up_radio_aspire.yaml
-env_configs/r1pro/r1pro_pick_up_trash_aspire.yaml
-```
-
-For release reporting, record config path, seed range, success count, common
-failure mode, videos inspected, and reusable strategy.
-
-Do not use this section for the canonical ASPIRE campaign. That protocol does
-not replay one frozen policy over seeds 1-25: each held-out seed gets a fresh
-agent and fresh policy, with within-seed block-by-block adaptation from the
-frozen skill library.
+Stop and ask before continuing if a seed boundary is crossed, frozen hashes
+change, multiple simulators overlap, required evidence is missing, the built-in
+LLM loop starts, credentials enter artifacts, or the protocol must change.

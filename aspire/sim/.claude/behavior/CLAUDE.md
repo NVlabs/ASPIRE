@@ -24,10 +24,8 @@ treat the first run on a machine as bring-up/smoke testing and record any local 
 | [api-reference.md](api-reference.md) | Public R1Pro API surface exposed to generated code |
 | [run-baseline.md](run-baseline.md) | Basic batch, traced, replay, and inspection commands |
 | [skills/system-pipeline.md](skills/system-pipeline.md) | Execution flow, launch modes, outputs, configs, perception servers |
-| [fix-loop/INSTRUCTIONS.md](fix-loop/INSTRUCTIONS.md) | Block-by-block interactive policy runbook |
-| [fix-loop/SKILL.md](fix-loop/SKILL.md) | Skill entrypoint for BEHAVIOR fix-loop agents |
-| [aspire-protocol/INSTRUCTIONS.md](aspire-protocol/INSTRUCTIONS.md) | Canonical seeds 26-35 skill acquisition and isolated seeds 1-25 evaluation protocol |
-| [aspire-protocol/SKILL.md](aspire-protocol/SKILL.md) | Entry point for complete Soda Can or Radio ASPIRE campaigns |
+| [fix-loop/INSTRUCTIONS.md](fix-loop/INSTRUCTIONS.md) | Complete seeds 26-35 skill-learning and seeds 1-25 evaluation protocol |
+| [fix-loop/SKILL.md](fix-loop/SKILL.md) | Canonical entrypoint for Soda Can and Radio ASPIRE campaigns |
 | [skills/](skills/) | Clean-slate placeholders plus API/pipeline references |
 
 ## Supported Configs

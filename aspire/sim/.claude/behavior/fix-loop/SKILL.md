@@ -1,82 +1,41 @@
 ---
 name: behavior/fix-loop
-description: BEHAVIOR-1K R1Pro block-by-block interactive policy fix-loop for radio and soda-can tasks.
+description: Complete BEHAVIOR-1K ASPIRE protocol: learn skills on seeds 26-35, freeze them, then run isolated fresh-agent adaptation on seeds 1-25.
 ---
 
-# BEHAVIOR-1K Fix Loop Skill
+# BEHAVIOR-1K ASPIRE Fix Loop
 
-Use this skill when building or debugging R1Pro BEHAVIOR interactive policies in
-ASPIRE. The policy is written block by block, replayed on the same seed after
-each append, and grown into one long observe-act-observe state machine.
+Use this skill for:
 
-This skill is the per-seed debugging primitive. Use
-[`../aspire-protocol/SKILL.md`](../aspire-protocol/SKILL.md) when the request is
-to run the complete seeds 26-35 development and seeds 1-25 evaluation
-protocol.
+```text
+Follow the protocol and run BEHAVIOR-1K Soda Can ASPIRE experiments.
+```
 
-## Read First
+```text
+Follow the protocol and run BEHAVIOR-1K Radio ASPIRE experiments.
+```
 
-- `.claude/behavior/CLAUDE.md`
-- `.claude/behavior/api-reference.md`
-- `.claude/behavior/skills/system-pipeline.md`
-- `.claude/behavior/skills/README.md`
-- `.claude/behavior/fix-loop/INSTRUCTIONS.md`
-- `.claude/behavior/skills/interactive-policy.md`
-- `.claude/behavior/skills/search.md`
-- `docs/behavior-tasks.md`
+From `aspire/sim`, read:
 
-Read sections 1-8 of `system-pipeline.md` before changing launch commands or
-interpreting traces. They cover the current ASPIRE/B1K scope, execution flow,
-launch modes, API hierarchy, TraceLogger, output layout, config set, and
-perception servers.
+1. `../../AGENTS.md`
+2. `CLAUDE.md`
+3. `.claude/behavior/CLAUDE.md`
+4. `.claude/behavior/api-reference.md`
+5. `.claude/behavior/skills/system-pipeline.md`
+6. `.claude/behavior/fix-loop/INSTRUCTIONS.md`
+7. `.claude/behavior/fix-loop/clean-task-slate.md`
 
-## Supported Task Set
+Then follow `.claude/behavior/fix-loop/main-agent-prompt.md`.
 
-- `env_configs/r1pro/r1pro_pick_up_radio.yaml`
-- `env_configs/r1pro/r1pro_pick_up_radio_aspire.yaml`
-- `env_configs/r1pro/r1pro_pick_up_radio_aspire_traced.yaml`
-- `env_configs/r1pro/r1pro_pick_up_radio_oracle.yaml`
-- `env_configs/r1pro/r1pro_pick_up_trash.yaml`
-- `env_configs/r1pro/r1pro_pick_up_trash_aspire.yaml`
-- `env_configs/r1pro/r1pro_pick_up_trash_aspire_traced.yaml`
-- `env_configs/r1pro/r1pro_pick_up_trash_oracle.yaml`
+The protocol is fixed:
 
-The `r1pro_pick_up_trash*.yaml` files are the legacy filenames for soda-can
-pickup.
+1. Preflight and wait for approval.
+2. Learn a campaign-owned skill library on seeds 26-35.
+3. Freeze skills and the experimental contract—not a policy.
+4. Run seeds 1-25 with a fresh context and empty policy per seed, allowing
+   debugging only within that seed.
+5. Preserve and report all outcomes.
 
-## Debug Loop
-
-1. Pick the target policy file:
-   `outputs/interactive/fix_code_interactive_radio.py` for radio or
-   `outputs/interactive/fix_code_interactive.py` for soda.
-2. Append 5-20 lines of policy code.
-3. Replay the same seed with `scripts/behavior/replay_trial_b1k.py --replay-code`
-   and the bare `--record-video` flag.
-4. Inspect `summary.txt`, `trace.json`, `keyframes/`, videos, VDM feedback, and
-   saved observations.
-5. Classify the current blocker and append the next block based on evidence.
-6. Repeat until search, approach, grasp, verification, and fallbacks are present.
-7. For an ad hoc shared-policy experiment, validate with the non-traced config
-   and report seed range, success count, and common failure modes. For the
-   canonical campaign, return control to `aspire-protocol`; do not substitute a
-   frozen-policy sweep for its fresh-agent evaluation.
-
-## Policy Pattern
-
-Build closed-loop state-machine code:
-
-1. observe and save the start view;
-2. search with prompt alternatives;
-3. estimate object/table pose with retry guards;
-4. navigate and verify actual movement;
-5. re-observe before grasping;
-6. try interleaved grasp attempts across both arms;
-7. save post-grasp observations and report failure mode.
-
-Use only public R1Pro API calls. Do not inspect OmniGibson internals, BDDL
-predicates, simulator object registries, or privileged reward state.
-
-Do not write the whole policy in one pass. Do not skip videos. Do not run
-`uv sync` in the B1K virtual environment. If choosing the coding model for an
-interactive-policy agent, follow `.claude/behavior/CLAUDE.md` and use the Opus
-1M-context option rather than a smaller model.
+Every trial uses replay mode, which calls `env.step` directly without an
+internal model call. Do not delete the shared built-in multi-turn engine; other
+experiments use it. Do not launch before preflight approval.

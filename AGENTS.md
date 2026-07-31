@@ -39,8 +39,8 @@ For either request, read and follow:
 1. [`aspire/sim/README.md`](aspire/sim/README.md)
 2. [`aspire/sim/CLAUDE.md`](aspire/sim/CLAUDE.md)
 3. [`aspire/sim/.claude/behavior/CLAUDE.md`](aspire/sim/.claude/behavior/CLAUDE.md)
-4. [`aspire/sim/.claude/behavior/aspire-protocol/SKILL.md`](aspire/sim/.claude/behavior/aspire-protocol/SKILL.md)
-5. [`aspire/sim/.claude/behavior/aspire-protocol/INSTRUCTIONS.md`](aspire/sim/.claude/behavior/aspire-protocol/INSTRUCTIONS.md)
+4. [`aspire/sim/.claude/behavior/fix-loop/SKILL.md`](aspire/sim/.claude/behavior/fix-loop/SKILL.md)
+5. [`aspire/sim/.claude/behavior/fix-loop/INSTRUCTIONS.md`](aspire/sim/.claude/behavior/fix-loop/INSTRUCTIONS.md)
 
 The named task resolves the task choice, but it does not waive preflight. Before
 installing or changing dependencies, starting services, dispatching agents, or

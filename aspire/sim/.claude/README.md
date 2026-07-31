@@ -13,8 +13,7 @@ This directory is organized by simulator suite. Each suite owns its setup conven
 | LIBERO | Zero-Shot Transfer | [libero/zeroshot-transfer/](libero/zeroshot-transfer/) | LIBERO-90 skill-library build and LIBERO-Long-Pro transfer handoff |
 | LIBERO | Library-Size Scaling | [libero/library-size-scaling/](libero/library-size-scaling/) | Frozen snapshot evals and scaling tables/plots |
 | LIBERO | Inference-Time Scaling | [libero/inference-time-scaling/](libero/inference-time-scaling/) | Debug-compute/token-budget scaling on LIBERO-Long-Pro |
-| BEHAVIOR-1K | Fix Loop | [behavior/fix-loop/](behavior/fix-loop/) | R1Pro BEHAVIOR-1K debug and eval workflow for radio and soda-can pickup |
-| BEHAVIOR-1K | ASPIRE Protocol | [behavior/aspire-protocol/](behavior/aspire-protocol/) | Development-seed skill acquisition followed by isolated per-seed held-out adaptation |
+| BEHAVIOR-1K | ASPIRE Fix Loop | [behavior/fix-loop/](behavior/fix-loop/) | Learn skills on seeds 26-35, then run isolated per-seed adaptation on seeds 1-25 |
 
 ## Suite Entrypoints
 
@@ -38,7 +37,7 @@ This directory is organized by simulator suite. Each suite owns its setup conven
       INSTRUCTIONS.md
       SKILL.md
       main-agent-prompt.md
-      subagent-prompt.md
+      <worker-or-stage>-prompt.md
       clean-task-slate.md
       skills/
 ```
