@@ -219,9 +219,13 @@ def main():
         build_suite_dir = BUILD / suite
         legacy_suite_dir = BASELINE / suite
         tasks = benchmark_tasks[suite]
+        _METADATA_DIRS = {"skill_promotions"}
         for suite_dir in (build_suite_dir, legacy_suite_dir):
             if suite_dir.exists():
-                tasks.update(p.name for p in suite_dir.iterdir() if p.is_dir())
+                tasks.update(
+                    p.name for p in suite_dir.iterdir()
+                    if p.is_dir() and p.name not in _METADATA_DIRS
+                )
         if not tasks:
             continue
 
