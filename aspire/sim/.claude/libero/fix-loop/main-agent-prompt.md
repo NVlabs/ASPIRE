@@ -76,7 +76,7 @@ If any server is down, start it before proceeding — subagents will fail silent
 regenerate+read progress → fill GPUs 3–7 (pending→subagent, stage1-done→eval) → GO IDLE
         ↑                                                                          │
         │   on SUBAGENT completion: start Stage 2 eval on that same GPU,           │
-        │                           update skills from findings.md, go idle        │
+        │                           update skills + record promotion, go idle      │
         │   on EVAL completion:     GPU is now free → assign it the next task,     │
         │                           go idle                                        │
         └──────────────────────────────────────────────────────────────────────────┘
@@ -90,7 +90,7 @@ Repeat until every task is `done`.
 
 1. **Dispatch subagents — never debug yourself.** Your only jobs: dispatch subagents, run Stage 2 evals, update skills, keep the ledger.
 2. **Go idle after dispatching.** You are notified automatically when a subagent or background eval finishes. Do not poll, monitor processes, or watch GPUs while jobs are running.
-3. **Keep all 5 GPUs (3–7) occupied** — with subagents *or* evals, one job per GPU (see ledger rules).
+3. **Keep all 5 GPUs (3–7) occupied** — with subagents *or* evals, one job per GPU (see ledger rules). The skill-promotion gate takes priority over immediately dispatching another Stage 1 task.
 4. **Never read task-specific debug files.** Do not open `trace.json`, `code.py`, `summary.txt`, or keyframe images — that's subagent work. You may read `findings.md` (and skim `fix_code.py` if needed) only when writing a skill update.
 5. **Route by state:** `pending` → subagent; `stage1-done` → Stage 2 eval script; `done` → never touch. Before starting a Stage 2 eval for a `stage1-done` task, check your ledger — if an eval for that task is already running, do not start a second one (the progress file cannot see in-flight evals).
 
@@ -137,19 +137,44 @@ The result includes `GPU: <N>` (if missing, use your ledger + the nvidia-smi fal
 
 1. Regenerate progress (step 1) and confirm the task now shows `stage1-done`.
 2. **Start the Stage 2 eval for this task, on this same GPU, in the background** (see Stage 2 section). The GPU remains owned by this task — do NOT dispatch a new subagent on it.
-3. Update skills from this task's `findings.md` (step 6).
+3. Update skills from this task's `findings.md` and record the promotion (step 6).
 4. Update the ledger (`SUBAGENT` → `EVAL`) and go idle.
 
 ### 5. On EVAL completion
 
 1. Regenerate progress and confirm the task shows `done` (50/50 results). If seeds are missing, re-run the same eval command with `--resume` on the same GPU.
-2. The GPU is now genuinely free — mark it FREE in the ledger and assign it the next job (step 2).
-3. Go idle.
+2. Verify this task's skill-promotion record (step 6). Do not assign another Stage 1 task to the GPU if verification fails.
+3. The GPU is now genuinely free — mark it FREE in the ledger and assign it the next job (step 2).
+4. Go idle.
 
 ### 6. Update skills
 
 After each subagent completion, read
 `outputs/libero_fix_loop/$SUITE/$TASK/findings.md` and promote **generalizable patterns** to the skill library. Subagents never write to skills — only the coordinator does. If `findings.md` is missing, note it and use the subagent's returned summary instead.
+
+Snapshot the library before editing, then record the exact per-task patch afterwards:
+
+```bash
+.venv/bin/python3 scripts/libero/record_skill_promotion.py begin \
+  --suite "$SUITE" --task "$TASK"
+
+# Read findings.md and update .claude/libero/skills/*.md.
+
+.venv/bin/python3 scripts/libero/record_skill_promotion.py finish \
+  --suite "$SUITE" --task "$TASK"
+```
+
+If there is nothing generalizable to promote, leave the library unchanged and pass a concise
+`--reason` to `finish`. Before dispatching another Stage 1 task on this task's GPU, require:
+
+```bash
+.venv/bin/python3 scripts/libero/record_skill_promotion.py verify \
+  --suite "$SUITE" --task "$TASK"
+```
+
+The append-only ledger is
+`outputs/libero_fix_loop/$SUITE/skill_promotions.jsonl`; exact patches and before snapshots are
+stored under `outputs/libero_fix_loop/$SUITE/skill_promotions/`.
 
 Route by topic: SAM3 prompts and disambiguation → [../skills/localize.md](../skills/localize.md);
 grasp selection, offsets, verification → [../skills/grasp.md](../skills/grasp.md); waypoints, transit,
@@ -165,13 +190,16 @@ placement → [../skills/transport.md](../skills/transport.md); drawer/knob/push
     in `findings.md`) and extract the real code, generalizing task-specific prompts and
     constants into placeholders. Do not paraphrase code into prose.
   - **Why it works + evidence** — one or two sentences, plus provenance: source suite/task,
-    which seeds it fixed, the source `fix_code.py` path, held-out result when available, and date.
+    which development seeds it fixed, the source `fix_code.py` path, and date.
 - **Table rows are only for one-line lookups** — a prompt string, a Z formula, a numeric
   threshold. If the Notes cell needs a sentence of procedure, it is not a table row: write a
   subsection (optionally with a table row pointing to it).
 - **Merge, don't append.** If an existing section already covers the pattern, extend it — add
   the new evidence, widen the trigger, note the variant. Never add a table row that paraphrases
   an existing section.
+
+Only Stage 1 evidence may drive skill edits. Report held-out outcomes separately; never use them
+to revise the shared library.
 
 ---
 
