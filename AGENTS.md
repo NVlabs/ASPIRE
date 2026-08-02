@@ -22,6 +22,34 @@ For this request, read and follow:
 
 Before any setup, service start, subagent dispatch, replay, or evaluation, provide a preflight report covering the host, GPU mapping, credentials and gated weights, required services, seed partitions, expected runtime, and output paths. Wait for explicit confirmation before continuing.
 
+### Canonical BEHAVIOR-1K ASPIRE Protocol
+
+Canonical requests are:
+
+```text
+Follow the protocol and run BEHAVIOR-1K Soda Can ASPIRE experiments.
+```
+
+```text
+Follow the protocol and run BEHAVIOR-1K Radio ASPIRE experiments.
+```
+
+For either request, read and follow:
+
+1. [`aspire/sim/README.md`](aspire/sim/README.md)
+2. [`aspire/sim/CLAUDE.md`](aspire/sim/CLAUDE.md)
+3. [`aspire/sim/.claude/behavior/CLAUDE.md`](aspire/sim/.claude/behavior/CLAUDE.md)
+4. [`aspire/sim/.claude/behavior/fix-loop/SKILL.md`](aspire/sim/.claude/behavior/fix-loop/SKILL.md)
+5. [`aspire/sim/.claude/behavior/fix-loop/INSTRUCTIONS.md`](aspire/sim/.claude/behavior/fix-loop/INSTRUCTIONS.md)
+
+The named task resolves the task choice, but it does not waive preflight. Before
+installing or changing dependencies, starting services, dispatching agents, or
+running a trial, report the protocol commit, host and GPU, environment status,
+model, fixed per-seed budgets, seed partitions, expected runtime, and fresh
+campaign output path. Wait for explicit confirmation. After confirmation, the
+coordinator may execute the complete protocol autonomously and resume it from
+its campaign state file.
+
 ### Other simulation experiments
 
 Use `aspire/sim` as the working root. Read [`aspire/sim/.claude/README.md`](aspire/sim/.claude/README.md), the selected suite constitution, and the experiment's `INSTRUCTIONS.md` and `SKILL.md`.

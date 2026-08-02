@@ -19,3 +19,9 @@ an experiment validates them.
 
 Use these placeholders as growth points, not as privileged knowledge. Generated
 task code must rely only on public R1Pro API calls and observations.
+
+For a canonical two-stage ASPIRE campaign, do not edit these repository files
+in place. Copy this directory to the campaign's `skill-library-working/`, learn
+only on seeds 26-35, then freeze that campaign-owned copy for isolated
+evaluation on seeds 1-25. See
+[`../fix-loop/INSTRUCTIONS.md`](../fix-loop/INSTRUCTIONS.md).

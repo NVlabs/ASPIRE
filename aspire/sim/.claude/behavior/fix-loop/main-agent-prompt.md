@@ -1,43 +1,28 @@
 # BEHAVIOR-1K Fix-Loop Coordinator Prompt
 
-You are coordinating a BEHAVIOR-1K R1Pro fix-loop experiment.
-Your job is to build an interactive policy block by block, not to write a full
-static policy in one pass.
+Coordinate one canonical Soda Can or Radio campaign. Read the suite guide,
+`.claude/behavior/fix-loop/SKILL.md`, and all of
+`.claude/behavior/fix-loop/INSTRUCTIONS.md`.
 
-## Startup
+Before doing anything operational, report the exact commit, task/config,
+host/GPU, environment/services, model/context, fixed budgets, seeds, campaign
+path, runtime, and risks. Wait for user approval.
 
-1. Read `.claude/memory/MEMORY.md`.
-2. Read `.claude/behavior/CLAUDE.md`.
-3. Read `.claude/behavior/fix-loop/SKILL.md`.
-4. Read sections 1-8 of `.claude/behavior/skills/system-pipeline.md`; use
-   them for launch modes, trace artifacts, configs, and perception servers.
-5. Read `.claude/behavior/skills/interactive-policy.md`.
-6. Read the relevant task skills under `.claude/behavior/skills/`.
+After approval:
 
-## Workflow
+1. Create a fresh campaign and working skill-library copy.
+2. Run Stage 1 on seeds 26-35 with
+   `.claude/behavior/fix-loop/stage1-skill-acquisition-prompt.md`.
+3. Freeze and checksum the skills and experimental contract.
+4. Run seeds 1-25 sequentially. Start a new non-resumed context for each seed
+   with `.claude/behavior/fix-loop/stage2-evaluation-seed-prompt.md`.
+5. Preserve all attempts and resume only from the first incomplete state.
+6. Aggregate detailed held-out results only after all 25 episodes terminate.
 
-1. Select one supported radio or soda config from `env_configs/r1pro/`.
-2. Select the policy file under `outputs/interactive/`.
-3. Append 5-20 lines of code.
-4. Replay the same seed with `scripts/behavior/replay_trial_b1k.py --replay-code` and
-   `--record-video True`.
-5. Inspect traced output and saved observations.
-6. Classify failures as perception, search, navigation, grasping, sequencing, time
-   budget, or setup.
-7. Append the next block based on evidence.
-8. Evaluate first on traced debug seeds, then on the non-traced validation
-   config. Record trial count, seed range, success count, and dominant failure
-   modes.
-9. Update skill notes only when a pattern is reusable across tasks.
+During Stage 2, accept only seed, outcome, replay count, and summary path from
+each agent. Do not inspect or relay its policy, traces, diagnoses, or lessons
+before the final aggregation.
 
-## Constraints
-
-- Do not use simulator internals, object registries, BDDL predicates, or reward
-  state in generated policy code.
-- Keep BEHAVIOR work in the B1K environment.
-- Preserve outputs needed for videos, stdout/stderr, and observations.
-- Always run with `--record-video True`.
-- Do not run `uv sync`.
-- Do not push from the fix-loop.
-- If selecting an agent model, use the Opus 1M-context option from
-  `.claude/behavior/CLAUDE.md`.
+All trials must use `replay_trial_b1k.py --replay-code`. Never use normal batch
+generation or the built-in `REGENERATE`/`FINISH` loop. Run one Isaac Sim process,
+do not push, and do not touch real hardware.
