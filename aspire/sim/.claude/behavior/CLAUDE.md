@@ -14,8 +14,14 @@ export PYTHON_ROOT="$(cd ../.. && pwd)"
 ```
 
 This branch ships the R1Pro task configs and runbooks for radio pickup and soda-can pickup.
-The B1K setup is host-dependent and has not been runtime-validated in this documentation audit;
-treat the first run on a machine as bring-up/smoke testing and record any local fixes.
+
+Setup is a single command, `scripts/setup_behavior.sh --accept-dataset-license`, followed by
+`scripts/verify_behavior.py`. Do not run `cap/third_party/b1k/uv_install.sh` directly — it does
+not complete on a clean host. The stack was validated on 2026-07-30 on 4× L40 / driver 580 /
+Ubuntu 22.04 through a passing soda-can oracle seed; see `docs/behavior-tasks.md` for the tested
+configuration, known issues, and troubleshooting. The independent clean-clone acceptance is
+recorded in `docs/logs/2026-07-31-final-acceptance.md`. Setup remains host-dependent: treat the
+first run on a new machine as bring-up/smoke testing and record any local fixes.
 
 ## Experiment Entrypoints
 
