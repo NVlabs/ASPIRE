@@ -91,6 +91,10 @@ minimally revise the next block, and stop on success or budget exhaustion.
 Generated code may use only public R1Pro APIs—never simulator internals, BDDL,
 object registries, or reward state.
 
+The launcher zero-pads finalized trial directories (`trial_01_*`). Any wrapper
+that discovers them must format the seed as `%02d`; before launch, test its
+lookup against synthetic IDs 1, 9, 10, and 26 without running held-out seeds.
+
 ## Stage 1: Learn On Seeds 26-35
 
 Run seeds 26-35 sequentially with `stage1-skill-acquisition-prompt.md`. The
