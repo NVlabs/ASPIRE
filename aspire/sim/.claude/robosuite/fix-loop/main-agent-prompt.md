@@ -27,13 +27,14 @@ If any required server is down, start the shared perception servers from a persi
 ```bash
 tmux new -s aspire-perception
 cd "$ASPIRE_ROOT"
-ASPIRE_PERCEPTION_PYTHON=.venv-libero/bin/python3 bash scripts/common/start_perception_servers.sh --no-molmo
+ASPIRE_PERCEPTION_PYTHON=.venv-libero/bin/python3 bash scripts/common/start_perception_servers.sh --with-molmo
 ```
 
 SAM3 needs authenticated access to the gated Hugging Face `facebook/sam3` model.
 GraspNet requires the perception environment to be installed with
-`--extra contactgraspnet`. Molmo on `8122` is optional fallback; if it is not
-started, point-prompt fallback will be unavailable.
+`--extra contactgraspnet`. Molmo on `8122` is started by default; the
+perception environment must provide a `vllm` executable or `--with-molmo`
+aborts. Without Molmo, point-prompt fallback is unavailable.
 
 ---
 

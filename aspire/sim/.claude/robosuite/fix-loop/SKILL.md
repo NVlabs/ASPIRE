@@ -67,7 +67,7 @@ ASPIRE — LLMs write Python code to control a robot via a structured API. Code 
 tmux new -s aspire-perception
 cd "$ASPIRE_ROOT"
 ASPIRE_PERCEPTION_PYTHON=.venv-libero/bin/python3 \
-  bash scripts/common/start_perception_servers.sh --no-molmo
+  bash scripts/common/start_perception_servers.sh --with-molmo
 for p in 8114 8115 8116 8122; do
   echo "port $p: $(curl -s -o /dev/null -w '%{http_code}' --max-time 3 http://127.0.0.1:$p/health)"
 done
@@ -77,7 +77,9 @@ done
 SAM3 uses gated Hugging Face weights; authenticate before startup. GraspNet
 requires the pinned Contact-GraspNet submodule and the perception environment
 to include `--extra contactgraspnet`; the startup script verifies and applies
-the compatibility patch. Keep
+the compatibility patch. Molmo starts by default; `--with-molmo` aborts unless
+the perception environment provides a `vllm` executable, so pass `--no-molmo`
+to skip it and give up point-prompt fallback. Keep
 servers in tmux or another persistent terminal; one-off background shells can
 exit and take child server processes down with them.
 
