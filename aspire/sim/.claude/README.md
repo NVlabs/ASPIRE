@@ -6,7 +6,8 @@ This directory is organized by simulator suite. Each suite owns its setup conven
 
 | Suite | Experiment | Folder | What it measures |
 |---|---|---|---|
-| Robosuite | Fix Loop | [robosuite/fix-loop/](robosuite/fix-loop/) | Baseline -> iterative fix loop -> eval success rate on seeds 1-100 across seven tasks |
+| Robosuite | Fix Loop | [robosuite/fix-loop/](robosuite/fix-loop/) | Initial code -> iterative fix loop -> eval success rate on seeds 1-100 across seven tasks |
+| Robosuite | Fix Loop + Evolutionary Search | [robosuite/evosearch/](robosuite/evosearch/) | Candidate search on seeds 101-125, then selected-code eval on seeds 1-100 |
 | Robosuite | Training Law | [robosuite/training-law/](robosuite/training-law/) | Cumulative tokens vs. success rate across fix-loop iterations |
 | LIBERO | Fix Loop | [libero/fix-loop/](libero/fix-loop/) | LIBERO-Pro fix loop with debug and held-out eval seeds |
 | LIBERO | Fix Loop + Evolutionary Search | [libero/evosearch/](libero/evosearch/) | Candidate search, validation selection, and final eval on LIBERO-Pro |

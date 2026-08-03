@@ -93,6 +93,7 @@ Experiment runbooks live in `.claude/<suite>/<experiment>/`. Read the suite `CLA
 |---|---|
 | `.claude/robosuite/CLAUDE.md` | Robosuite suite constitution: allowed/forbidden APIs, baseline collection, fix-loop and training-law conventions. |
 | `.claude/robosuite/fix-loop/` | Robosuite fix-loop experiment runbook, coordinator prompt, subagent prompt, and skill snapshots. |
+| `.claude/robosuite/evosearch/` | Robosuite Fix Loop + Evolutionary Search: coordinator prompt and subagent prompt for K=8 candidate search on seeds 101-125, then selected-code eval on seeds 1-100. Seeded from the fix loop's `fix_code.py`. |
 | `.claude/robosuite/training-law/` | Robosuite training-law experiment runbook, coordinator prompt, subagent prompt, and token accounting. |
 | `.claude/libero/CLAUDE.md` | LIBERO suite constitution: benchmark roles, API/baseline pointers, env conventions, perception preflight |
 | `.claude/libero/fix-loop/` | Experiment 1: LIBERO-Pro fix loop. Coordinator + per-task subagent prompt for debug seeds 51-65 and held-out eval seeds 1-50. |
