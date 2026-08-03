@@ -44,10 +44,9 @@ Violation of this rule produces invalid benchmark results.
 
 ## Convenience Paths (substitute actual values in your commands)
 
-BASELINE_DIR: outputs/baseline_robosuite_multimodel_ensemble_traced/ensemble_multimodel/ensemble_multimodel
-CONFIG_STEM:  (the filename of CONFIG without the .yaml extension)
+TASK_DIR: outputs/robosuite_training_law/$TASK
 
-All paths below use $BASELINE_DIR and $CONFIG_STEM as shorthands. Replace them with literal values in your bash commands.
+All paths below use $TASK_DIR as a shorthand. Replace them with literal values in your bash commands.
 
 ---
 
@@ -84,7 +83,8 @@ All paths below use $BASELINE_DIR and $CONFIG_STEM as shorthands. Replace them w
 ## Context
 
 You are a fix loop subagent. ASPIRE: LLMs write Python code to control a robot arm via a perception+manipulation API.
-Code runs in MuJoCo (Robosuite). The baseline already ran seeds 101–125 for every task —
+Code runs in MuJoCo (Robosuite). No external baseline is used. First inspect one observed scene and
+generate an initial task-level program —
 most failed. Your job: diagnose failures, write a generalizable fix_code.py, and test it on debug seeds. The coordinator runs seeds 1–100 separately.
 
 **FORBIDDEN APIs** (use any of these and results are invalid):
@@ -148,7 +148,7 @@ echo "=== CHECKPOINT ==="
 cat /tmp/fix_progress_checkpoint_${TASK}_tl.md 2>/dev/null || echo "NO PRIOR PROGRESS"
 
 echo "=== FIX CODE ==="
-ls $BASELINE_DIR/$CONFIG_STEM/fix_code.py 2>/dev/null && echo "EXISTS" || echo "MISSING"
+ls $TASK_DIR/fix_code.py 2>/dev/null && echo "EXISTS" || echo "MISSING"
 
 ```
 
@@ -161,28 +161,29 @@ ls $BASELINE_DIR/$CONFIG_STEM/fix_code.py 2>/dev/null && echo "EXISTS" || echo "
 
 ## Stage 1: Debug Seeds 101–125 (You must never use seeds 1-100 during Stage 1)
 
-### Step 1 — Fast path: try successful baseline code first
+### Step 0 — Explore once and generate initial code
 
-Baseline dir: $BASELINE_DIR/$CONFIG_STEM/
-
-**Check if any seed already succeeded:**
 ```bash
-find $BASELINE_DIR/$CONFIG_STEM -maxdepth 1 -type d -name "*reward_1.000*"
+mkdir -p "$TASK_DIR/attempts" outputs/working_codes
 ```
 
-If successful trials exist:
-1. Read the successful `code.py`
-2. Test it on 2–3 failed seeds **(seeds 101–125 ONLY — never 1–100)**:
-   ```bash
-   MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=$GPU TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
-   .venv-robosuite/bin/python3 scripts/robosuite/replay_trial_robosuite.py \
-     --args.config $CONFIG \
-     --args.trial <failed_seed_from_101_to_125> \
-     --args.replay-code /tmp/baseline_success_${TASK}_tl.py \
-     --args.output-dir /tmp/fast_path_test_${TASK}_tl
-   ```
-3. If reward=1 on those 2-3 seeds → use this code as your starting point for Step 3's iterative loop (write it to `/tmp/fix_code_${TASK}_tl.py` and run `scripts/robosuite/run_iteration.sh --iter 1 ...`). It still must pass the 5-consecutive-25/25 gate before promotion.
-4. If any failures on those 2-3 seeds → fall through to debug loop, using baseline code as a reference.
+Inspect one observed scene using the REPL below (seeds 101–125 ONLY) and save your notes to
+`$TASK_DIR/task_analysis.md`. Then read the skill files under `.claude/robosuite/training-law/skills/`
+and write `$TASK_DIR/initial_code.py` using only allowed APIs.
+
+**The initial analysis may be wrong.** It comes from one seed. Treat inferred identity, geometry, free
+space, and strategy as hypotheses; revise them when later traces disagree. Never hardcode
+snapshot-specific coordinates or mask order.
+
+Smoke-test seed 101 and fix any crash, then use this program as the starting point for Step 3's
+iterative loop (write it to `/tmp/fix_code_${TASK}_tl.py` and run
+`scripts/robosuite/run_iteration.sh --iter 1 ...`). It still must pass the 5-consecutive-25/25 gate
+before promotion.
+
+### Step 1 — Triage the initial run
+
+For each seed 101–125, check the reward in the replay output dir name: `_reward_1.000` = success,
+`_reward_0.000` = failure. List which seeds passed and which failed. Debug only the failed seeds.
 
 ---
 
@@ -320,12 +321,12 @@ Synthesize findings from traces, keyframes, and REPL. Write revised code. **Incr
 
 ### Step 4 — Promote best code to fix_code.py
 
-Read all `iter_*_result.json` files in `$BASELINE_DIR/$CONFIG_STEM/code_versions/`. Find the iteration with the **highest pass rate** (ties broken by lowest iteration number). Copy that iteration's code file to:
+Read all `iter_*_result.json` files in `$TASK_DIR/code_versions/`. Find the iteration with the **highest pass rate** (ties broken by lowest iteration number). Copy that iteration's code file to:
 
-  $BASELINE_DIR/$CONFIG_STEM/fix_code.py              ← task-level (gen_progress_robosuite.py looks here)
+  $TASK_DIR/fix_code.py              ← task-level (gen_progress_robosuite.py looks here)
   outputs/working_codes/robosuite_${TASK}_fix.py      ← named copy
 
-Write findings at `$BASELINE_DIR/$CONFIG_STEM/findings.md`:
+Write findings at `$TASK_DIR/findings.md`:
 
 ```
 ## Task: $TASK
@@ -355,14 +356,14 @@ Write findings at `$BASELINE_DIR/$CONFIG_STEM/findings.md`:
 
 ## Final Step Before Returning
 
-**1. Write reasoning.txt** at `$BASELINE_DIR/$CONFIG_STEM/reasoning.txt`:
+**1. Write reasoning.txt** at `$TASK_DIR/reasoning.txt`:
 
 ```
 ## Why Stage 1 Stopped
 <one of: "5 consecutive 25/25 achieved", "fix_code already existed">
 
 ## Information you MUST include
-- Success rate on 25 debug seeds: <N>/25  ← fix_code.py run on ALL 25, not assumed from baseline
+- Success rate on 25 debug seeds: <N>/25  ← fix_code.py run on ALL 25, not assumed from the initial run
 - Result of the fix code on all 25 debug seeds: <list out 1 by 1 the result of fix_code.py on each of the 25 debug seeds>
 - Reason for failures on debug seeds (if any): <count and one-line cause each, or "none">
 - Key trace signals that informed the decision: <e.g. "SAM3 returned mask showing the cube was stacked on 25/25 seeds">

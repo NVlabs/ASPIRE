@@ -31,10 +31,10 @@ Working directory: $ASPIRE_ROOT
 
 ## Convenience Paths (substitute actual values in your commands)
 
-BASELINE_DIR: outputs/baseline_robosuite_multimodel_ensemble_traced/ensemble_multimodel/ensemble_multimodel
-CONFIG_STEM:  (the filename of CONFIG without the .yaml extension)
+TASK_DIR:  outputs/robosuite_fix_loop/$TASK
+DEBUG_DIR: outputs/robosuite_fix_loop_debug
 
-All paths below use $BASELINE_DIR and $CONFIG_STEM as shorthands. Replace them with literal values in your bash commands.
+All paths below use $TASK_DIR and $DEBUG_DIR as shorthands. Replace them with literal values in your bash commands.
 
 ---
 
@@ -60,8 +60,9 @@ You have full tool access (Bash, Read, Write, Edit, Glob, Grep).
 ## Context
 
 ASPIRE: LLMs write Python code to control a robot arm via a perception+manipulation API.
-Code runs in MuJoCo (Robosuite). The baseline already ran seeds 101–125 for every task —
-most failed. Your job: diagnose failures and write a generalizable fix_code.py. The coordinator runs seeds 1–100 separately.
+Code runs in MuJoCo (Robosuite). No external baseline is used. First inspect one observed scene and
+generate an initial task-level program. Then diagnose its failures on debug seeds 101–125 and write a
+generalizable fix_code.py. The coordinator runs seeds 1–100 separately.
 
 **FORBIDDEN APIs** (use any of these and results are invalid):
   sim.data.body_xpos, sim.data.get_site_xpos, sim.data.set_joint_qpos,
@@ -124,14 +125,14 @@ echo "=== CHECKPOINT ==="
 cat /tmp/fix_progress_checkpoint_${TASK}.md 2>/dev/null || echo "NO PRIOR PROGRESS"
 
 echo "=== FIX CODE ==="
-ls $BASELINE_DIR/$CONFIG_STEM/fix_code.py 2>/dev/null && echo "EXISTS" || echo "MISSING"
+ls $TASK_DIR/fix_code.py 2>/dev/null && echo "EXISTS" || echo "MISSING"
 
 ```
 
 **Decision tree:**
 - If fix_code.py exists → task is done. Report results and return.
-- If checkpoint exists AND no fix_code.py → read checkpoint, resume Stage 1 from where the previous run left off. Do not repeat work already done (e.g. don't re-test seeds that already have results on disk).
-- If no checkpoint AND no fix_code.py → start fresh from Step 1.
+- If checkpoint exists AND no fix_code.py → read checkpoint, resume from where the previous run left off. Do not repeat work already done (e.g. don't re-test seeds that already have results on disk).
+- If no checkpoint AND no fix_code.py → start fresh from Stage 0.
 
 ---
 
@@ -158,30 +159,46 @@ Last updated: <timestamp>
 
 ---
 
-## Stage 1: Debug Seeds 101–125 (You must never use seeds 1-100 during Stage 1)
+## Stage 0: Explore Once and Generate Initial Code
 
-### Step 1 — Fast path: try successful baseline code first
-
-Baseline dir: $BASELINE_DIR/$CONFIG_STEM/
-
-**Check if any seed already succeeded:**
 ```bash
-find $BASELINE_DIR/$CONFIG_STEM -maxdepth 1 -type d -name "*reward_1.000*"
+mkdir -p "$TASK_DIR/attempts" outputs/working_codes
 ```
 
-If successful trials exist:
-1. Read the successful `code.py`
-2. Test it on 2–3 failed seeds **(seeds 101–125 ONLY — never 1–100)**:
-   ```bash
-   MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=$GPU TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
-   .venv-robosuite/bin/python3 scripts/robosuite/replay_trial_robosuite.py \
-     --args.config $CONFIG \
-     --args.trial <failed_seed_from_101_to_125> \
-     --args.replay-code /tmp/baseline_success_${TASK}.py \
-     --args.output-dir /tmp/fast_path_test_${TASK}
-   ```
-3. If reward=1 on those 2-3 seeds → run on **all 25 debug seeds (101–125)**. Do NOT assume seeds that succeeded in the baseline will still succeed with this code — you must verify every seed. If any failures on 25 seeds → fall through to debug loop. If no failures on 25 seeds, use the successful `code.py` as `fix_code.py` and you're done.
-4. If any failures on those 2-3 seeds → fall through to debug loop.
+Inspect one observed scene using the REPL below (seeds 101–125 ONLY), and save the scene images plus
+your notes to `$TASK_DIR/task_analysis.md`. Then read the skill files before writing:
+- `.claude/robosuite/fix-loop/skills/grasp.md`
+- `.claude/robosuite/fix-loop/skills/localize.md`
+- `.claude/robosuite/fix-loop/skills/transport.md`
+- `.claude/robosuite/fix-loop/skills/manipulation.md`
+
+**The initial analysis may be wrong.** It comes from one seed. Treat inferred identity, geometry, free
+space, and strategy as hypotheses; revise them when later traces disagree. Never hardcode
+snapshot-specific coordinates or mask order.
+
+Write `$TASK_DIR/initial_code.py` using only allowed APIs. Smoke-test seed 101 first and fix any crash
+before continuing. Then run the initial program once on every debug seed:
+
+```bash
+for trial in $(seq 101 125); do
+  MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=$GPU TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
+  .venv-robosuite/bin/python3 scripts/robosuite/replay_trial_robosuite.py \
+    --args.config $CONFIG \
+    --args.trial $trial \
+    --args.replay-code "$TASK_DIR/initial_code.py" \
+    --args.output-dir "$DEBUG_DIR" \
+    > "$TASK_DIR/initial_seed_${trial}.log" 2>&1
+done
+```
+
+---
+
+## Stage 1: Debug Seeds 101–125 (You must never use seeds 1-100 during Stage 1)
+
+### Step 1 — Triage the initial run
+
+For each seed 101–125, check the reward in the replay output dir name: `_reward_1.000` = success,
+`_reward_0.000` = failure. List which seeds passed and which failed. Debug only the failed seeds.
 
 ---
 
@@ -195,7 +212,7 @@ For each failed seed, read:
       plan_grasp → num_grasps=0 means no grasp candidates found
       select_top_down_grasp → found_grasp=false means no top-down grasp passed threshold
       solve_ik entry has "error" key (not "result") → IK failed, target out of workspace
-  - `code.py` — what did the baseline try?
+  - `code.py` — what did the current program try?
   - `summary.txt` — stdout/stderr/reward
 
 Parse trace.json (handles both single-arm and bimanual function names):
@@ -229,7 +246,7 @@ for step in trace:
 
 ⚠️ **ALL replays in Stage 1 must use seeds 101–125. NEVER replay seeds 1–100 during Stage 1.**
 
-⚠️ **fix_code.py is ONE program and you MUST test it on ALL 25 debug seeds — not just the ones that failed baseline.** You MUST run your candidate fix on every seed 101–125, including seeds where the baseline already succeeded. Do NOT assume baseline successes will still pass with your fix code — they may not. There can be variance in runs even if the seed and code is fixed. Your Stage 1 score is the count of reward=1 across all 25 seeds when you run fix_code.py on all of them. Reporting (N_fixed_failures + N_baseline_successes)/25 without running fix_code on the baseline-success seeds is invalid.
+⚠️ **fix_code.py is ONE program and you MUST test it on ALL 25 debug seeds — not just the ones that failed the initial run.** You MUST run your candidate fix on every seed 101–125, including seeds where the initial program already succeeded. Do NOT assume initial-run successes will still pass with your fix code — they may not. There can be variance in runs even if the seed and code is fixed. Your Stage 1 score is the count of reward=1 across all 25 seeds when you run fix_code.py on all of them. Reporting (N_fixed_failures + N_initial_successes)/25 without running fix_code on the initial-success seeds is invalid.
 
 ⚠️ **COMPLETION GATE: Do NOT write fix_code.py unless your fix code achieves 25/25 (100%) on the debug seeds or you reach the maximum allowed 5 replay attempts per seed for all seeds.**
 
@@ -268,7 +285,7 @@ EOF
 **Hard limit: 5 replay attempts per seed. Absolute — no exceptions.**
 
 If a seed is blocked after 5 attempts, write BLOCKED.md:
-  $BASELINE_DIR/$CONFIG_STEM/trial_<N>/BLOCKED.md
+  $TASK_DIR/attempts/trial_<N>_BLOCKED.md
   Format:
     ## Root Cause: [Physical|Perception|Algorithmic]
     ## Details: <what exactly fails and why>
@@ -279,11 +296,11 @@ If a seed is blocked after 5 attempts, write BLOCKED.md:
 ### Step 4 — Synthesize task-level fix_code.py
 
 Save to TWO locations:
-  $BASELINE_DIR/$CONFIG_STEM/fix_code.py              ← task-level (gen_progress_robosuite.py looks here)
+  $TASK_DIR/fix_code.py                                ← task-level (gen_progress_robosuite.py looks here)
   outputs/working_codes/robosuite_${TASK}_fix.py      ← named copy
 
 Write findings at:
-  $BASELINE_DIR/$CONFIG_STEM/findings.md
+  $TASK_DIR/findings.md
 
 ```
 ## Task: $TASK
@@ -316,7 +333,7 @@ Write findings at:
 **1. Write reasoning.txt** — always, before anything else in this step:
 
 ```
-$BASELINE_DIR/$CONFIG_STEM/reasoning.txt
+$TASK_DIR/reasoning.txt
 ```
 
 You must write a plain-text file explaining why you stopped. Be specific — include seed counts, success rates, and the deciding factor. Use this format:
@@ -326,7 +343,7 @@ You must write a plain-text file explaining why you stopped. Be specific — inc
 <one of: "fix_code generalized", "hit retry limit on N seeds", "fast-path succeeded", "fix_code already existed">
 
 ## Information you MUST include
-- Success rate on 25 debug seeds: <N>/25  ← fix_code.py run on ALL 25, not assumed from baseline
+- Success rate on 25 debug seeds: <N>/25  ← fix_code.py run on ALL 25, not assumed from the initial run
 - Result of the fix code on all 25 debug seeds: <list out 1 by 1 the result of fix_code.py on each of the 25 debug seeds>
 - Reason for failures on debug seeds (if any): <count and one-line cause each, or "none">
 - Key trace signals that informed the decision: <e.g. "SAM3 returned mask showing the cube was stacked on 25/25 seeds">
@@ -343,7 +360,7 @@ You must write a plain-text file explaining why you stopped. Be specific — inc
   - SAM3/Molmo/GraspNet gave results that seemed wrong (e.g. mask covered wrong object)
   - solve_ik raised an exception for a pose that should be reachable
   - output directory structure was unexpected
-  - seeds that should have existed were missing from baseline
+  - seeds that should have existed were missing from the debug run
   - conflicting or confusing instructions in your prompt or context
   - any other behavior that seemed like a bug or environment issue
 If nothing anomalous occurred, write "none".>
@@ -357,7 +374,7 @@ If nothing anomalous occurred, write "none".>
 
 ---
 
-## What to Return (write to $BASELINE_DIR/$CONFIG_STEM/findings.md)
+## What to Return (write to $TASK_DIR/findings.md)
 
 ```
 TASK: <task>

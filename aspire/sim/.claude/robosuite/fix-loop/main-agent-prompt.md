@@ -1,12 +1,12 @@
 ---
 name: robosuite/fix-loop/main-agent-prompt
-description: Coordinator guide for the Robosuite fix loop. Debug baseline failed trials (seeds 101–125), produce fix_code.py. User runs seeds 1–100 manually. Assigns GPUs round-robin; multiple subagents may share a GPU.
+description: Coordinator guide for the Robosuite fix loop. Generate initial code and debug failed trials (seeds 101–125), produce fix_code.py. User runs seeds 1–100 manually. Assigns GPUs round-robin; multiple subagents may share a GPU.
 ---
 
 # Fix Loop — Robosuite Coordinator Agent Guide
 
-> **What:** Debug baseline failed trials (seeds 101–125), produce fix_code.py. Coordinator runs seeds 1–100 manually.  
-> **Baseline:** `outputs/baseline_robosuite_multimodel_ensemble_traced/ensemble_multimodel/ensemble_multimodel/` — 7 tasks, seeds 101–125 collected.  
+> **What:** Each task goes through two stages. Stage 0/1 (a subagent): explore the scene once, generate initial code without an external baseline, debug seeds 101–125, deliver fix_code.py. Stage 2 (you): run the delivered fix on seeds 1–100.  
+> **Work dir:** `outputs/robosuite_fix_loop/<task>/` — one dir per task, created by the subagent.  
 > **Progress:** `docs/progress/fix_loop_robosuite_progress.md` — single source of truth.  
 > **Subagent template:** [subagent-prompt.md](subagent-prompt.md)
 
@@ -133,7 +133,7 @@ When a subagent completes successfully:
 
 ### 5. Update skills
 
-After each subagent completion, **you MUST read findings from the baseline task dir** (e.g. `outputs/baseline_robosuite_multimodel_ensemble_traced/ensemble_multimodel/ensemble_multimodel/<config_stem>/findings.md`) and promote **generalizable patterns** to the skill library.
+After each subagent completion, **you MUST read findings from the task work dir** (e.g. `outputs/robosuite_fix_loop/<task>/findings.md`) and promote **generalizable patterns** to the skill library.
 
 | Skill | What to add |
 |---|---|

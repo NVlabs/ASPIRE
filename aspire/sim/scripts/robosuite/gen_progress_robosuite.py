@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-BASELINE = ROOT / "outputs/baseline_robosuite_multimodel_ensemble_traced/ensemble_multimodel/ensemble_multimodel"
+FIX_LOOP_ROOT = ROOT / "outputs/robosuite_fix_loop"
 OUT_FILE = ROOT / "docs/progress/fix_loop_robosuite_progress.md"
 
 TASKS = {
@@ -56,8 +56,8 @@ def main():
     pending_tasks = []
     rows = []
 
-    for task, config_stem in sorted(TASKS.items()):
-        task_dir = BASELINE / config_stem
+    for task in sorted(TASKS):
+        task_dir = FIX_LOOP_ROOT / task
         fix_code = task_dir / "fix_code.py"
         status = get_status(task_dir, fix_code)
 
