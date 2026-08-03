@@ -87,9 +87,9 @@ OMNIGIBSON_GPU_ID=<gpu> uv run --no-sync --active \
 
 Inspect only allowed evidence: summary, trace, keyframes, video, saved
 observations, and relevant perception logs. Diagnose the failure, append or
-minimally revise the next block, and stop on success or budget exhaustion.
-Generated code may use only public R1Pro APIs—never simulator internals, BDDL,
-object registries, or reward state.
+revise the next block in Stage 1, and only append in Stage 2. Stop on success or
+budget exhaustion. Generated code may use only public R1Pro APIs—never
+simulator internals, BDDL, object registries, or reward state.
 
 The launcher zero-pads finalized trial directories (`trial_01_*`). Any wrapper
 that discovers them must format the seed as `%02d`; before launch, test its
@@ -121,7 +121,8 @@ For each seed in order:
 
 1. Create a fresh seed directory and empty `policy.py`.
 2. Launch a new non-resumed context with `stage2-evaluation-seed-prompt.md`.
-3. Allow block-by-block replay and inspection only within that seed.
+3. Allow block-by-block replay and inspection only within that seed. Before
+   each replay, append one new block; never modify earlier blocks.
 4. End on success or budget exhaustion; do not replace failed episodes.
 5. Record only seed, outcome, replay count, and summary path in campaign state.
 
