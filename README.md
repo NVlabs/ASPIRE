@@ -15,8 +15,8 @@ ASPIRE includes repository instructions for coding agents such as Codex and Clau
 **Reference agent environments:** ASPIRE is coding-agent agnostic. Our simulation workflow is packaged for reproduction with Claude Code, while the real-robot agent experiments were conducted with Codex. Other coding agents can follow the model-neutral instructions in [`AGENTS.md`](AGENTS.md), although orchestration behavior may differ.
 
 ```text
-Read AGENTS.md and run the ASPIRE LIBERO-Pro Goal-Swap Quick Start for
-put_the_wine_bottle_on_top_of_the_cabinet.
+Read AGENTS.md and run the complete ASPIRE LIBERO-Pro Goal-Swap Quick Start
+for all ten tasks in the libero_goal_swap suite.
 
 Before executing, report the required GPUs, credentials, gated weights,
 services, expected runtime, seed partitions, and output paths. Wait for
@@ -24,14 +24,15 @@ my confirmation before launching. Do not access real-robot code or push
 repository changes.
 ```
 
-This Quick Start runs one complete LIBERO-Pro Fix Loop task rather than a short demo:
+This Quick Start runs the complete LIBERO-Pro Goal-Swap Fix Loop suite rather than a short demo:
 
-- **Suite and task:** `libero_goal_swap/put_the_wine_bottle_on_top_of_the_cabinet`
-- **Development:** seeds 51–65 for initial code generation and repair
-- **Held-out evaluation:** seeds 1–50 using the selected fix
-- **Reference GPU topology:** SAM3, GraspNet, and PyRoKi on GPUs 0–2; task execution on GPU 3
-- **Runtime:** potentially several hours; failed trials can run for approximately 6–7 minutes each
-- **Completion:** a selected `fix_code.py`, reusable findings, traces and videos, and an immutable 50-seed validation manifest and pass rate—not a guaranteed success threshold
+- **Suite and tasks:** all ten tasks in `libero_goal_swap`
+- **Development:** seeds 51–65 per task for initial code generation and repair
+- **Held-out evaluation:** seeds 1–50 per task using each selected fix
+- **Reference GPU topology:** SAM3, GraspNet, and PyRoKi on GPUs 0–2; five concurrent task slots on GPUs 3–7
+- **Scheduling:** each task retains its GPU through repair, skill promotion, and held-out evaluation; freed slots are refilled until all ten tasks finish
+- **Runtime:** potentially several days; failed trials can run for approximately 6–7 minutes each, and held-out seeds run sequentially within each task
+- **Completion:** ten selected `fix_code.py` files, reusable findings and promoted skills, traces and videos, and one immutable 50-seed validation manifest and pass rate per task—not a guaranteed success threshold
 
 The canonical procedure is [`aspire/sim/.claude/libero/fix-loop/QUICKSTART.md`](aspire/sim/.claude/libero/fix-loop/QUICKSTART.md). The agent must complete preflight and wait for confirmation before installing dependencies, starting services, or launching trials.
 

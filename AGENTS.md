@@ -9,8 +9,8 @@ This is the model-neutral entry point for repository-aware coding agents. Read i
 The canonical request is:
 
 ```text
-Run the ASPIRE LIBERO-Pro Goal-Swap Quick Start for
-put_the_wine_bottle_on_top_of_the_cabinet.
+Run the complete ASPIRE LIBERO-Pro Goal-Swap Quick Start for all ten tasks
+in the libero_goal_swap suite.
 ```
 
 For this request, read and follow:
