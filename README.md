@@ -48,6 +48,7 @@ For any experiment other than the canonical Quick Start, name the suite and expe
 | LIBERO-Long-Pro | Library-Size Scaling | [`libero/library-size-scaling/`](aspire/sim/.claude/libero/library-size-scaling/INSTRUCTIONS.md) |
 | LIBERO-Long-Pro | Inference-Time Scaling | [`libero/inference-time-scaling/`](aspire/sim/.claude/libero/inference-time-scaling/INSTRUCTIONS.md) |
 | Robosuite | Fix Loop | [`robosuite/fix-loop/`](aspire/sim/.claude/robosuite/fix-loop/INSTRUCTIONS.md) |
+| Robosuite | Fix Loop + Evolutionary Search | [`robosuite/evosearch/`](aspire/sim/.claude/robosuite/evosearch/INSTRUCTIONS.md) |
 | Robosuite | Training Law | [`robosuite/training-law/`](aspire/sim/.claude/robosuite/training-law/INSTRUCTIONS.md) |
 | BEHAVIOR-1K | Fix Loop | [`behavior/fix-loop/`](aspire/sim/.claude/behavior/fix-loop/INSTRUCTIONS.md) |
 
