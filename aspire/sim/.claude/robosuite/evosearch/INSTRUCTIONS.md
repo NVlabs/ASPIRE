@@ -6,9 +6,10 @@ description: End-to-end entrypoint for Robosuite Fix Loop + Evolutionary Search.
 # Robosuite Evolutionary Search Instructions
 
 1. Complete the base and Robosuite setup in [`../../../README.md`](../../../README.md).
-2. Confirm the two tracked five-iteration Fix Loop baselines exist:
-   `baselines/robosuite_nut_assembly_fix.py` (9/100 held out) and
-   `baselines/robosuite_two_arm_lift_fix.py` (approximately 70/100 held out).
+2. Confirm the Fix Loop experiment has produced `fix_code.py` for the target
+   tasks: `outputs/robosuite_fix_loop/nut_assembly/fix_code.py` and
+   `outputs/robosuite_fix_loop/two_arm_lift/fix_code.py`. Use each task's Fix
+   Loop seeds 1-100 rate as its held-out baseline rate.
 3. Export `ASPIRE_ROOT`, `PYTHON_ROOT`, `MUJOCO_GL=egl`, and
    `TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1`.
 4. Start a persistent coordinator session, for example

@@ -13,7 +13,7 @@ to one background subagent.
 
 TASK:          <nut_assembly|two_arm_lift>
 CONFIG:        <traced yaml from the coordinator task table>
-FIX_CODE:      <tracked baseline from the coordinator task table>
+FIX_CODE:      outputs/robosuite_fix_loop/<task>/fix_code.py (from the coordinator task table)
 GPU:           <simulation GPU>
 BASELINE_RATE: <9/100|approximately 70/100>
 EVOSEARCH_DIR: outputs/robosuite_evosearch
@@ -93,7 +93,7 @@ done
 ```
 
 All four must respond (`404` is expected; `000` is down). Molmo is required
-because both tracked baselines use it as a localization fallback.
+because the Fix Loop seed programs may use it as a localization fallback.
 
 ## Stage 0 — Resume and Baseline
 

@@ -9,12 +9,12 @@ Start with [INSTRUCTIONS.md](INSTRUCTIONS.md).
 
 ## Run Order
 
-1. Confirm the traced config and tracked five-iteration baseline exist for each
-   target.
+1. Confirm the traced config exists and the Fix Loop has produced
+   `outputs/robosuite_fix_loop/<task>/fix_code.py` for each target.
 2. Complete the coordinator preflight and wait for explicit launch approval.
 3. Follow [main-agent-prompt.md](main-agent-prompt.md).
 4. Fill [subagent-prompt.md](subagent-prompt.md) once per confirmed task.
-5. Seed `candidate_A` verbatim from the task baseline file under `baselines/`.
+5. Seed `candidate_A` verbatim from the task's Fix Loop `fix_code.py`.
 6. Search on seeds 101-125 only, then evaluate the selected code on seeds 1-100.
 
 ## Reused Robosuite References

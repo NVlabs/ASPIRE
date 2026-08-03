@@ -9,7 +9,7 @@ description: Coordinator guide for K=8 Evolutionary Search on Robosuite Fix Loop
 > search on seeds 101-125. Each task subagent evaluates the selected program on
 > seeds 1-100 only after Stage 1 stops.
 >
-> **Tracked five-iteration baselines:** [baselines/](baselines/)
+> **Fix Loop seed programs:** `outputs/robosuite_fix_loop/<task>/fix_code.py` (produced by the Fix Loop experiment)
 >
 > **Subagent template:** [subagent-prompt.md](subagent-prompt.md)
 
@@ -47,8 +47,8 @@ Run from `$ASPIRE_ROOT`:
 ```bash
 test -x .venv-robosuite/bin/python
 .venv-robosuite/bin/python -c "import aspire, robosuite; print('robosuite env ok')"
-test -f .claude/robosuite/evosearch/baselines/robosuite_nut_assembly_fix.py
-test -f .claude/robosuite/evosearch/baselines/robosuite_two_arm_lift_fix.py
+test -f outputs/robosuite_fix_loop/nut_assembly/fix_code.py
+test -f outputs/robosuite_fix_loop/two_arm_lift/fix_code.py
 
 for p in 8114 8115 8116 8122; do
   echo "port $p: $(curl -s -o /dev/null -w '%{http_code}' --max-time 3 http://127.0.0.1:$p/health)"
@@ -133,8 +133,8 @@ diagnosis. Dispatch only tasks confirmed in preflight.
 
 | Task | Config | Fix code | Held-out baseline | Notes |
 |---|---|---|---|---|
-| `nut_assembly` | `env_configs/robosuite/nut_assembly_multimodel_aspire_traced.yaml` | `.claude/robosuite/evosearch/baselines/robosuite_nut_assembly_fix.py` | `9/100` | Single arm |
-| `two_arm_lift` | `env_configs/robosuite/two_arm_lift_multimodel_aspire_traced.yaml` | `.claude/robosuite/evosearch/baselines/robosuite_two_arm_lift_fix.py` | `~70/100` | Bimanual |
+| `nut_assembly` | `env_configs/robosuite/nut_assembly_multimodel_aspire_traced.yaml` | `outputs/robosuite_fix_loop/nut_assembly/fix_code.py` | from Fix Loop seeds 1-100 | Single arm |
+| `two_arm_lift` | `env_configs/robosuite/two_arm_lift_multimodel_aspire_traced.yaml` | `outputs/robosuite_fix_loop/two_arm_lift/fix_code.py` | from Fix Loop seeds 1-100 | Bimanual |
 
 ## Stopping Criteria
 
