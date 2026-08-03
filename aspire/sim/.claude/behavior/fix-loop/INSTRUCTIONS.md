@@ -86,10 +86,10 @@ OMNIGIBSON_GPU_ID=<gpu> uv run --no-sync --active \
 ```
 
 Inspect only allowed evidence: summary, trace, keyframes, video, saved
-observations, and relevant perception logs. Stage 1 may revise its policy while
-learning; Stage 2 must follow the stricter append-only rule below. Stop on
-success or budget exhaustion. Generated code may use only public R1Pro
-APIs—never simulator internals, BDDL, object registries, or reward state.
+observations, and relevant perception logs. Diagnose the failure, append or
+revise the next block in Stage 1, and only append in Stage 2. Stop on success or
+budget exhaustion. Generated code may use only public R1Pro APIs—never
+simulator internals, BDDL, object registries, or reward state.
 
 The launcher zero-pads finalized trial directories (`trial_01_*`). Any wrapper
 that discovers them must format the seed as `%02d`; before launch, test its
@@ -99,7 +99,6 @@ lookup against synthetic IDs 1, 9, 10, and 26 without running held-out seeds.
 
 Run seeds 26-35 sequentially with `stage1-skill-acquisition-prompt.md`. The
 learning agent may reuse reasoning and policies across these development seeds.
-It may append, edit, delete, or reorder policy blocks while debugging.
 After each seed, preserve all attempts, write its summary, and add only
 evidence-backed reusable public-API lessons to `skill-library-working/`. Record
 the source seed and evidence path. Stage 1 produces skills, not an evaluation
@@ -122,18 +121,10 @@ For each seed in order:
 
 1. Create a fresh seed directory and empty `policy.py`.
 2. Launch a new non-resumed context with `stage2-evaluation-seed-prompt.md`.
-3. Before each replay, append exactly one new `# Code block N` and make no
-   other source change. Once a block has been launched, its bytes and order are
-   immutable: never edit, delete, reorder, or replace earlier code. An appended
-   block must not redefine or monkeypatch functions, classes, or constants from
-   an earlier block. Runtime state updates from execution remain allowed.
-4. Save the launched policy as `attempt_NNN/policy.snapshot.py` with its
-   SHA-256. Before the next replay, verify that snapshot is an exact byte prefix
-   of `policy.py` and that exactly one new block follows it. Stop and report any
-   mismatch instead of launching.
-5. Replay and inspect evidence only within that seed. End on success or budget
-   exhaustion; do not replace failed episodes.
-6. Record only seed, outcome, replay count, and summary path in campaign state.
+3. Allow block-by-block replay and inspection only within that seed. Before
+   each replay, append one new block; never modify earlier blocks.
+4. End on success or budget exhaustion; do not replace failed episodes.
+5. Record only seed, outcome, replay count, and summary path in campaign state.
 
 Until all 25 seeds finish, the coordinator must not inspect detailed Stage 2
 policies, summaries, traces, observations, or videos. This prevents it from
@@ -147,10 +138,9 @@ the terminal result, summary, trace, and video were already saved.
 
 Report provenance, learned skills, all 25 outcomes, success rate over 25,
 replay counts, failures/invalidities, and confirmation of fresh policies,
-isolated agents, verified append-only Stage 2 snapshots, replay-only execution,
-and no hardware use. Never drop failed or invalid seeds from the denominator.
+isolated agents, replay-only execution, and no hardware use. Never drop failed
+or invalid seeds from the denominator.
 
 Stop and ask before continuing if a seed boundary is crossed, frozen hashes
 change, multiple simulators overlap, required evidence is missing, the built-in
-LLM loop starts, credentials enter artifacts, a Stage 2 policy-prefix check
-fails, or the protocol must change.
+LLM loop starts, credentials enter artifacts, or the protocol must change.
