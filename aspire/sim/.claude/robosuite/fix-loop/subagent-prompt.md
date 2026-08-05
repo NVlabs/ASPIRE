@@ -176,8 +176,53 @@ your notes to `$TASK_DIR/task_analysis.md`. Then read the skill files before wri
 space, and strategy as hypotheses; revise them when later traces disagree. Never hardcode
 snapshot-specific coordinates or mask order.
 
-Write `$TASK_DIR/initial_code.py` using only allowed APIs. Smoke-test seed 101 first and fix any crash
-before continuing. Then run the initial program once on every debug seed:
+Before writing the full initial code, explore seed 101 interactively in a REPL session. You have a budget of **5 code blocks** inside ONE REPL session. Use them to incrementally build and test your approach — observe the scene, try perception calls, attempt grasps, diagnose what works and what doesn't. Each code block runs in the same environment state left by the previous block (the robot and objects stay where they are).
+
+**Interactive exploration on seed 101 (5 code blocks, 1 REPL session):**
+
+```bash
+MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=$GPU TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
+.venv-robosuite/bin/python3 scripts/robosuite/replay_trial_robosuite.py \
+  --args.config $CONFIG \
+  --args.trial 101 \
+  --args.interactive \
+  --args.output-dir /tmp/repl_explore_${TASK} 2>/dev/null << 'REPL_EOF' | tee $TASK_DIR/repl_explore_101.txt
+# Code block 0: observe scene, run perception, print what you see
+import numpy as np
+obs = get_observation()
+cam = obs["robot0_robotview"]
+rgb = cam["images"]["rgb"]
+depth = cam["images"]["depth"]
+K = cam["intrinsics"]
+T = cam["pose_mat"]
+# ... explore segmentation, point clouds, object locations ...
+print("block 0 done", flush=True)
+
+# Code block 1: try a grasp or motion approach
+# ... test your strategy step by step ...
+print("block 1 done", flush=True)
+
+# Code block 2: inspect result, adjust
+# ... check gripper width, re-observe, diagnose ...
+print("block 2 done", flush=True)
+
+# Code block 3: refine approach
+# ... fix issues found in block 2 ...
+print("block 3 done", flush=True)
+
+# Code block 4: final verification
+# ... confirm the full sequence works ...
+print("block 4 done", flush=True)
+REPL_EOF
+```
+
+**How to use the 5 blocks:** Plan all 5 blocks upfront in one heredoc (the REPL reads stdin in batch mode). Each `# Code block N` section runs sequentially in the same env. Use early blocks for perception and scene understanding, middle blocks for trying manipulation, and later blocks to refine. Print intermediate results so you can see what happened. After the REPL session, read the tee'd output and any keyframes/video to understand what worked.
+
+**After the REPL exploration**, synthesize everything you learned into `$TASK_DIR/initial_code.py` — a complete standalone program. This is NOT a copy-paste of the REPL blocks (which ran incrementally in shared state). The initial code must work from a fresh env reset.
+
+These 5 REPL blocks do NOT count toward the Stage 1 per-seed replay limit. They are a separate exploration budget.
+
+After writing initial_code.py, run it once on every debug seed:
 
 ```bash
 for trial in $(seq 101 125); do
