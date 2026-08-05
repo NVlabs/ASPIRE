@@ -165,8 +165,9 @@ Last updated: <timestamp>
 mkdir -p "$TASK_DIR/attempts" outputs/working_codes
 ```
 
-Inspect one observed scene using the REPL below (seeds 101–125 ONLY), and save the scene images plus
-your notes to `$TASK_DIR/task_analysis.md`. Then read the skill files before writing:
+Your only tool in Stage 0 is the incremental block loop below (seed 101). Block 0 is where you observe
+the scene — do NOT open a separate interactive REPL to look around first. Record what you learn in
+`$TASK_DIR/task_analysis.md` as you go. Read the skill files before writing:
 - `.claude/robosuite/fix-loop/skills/grasp.md`
 - `.claude/robosuite/fix-loop/skills/localize.md`
 - `.claude/robosuite/fix-loop/skills/transport.md`
@@ -176,51 +177,46 @@ your notes to `$TASK_DIR/task_analysis.md`. Then read the skill files before wri
 space, and strategy as hypotheses; revise them when later traces disagree. Never hardcode
 snapshot-specific coordinates or mask order.
 
-Before writing the full initial code, explore seed 101 interactively in a REPL session. You have a budget of **5 code blocks** inside ONE REPL session. Use them to incrementally build and test your approach — observe the scene, try perception calls, attempt grasps, diagnose what works and what doesn't. Each code block runs in the same environment state left by the previous block (the robot and objects stay where they are).
+Build `$TASK_DIR/initial_code.py` incrementally on seed 101, in small `# Code block N` sections. You
+have a budget of **5 blocks**. Write ONE block, replay the file, read what happened, and only then
+decide what the next block should be.
 
-**Interactive exploration on seed 101 (5 code blocks, 1 REPL session):**
+**Do NOT plan all 5 blocks upfront.** Each block is chosen after seeing the previous replay's result.
+Writing them all in advance wastes the budget on guesses.
+
+### The loop (repeat at most 5 times)
+
+1. Append one new `# Code block N` section to `$TASK_DIR/initial_code.py`.
+   (Start from an empty file: block 0 is the first thing you write.)
+2. Reset and replay seed 101 into a fresh attempt directory:
 
 ```bash
 MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=$GPU TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
 .venv-robosuite/bin/python3 scripts/robosuite/replay_trial_robosuite.py \
   --args.config $CONFIG \
   --args.trial 101 \
-  --args.interactive \
-  --args.output-dir /tmp/repl_explore_${TASK} 2>/dev/null << 'REPL_EOF' | tee $TASK_DIR/repl_explore_101.txt
-# Code block 0: observe scene, run perception, print what you see
-import numpy as np
-obs = get_observation()
-cam = obs["robot0_robotview"]
-rgb = cam["images"]["rgb"]
-depth = cam["images"]["depth"]
-K = cam["intrinsics"]
-T = cam["pose_mat"]
-# ... explore segmentation, point clouds, object locations ...
-print("block 0 done", flush=True)
-
-# Code block 1: try a grasp or motion approach
-# ... test your strategy step by step ...
-print("block 1 done", flush=True)
-
-# Code block 2: inspect result, adjust
-# ... check gripper width, re-observe, diagnose ...
-print("block 2 done", flush=True)
-
-# Code block 3: refine approach
-# ... fix issues found in block 2 ...
-print("block 3 done", flush=True)
-
-# Code block 4: final verification
-# ... confirm the full sequence works ...
-print("block 4 done", flush=True)
-REPL_EOF
+  --args.replay-code "$TASK_DIR/initial_code.py" \
+  --args.output-dir "$TASK_DIR/attempts/block_00N" \
+  > "$TASK_DIR/attempts/block_00N.log" 2>&1
 ```
 
-**How to use the 5 blocks:** Plan all 5 blocks upfront in one heredoc (the REPL reads stdin in batch mode). Each `# Code block N` section runs sequentially in the same env. Use early blocks for perception and scene understanding, middle blocks for trying manipulation, and later blocks to refine. Print intermediate results so you can see what happened. After the REPL session, read the tee'd output and any keyframes/video to understand what worked.
+3. Inspect the result before writing anything else — the log, the reward in the output dir name, and
+   `trace.json` / `keyframes/` inside the attempt dir.
+4. Append or revise the next block based on what you observed.
 
-**After the REPL exploration**, synthesize everything you learned into `$TASK_DIR/initial_code.py` — a complete standalone program. This is NOT a copy-paste of the REPL blocks (which ran incrementally in shared state). The initial code must work from a fresh env reset.
+Each replay starts from a **fresh env reset** and re-runs every block from the top, so the world state
+block N sees is rebuilt by blocks 0..N-1 executing again. That is what makes this reproducible: the
+seed alone determines the scene, and `initial_code.py` is always exercised on the exact from-reset
+path it has to survive in Stage 1.
 
-These 5 REPL blocks do NOT count toward the Stage 1 per-seed replay limit. They are a separate exploration budget.
+The replay script splits the file on `# Code block N` headers and executes each as its own step, so
+keep that header format exactly.
+
+**After the 5 blocks**, `$TASK_DIR/initial_code.py` IS your initial program — it already runs
+standalone from reset, so there is nothing to re-synthesize. Clean it up if needed, then continue to
+the debug-seed sweep below.
+
+These 5 exploration replays do NOT count toward the Stage 1 per-seed replay limit.
 
 After writing initial_code.py, run it once on every debug seed:
 
@@ -312,7 +308,8 @@ MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=$GPU TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
 
 Check reward in output dir name: `_reward_1.000` = success, `_reward_0.000` = failure.
 
-**REPL for live inspection (seeds 101–125 ONLY):**
+**REPL for live inspection — Stage 1 diagnosis of a FAILED seed ONLY (seeds 101–125).**
+**Do NOT use this during Stage 0.** Stage 0 uses the incremental block loop and `--args.replay-code`.
 ```bash
 MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=$GPU TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
 .venv-robosuite/bin/python3 scripts/robosuite/replay_trial_robosuite.py \
