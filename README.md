@@ -2,7 +2,7 @@
 
 [Project Page](https://research.nvidia.com/labs/gear/aspire/) &ensp;|&ensp; [Paper](https://arxiv.org/abs/2607.00272)
 
-<img src="assets/media/mainvideoclip-2.gif" alt="ASPIRE robot demonstrations" width="100%">
+<img src="assets/media/covervideo.gif" alt="ASPIRE robot demonstrations" width="100%">
 
 ASPIRE is a continual-learning robotics system that autonomously writes, debugs, and distills robot-control programs into reusable skills across simulation and real-world settings.
 
