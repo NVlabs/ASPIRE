@@ -1,0 +1,716 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Runyu Lu <runyul@nvidia.com>
+Date: Thu, 2 Jul 2026 15:38:32 -0700
+Subject: [PATCH] YAM workstation changes for i2rt
+
+Developed by the NVIDIA ASPIRE Team.
+
+Upstream: https://github.com/i2rt-robotics/i2rt.git
+Base: 98d177bb511d545c80c0e8ec13ffaf227238a8d6
+Upstream-License: MIT
+
+Signed-off-by: Runyu Lu <runyul@nvidia.com>
+
+---
+ devices/FlowBase.desktop            |   0
+ i2rt/motor_drivers/can_interface.py |   2 +-
+ i2rt/motor_drivers/dm_driver.py     | 214 ++++++++++++++++++++++++++--
+ i2rt/robots/get_robot.py            |  22 ++-
+ i2rt/robots/motor_chain_robot.py    |  58 ++++++++
+ i2rt/robots/utils.py                |  23 ++-
+ i2rt/utils/mujoco_utils.py          |   3 +-
+ 7 files changed, 300 insertions(+), 22 deletions(-)
+ mode change 100755 => 100644 devices/FlowBase.desktop
+
+diff --git a/devices/FlowBase.desktop b/devices/FlowBase.desktop
+old mode 100755
+new mode 100644
+diff --git a/i2rt/motor_drivers/can_interface.py b/i2rt/motor_drivers/can_interface.py
+index 8246835..4d5dc2d 100644
+--- a/i2rt/motor_drivers/can_interface.py
++++ b/i2rt/motor_drivers/can_interface.py
+@@ -32,7 +32,7 @@ class CanInterface:
+             self.notifier.stop()
+         self.bus.shutdown()
+ 
+-    def _send_message_get_response(
++    def  _send_message_get_response(
+         self, id: int, motor_id: int, data: List[int], max_retry: int = 5, expected_id: Optional[int] = None
+     ) -> can.Message:
+         """Send a message over the CAN bus.
+diff --git a/i2rt/motor_drivers/dm_driver.py b/i2rt/motor_drivers/dm_driver.py
+index 734bed1..ae7c8ae 100644
+--- a/i2rt/motor_drivers/dm_driver.py
++++ b/i2rt/motor_drivers/dm_driver.py
+@@ -30,6 +30,7 @@ class ControlMode:
+     MIT = "MIT"
+     POS_VEL = "POS_VEL"
+     VEL = "VEL"
++    FORCE_POS = "FORCE_POS"
+ 
+     @classmethod
+     def get_id_offset(cls, control_mode: str) -> int:
+@@ -39,6 +40,8 @@ class ControlMode:
+             return 0x100
+         elif control_mode == cls.VEL:
+             return 0x200
++        elif control_mode == cls.FORCE_POS:
++            return 0x300
+         else:
+             raise ValueError(f"Control mode '{control_mode}' not recognized.")
+ 
+@@ -72,11 +75,12 @@ class PassiveEncoderReader:
+             encoder_id, encoder_id, data, expected_id=self.receive_mode.get_receive_id(0x50E), max_retry=15
+         )
+         pos, vel, button_state = self._parse_encoder_message(message)
+-        pos_range = [-0.7, 0.7]
+-        pos = np.clip(pos, pos_range[0], pos_range[1])
++        print(f"pos: {pos}, vel: {vel}, button_state: {button_state}")
++        pos_range = 0.62
++        pos = np.clip(pos, -pos_range, pos_range)
+         # normalize pos to 1 - 0
+         delta = np.abs(0.0 - pos)
+-        pos = delta / 0.7
++        pos = delta / pos_range
+         result = PassiveEncoderInfo(id=encoder_id, position=pos, velocity=vel, io_inputs=button_state)
+         return result
+ 
+@@ -105,6 +109,10 @@ class EncoderChain:
+ class DMSingleMotorCanInterface(CanInterface):
+     """Class for CAN interface with a single motor."""
+ 
++    _SPECIAL_MSG_ID = 0x7FF
++    _REG_READ_CMD = 0x33
++    _REG_WRITE_CMD = 0x55
++
+     def __init__(
+         self,
+         control_mode: str = ControlMode.MIT,
+@@ -122,10 +130,79 @@ class DMSingleMotorCanInterface(CanInterface):
+         self.cmd_idoffset = ControlMode.get_id_offset(self.control_mode)
+         self.receive_mode = receive_mode
+ 
++    def _read_register_uint32(self, motor_id: int, reg_id: int, expected_id: int = _SPECIAL_MSG_ID) -> int:
++        data = [motor_id, 0x00, self._REG_READ_CMD, reg_id, 0x00, 0x00, 0x00, 0x00]
++        try:
++            message = self._send_message_get_response(
++                self._SPECIAL_MSG_ID, motor_id, data, max_retry=20, expected_id=expected_id
++            )
++        except AssertionError as e:
++            raise TimeoutError(f"Failed to read register {reg_id} from motor {motor_id}") from e
++        return struct.unpack("<I", message.data[4:8])[0]
++
++    def _write_register_uint32(self, motor_id: int, reg_id: int, value: int, expected_id: int = _SPECIAL_MSG_ID) -> int:
++        payload = struct.pack("<I", int(value))
++        data = [motor_id, 0x00, self._REG_WRITE_CMD, reg_id] + list(payload)
++        try:
++            message = self._send_message_get_response(
++                self._SPECIAL_MSG_ID, motor_id, data, max_retry=20, expected_id=expected_id
++            )
++        except AssertionError as e:
++            raise TimeoutError(f"Failed to write register {reg_id} for motor {motor_id}") from e
++        return struct.unpack("<I", message.data[4:8])[0]
++
++    def ensure_control_mode(self, motor_id: int, control_mode: str, motor_type: Optional[str] = None) -> None:
++        """
++        Ensure control mode (register 10) matches the desired mode.
++        Reads register 10; if it differs, writes and verifies.
++
++        Args:
++            motor_id (int): The ID of the motor.
++            control_mode (str): "MIT", "POS_VEL", "VEL", or "FORCE_POS"
++
++        Raises:
++            ValueError: If control_mode is invalid or register value is invalid.
++            TimeoutError: If reading/writing register times out.
++            RuntimeError: Other errors during register operations, or if verification after write fails.
++        """
++        mode_to_register = {
++            ControlMode.MIT: 1,
++            ControlMode.POS_VEL: 2,
++            ControlMode.VEL: 3,
++            ControlMode.FORCE_POS: 4,
++        }
++        if control_mode not in mode_to_register:
++            raise ValueError(
++                f"Invalid control_mode: {control_mode}. Must be one of {list(mode_to_register.keys())}"
++            )
++        desired = mode_to_register[control_mode]
++
++        current = int(self._read_register_uint32(motor_id, 10, self.receive_mode.get_receive_id(motor_id)))
++        if current == desired:
++            print(f"✓ Control mode already set to {control_mode}")
++            return
++        print(f"⚠ Control mode mismatch: register 10 = {current}, required = {desired}")
++        print(f"  Setting control mode to {control_mode} (register value: {desired})...")
++        self._write_register_uint32(motor_id, 10, desired, self.receive_mode.get_receive_id(motor_id))
++        time.sleep(0.1)
++        verify = int(self._read_register_uint32(motor_id, 10, self.receive_mode.get_receive_id(motor_id)))
++        if verify != desired:
++            raise RuntimeError(
++                f"Control mode verification failed after write: expected {desired}, got {verify}"
++            )
++        print(f"✓ Control mode set to {control_mode}")
++        if motor_type is not None:
++            self.motor_on(motor_id, motor_type)
++
+     def _get_frame_id(self, motor_id: int) -> int:
+         """Calculate the Control Frame ID for a given motor."""
+         return self.cmd_idoffset + motor_id
+ 
++    def _get_frame_id_with_mode(self, motor_id: int, control_mode: Optional[str]) -> int:
++        if control_mode is None:
++            return self._get_frame_id(motor_id)
++        return ControlMode.get_id_offset(control_mode) + motor_id
++
+     def motor_on(self, motor_id: int, motor_type: str) -> None:
+         """Turn on the motor.
+ 
+@@ -212,25 +289,32 @@ class DMSingleMotorCanInterface(CanInterface):
+         kp: float,
+         kd: float,
+         torque: float,
++        vel_limit: Optional[float] = 100.0,
++        torque_limit: Optional[float] = None,
++        control_mode: Optional[str] = None,
+     ) -> FeedbackFrameInfo:
+         """Set the control of the motor and return its status.
++        Check https://github.com/dmBots/DM-J4310-2EC for protocol details.
+ 
+         Args:
+             motor_id (int): The ID of the motor. Check GUI for the CAN ID.
+             motor_type (str): The type of the motor. Check MotorType class for available motor types.
+             pos (float): The target position value.
+             vel (float): The target velocity value.
++            vel_limit (Optional[float]): Velocity limit for FORCE_POS mode, defualt to max. (max: 100.0 rad/s)
+             kp (float): The proportional gain value.
+             kd (float): The derivative gain value.
+             torque (float): The target torque value.
++            torque_limit (Optional[float]): Torque limit for FORCE_POS mode, defualt to max. (max: motor specific)
+ 
+         Returns:
+             FeedbackFrameInfo: The current state of the motor, including motor id, error code, position, velocity, torque, temperature.
+         """
+-        frame_id = self._get_frame_id(motor_id)
++        local_mode = self.control_mode if control_mode is None else control_mode
++        frame_id = self._get_frame_id_with_mode(motor_id, local_mode)
+         # Prepare the CAN message
+         data = bytearray(8)
+-        if self.control_mode == ControlMode.MIT:
++        if local_mode == ControlMode.MIT:
+             const = MotorType.get_motor_constants(motor_type)
+ 
+             pos_tmp = float_to_uint(pos, const.POSITION_MIN, const.POSITION_MAX, 16)
+@@ -249,11 +333,28 @@ class DMSingleMotorCanInterface(CanInterface):
+             data[5] = (kd_tmp >> 4) & 0xFF
+             data[6] = ((kd_tmp & 0xF) << 4) | (tor_tmp >> 8)
+             data[7] = tor_tmp & 0xFF
+-        elif self.control_mode == ControlMode.VEL:
++        elif local_mode == ControlMode.VEL:
+             # system will only response to vel command
+             can_data = struct.pack("<f", vel)
+             data[0:4] = can_data[0:4]
+-
++        elif local_mode == ControlMode.FORCE_POS:
++            # system will respond to command position under the velocity limit and torque limit
++            # the min max operations are protocol specific, check the protocol doc for details
++            const = MotorType.get_motor_constants(motor_type)
++            vel_limit = 0 if vel_limit is None else min(const.VELOCITY_MAX, abs(vel_limit))
++            v_des_clamped = max(0.0, min(100.0, vel_limit))
++            v_des_scaled = int(v_des_clamped * 100)
++            v_des_scaled = min(10000, v_des_scaled)
++
++            
++            torque_limit = 0 if torque_limit is None else min(const.TORQUE_MAX, torque_limit)
++            torque_ratio = torque_limit / const.TORQUE_MAX if const.TORQUE_MAX else 0.0
++            i_des_clamped = max(0.0, min(1.0, torque_ratio))
++            i_des_scaled = int(i_des_clamped * 10000)
++            i_des_scaled = min(10000, i_des_scaled)
++
++            data = struct.pack("<fHH", pos, v_des_scaled, i_des_scaled)
++            
+         # Send the CAN message
+         message = self._send_message_get_response(frame_id, motor_id, data, max_retry=15)
+ 
+@@ -324,6 +425,8 @@ class MotorCmd:
+     torque: float = 0.0
+     kp: float = 0.0
+     kd: float = 0.0
++    vel_limit: Optional[float] = 100
++    torque_limit: Optional[float] = 0
+ 
+ 
+ class MotorChain(Protocol):
+@@ -340,6 +443,9 @@ class MotorChain(Protocol):
+         vel: Optional[np.ndarray] = None,
+         kp: Optional[np.ndarray] = None,
+         kd: Optional[np.ndarray] = None,
++        types: Optional[List[Optional[str]]] = None,
++        vel_limits: Optional[List[Optional[float]]] = None,
++        torque_limits: Optional[List[Optional[float]]] = None,
+     ) -> List[MotorInfo]:
+         """Set commands to the motors in the chain."""
+         raise NotImplementedError
+@@ -357,6 +463,9 @@ class DMChainCanInterface(MotorChain):
+         motor_chain_name: str = "default_motor_chain",
+         receive_mode: ReceiveMode = ReceiveMode.p16,
+         control_mode: ControlMode = ControlMode.MIT,
++        gripper_control_mode: str = None,
++        gripper_vel_limit: Optional[float] = 100.0,
++        gripper_torque_limit: Optional[float] = 1.0,
+         get_same_bus_device_driver: Optional[Callable] = None,
+         use_buffered_reader: bool = False,  # buffered reader is not very stable, the latest encoder fix allows us to use the non-buffered reader
+     ):
+@@ -371,6 +480,9 @@ class DMChainCanInterface(MotorChain):
+         self.motor_offset = np.array(motor_offset)
+         self.motor_direction = np.array(motor_direction)
+         self.channel = channel
++        self.control_mode = control_mode
++
++        self.gripper_control_mode = self._control_mode_from_cmd_type(gripper_control_mode)
+         logging.info(f"Channel: {channel}, Bitrate: {bitrate}")
+         if "can" in channel:
+             self.motor_interface = DMSingleMotorCanInterface(
+@@ -390,6 +502,8 @@ class DMChainCanInterface(MotorChain):
+             )
+         self.state = None
+         self.state_lock = threading.Lock()
++        self.send_raw = False
++        self.send_raw_lock = threading.Lock()
+ 
+         self.same_bus_device_states = None
+ 
+@@ -400,21 +514,47 @@ class DMChainCanInterface(MotorChain):
+             self.same_bus_device_driver = None
+ 
+         self.absolute_positions = None
++        logging.info(f"[DMChainCanInterface]: Setting control modes: {control_mode}, gripper mode:{self.gripper_control_mode}")
++        self.ensure_control_modes()
++        logging.info(f"[DMChainCanInterface]: Enabling on motors")
+         self._motor_on()
+         starting_command = []
+         for motor_state in self.state:
+-            starting_command.append(MotorCmd(torque=motor_state.torque))
+-        logging.info(f"Initializing motorchain with starting command: {starting_command}")
++            starting_command.append(MotorCmd(torque=motor_state.torque, type="pos_vel_torque"))
++        if gripper_control_mode is not None:
++            starting_command[-1].type = gripper_control_mode
++            starting_command[-1].vel_limit = gripper_vel_limit
++            starting_command[-1].torque_limit = gripper_torque_limit
++            logging.info(f"[DMChainCanInterface]: Gripper vel limit: {gripper_vel_limit}, torque limit: {gripper_torque_limit}")
++        logging.info(f"[DMChainCanInterface]: Gripper mode: {gripper_control_mode}")
++        logging.debug(f"Initializing motorchain with starting command: {starting_command}")
+         self.commands = starting_command
+         self.command_lock = threading.Lock()
+ 
+         self.start_thread_flag = start_thread
+         if start_thread:
+             self.start_thread()
++        logging.info(f"[DMChainCanInterface]: Fully initialized.")
+ 
+     def __repr__(self) -> str:
+         return f"DMChainCanInterface(channel={self.channel})"
+ 
++    @staticmethod
++    def _control_mode_from_cmd_type(cmd_type: str) -> Optional[str]:
++        mapping = {
++            "pos_vel_torque": ControlMode.MIT,
++            "pos_with_vel_torque_limit": ControlMode.FORCE_POS,
++        }
++        return mapping.get(cmd_type)
++
++    def ensure_control_modes(self) -> None:
++        for idx, motor_info in enumerate(self.motor_list):
++            motor_id, motor_type = motor_info
++            target_mode = self.control_mode
++            if idx == len(self.motor_list) - 1 and self.gripper_control_mode is not None:
++                target_mode = self.gripper_control_mode
++            self.motor_interface.ensure_control_mode(motor_id, target_mode, motor_type=motor_type)
++
+     def _update_absolute_positions(self, motor_feedback: List[MotorInfo]) -> None:
+         init_mode = False
+         if self.absolute_positions is None:
+@@ -547,11 +687,17 @@ class DMChainCanInterface(MotorChain):
+         for idx, motor_info in enumerate(self.motor_list):
+             motor_id, motor_type = motor_info
+             torque = commands[idx].torque * self.motor_direction[idx]
+-            pos = self._joint_position_sim_to_real_idx(commands[idx].pos, idx)
++            with self.send_raw_lock:
++                send_raw = self.send_raw
++                if not send_raw:
++                    pos = self._joint_position_sim_to_real_idx(commands[idx].pos, idx)
++                else:
++                    pos = commands[idx].pos
+ 
+             vel = commands[idx].vel * self.motor_direction[idx]
+             kp = commands[idx].kp
+             kd = commands[idx].kd
++            control_mode = self._control_mode_from_cmd_type(commands[idx].type)
+             try:
+                 fd_back = self.motor_interface.set_control(
+                     motor_id=motor_id,
+@@ -561,6 +707,9 @@ class DMChainCanInterface(MotorChain):
+                     kp=kp,
+                     kd=kd,
+                     torque=torque,
++                    vel_limit=commands[idx].vel_limit,
++                    torque_limit=commands[idx].torque_limit,
++                    control_mode=control_mode,
+                 )
+             except Exception as e:
+                 logging.error(f"{idx}th motor at DMChainCanInterface {self} failed with info {motor_info}")
+@@ -590,22 +739,46 @@ class DMChainCanInterface(MotorChain):
+ 
+     def set_commands(
+         self,
+-        torques: np.ndarray,
++        torques: Optional[np.ndarray] = None,
+         pos: Optional[np.ndarray] = None,
+         vel: Optional[np.ndarray] = None,
+         kp: Optional[np.ndarray] = None,
+         kd: Optional[np.ndarray] = None,
+         get_state: bool = True,
++        types: Optional[List[Optional[str]]] = None,
++        vel_limits: Optional[List[Optional[float]]] = None,
++        torque_limits: Optional[List[Optional[float]]] = None,
++        send_raw: bool = False,
+     ) -> List[MotorInfo]:
++        with self.send_raw_lock:
++            self.send_raw = send_raw
++        with self.command_lock:
++            previous_commands = list(self.commands)
+         command = []
+         for idx in range(len(self.motor_list)):
++            if types is not None:
++                cmd_type = types[idx]
++            else:
++                cmd_type = previous_commands[idx].type
++            if vel_limits is not None:
++                vel_limit = vel_limits[idx]
++            else:
++                vel_limit = previous_commands[idx].vel_limit
++            if torque_limits is not None:
++                torque_limit = torque_limits[idx]
++            else:
++                torque_limit = previous_commands[idx].torque_limit
++
+             command.append(
+                 MotorCmd(
+-                    torque=torques[idx],
++                    type=cmd_type,
++                    torque=torques[idx] if torques is not None else 0.0,
+                     pos=pos[idx] if pos is not None else 0.0,
+                     vel=vel[idx] if vel is not None else 0.0,
+                     kp=kp[idx] if kp is not None else 0.0,
+                     kd=kd[idx] if kd is not None else 0.0,
++                    vel_limit=vel_limit,
++                    torque_limit=torque_limit,
+                 )
+             )
+         with self.command_lock:
+@@ -640,6 +813,9 @@ class MultiDMChainCanInterface(MotorChain):
+         vel: Optional[np.ndarray] = None,
+         kp: Optional[np.ndarray] = None,
+         kd: Optional[np.ndarray] = None,
++        types: Optional[List[Optional[str]]] = None,
++        vel_limits: Optional[List[Optional[float]]] = None,
++        torque_limits: Optional[List[Optional[float]]] = None,
+     ) -> List[MotorInfo]:
+         start_idx = 0
+         motor_infos = []
+@@ -651,7 +827,19 @@ class MultiDMChainCanInterface(MotorChain):
+             inter_vel = vel[start_idx:end_idx] if vel is not None else None
+             inter_kp = kp[start_idx:end_idx] if kp is not None else None
+             inter_kd = kd[start_idx:end_idx] if kd is not None else None
+-            infos = inter.set_commands(inter_torques, inter_pos, inter_vel, inter_kp, inter_kd)
++            inter_types = types[start_idx:end_idx] if types is not None else None
++            inter_vel_limits = vel_limits[start_idx:end_idx] if vel_limits is not None else None
++            inter_torque_limits = torque_limits[start_idx:end_idx] if torque_limits is not None else None
++            infos = inter.set_commands(
++                inter_torques,
++                inter_pos,
++                inter_vel,
++                inter_kp,
++                inter_kd,
++                types=inter_types,
++                vel_limits=inter_vel_limits,
++                torque_limits=inter_torque_limits,
++            )
+             motor_infos.extend(infos)
+             start_idx = end_idx
+         return motor_infos
+diff --git a/i2rt/robots/get_robot.py b/i2rt/robots/get_robot.py
+index 20cbe41..634d89e 100644
+--- a/i2rt/robots/get_robot.py
++++ b/i2rt/robots/get_robot.py
+@@ -1,6 +1,7 @@
+ import logging
+ import time
+ from functools import partial
++from typing import Optional
+ 
+ import numpy as np
+ 
+@@ -24,6 +25,9 @@ def get_yam_robot(
+     channel: str = "can0",
+     gripper_type: GripperType = GripperType.CRANK_4310,
+     zero_gravity_mode:bool = True,
++    gripper_cmd_type: str = "pos_with_vel_torque_limit", # or pos_vel_torque/pos_with_vel_torque_limit
++    gripper_vel_limit: Optional[float] = 30.0, # will be capped by hardware velocity limit (30rad/s for 4310)
++    gripper_torque_limit: Optional[float] = 1.0,
+ ) -> MotorChainRobot:
+     with_gripper = True
+     with_teaching_handle = False
+@@ -33,6 +37,10 @@ def get_yam_robot(
+     if gripper_type == GripperType.NO_GRIPPER:
+         with_gripper = False
+         with_teaching_handle = False
++    if with_teaching_handle:
++        gripper_cmd_type = None
++        gripper_vel_limit = None
++        gripper_torque_limit = None
+ 
+     model_path = gripper_type.get_xml_path()
+     motor_list = [
+@@ -72,9 +80,13 @@ def get_yam_robot(
+         motor_chain_name="yam_real",
+         receive_mode=ReceiveMode.p16,
+         start_thread=False,
++        gripper_control_mode=gripper_cmd_type,
++        gripper_vel_limit=gripper_vel_limit,
++        gripper_torque_limit=gripper_torque_limit,
+     )
+     motor_states = motor_chain.read_states()
+-    print(f"motor_states: {motor_states}")
++    logging.debug(f"motor_states: {motor_states}")
++    logging.info("[get_yam_robot]: Closing dummy can interface...")
+     motor_chain.close()
+ 
+     current_pos = [m.pos for m in motor_states]
+@@ -105,9 +117,12 @@ def get_yam_robot(
+         receive_mode=ReceiveMode.p16,
+         get_same_bus_device_driver=get_encoder_chain if with_teaching_handle else None,
+         use_buffered_reader=False,
++        gripper_control_mode=gripper_cmd_type,
++        gripper_vel_limit=gripper_vel_limit,
++        gripper_torque_limit=gripper_torque_limit,
+     )
+     motor_states = motor_chain.read_states()
+-    logging.info(f"YAM initial motor_states: {motor_states}")
++    logging.debug(f"YAM initial motor_states: {motor_states}")
+     get_robot = partial(
+         MotorChainRobot,
+         motor_chain=motor_chain,
+@@ -118,6 +133,9 @@ def get_yam_robot(
+         kp=kp,
+         kd=kd,
+         zero_gravity_mode=zero_gravity_mode,
++        gripper_cmd_type=gripper_cmd_type,
++        gripper_vel_limit=gripper_vel_limit,
++        gripper_torque_limit=gripper_torque_limit,
+     )
+ 
+     if with_gripper:
+diff --git a/i2rt/robots/motor_chain_robot.py b/i2rt/robots/motor_chain_robot.py
+index fa74ab0..55fb398 100644
+--- a/i2rt/robots/motor_chain_robot.py
++++ b/i2rt/robots/motor_chain_robot.py
+@@ -43,6 +43,9 @@ class JointCommands:
+     vel: np.ndarray
+     kp: np.ndarray
+     kd: np.ndarray
++    types: Optional[List[str]] = None
++    vel_limits: Optional[List[Optional[float]]] = None
++    torque_limits: Optional[List[Optional[float]]] = None
+ 
+     indices: Optional[List[int]] = None
+ 
+@@ -78,6 +81,9 @@ class MotorChainRobot(Robot):
+         temp_record_flag: bool = False,  # whether record the motor's temperature
+         enable_gripper_calibration: bool = False,  # whether to auto-detect gripper limits
+         zero_gravity_mode:bool = True,
++        gripper_cmd_type: Optional[str] = None,
++        gripper_vel_limit: Optional[float] = None,
++        gripper_torque_limit: Optional[float] = None,
+         # below are calibration parameters
+         test_torque: float = 0.5,  # test torque for gripper detection (Nm)
+         test_duration: float = 2.0,  # max test duration for each direction (s)
+@@ -106,6 +112,7 @@ class MotorChainRobot(Robot):
+                     max_duration=test_duration,
+                     position_threshold=position_threshold,
+                     check_interval=check_interval,
++                    gripper_control_mode=gripper_cmd_type
+                 )
+                 gripper_limits = np.array(detected_limits)
+                 logger.info(f"Gripper limits auto-detected: {gripper_limits}")
+@@ -128,6 +135,9 @@ class MotorChainRobot(Robot):
+ 
+         # variables for gripper effort limiting
+         self._gripper_index = gripper_index
++        self._gripper_cmd_type = gripper_cmd_type
++        self._gripper_vel_limit = gripper_vel_limit
++        self._gripper_torque_limit = gripper_torque_limit
+         self.remapper = JointMapper({}, len(motor_chain))  # so it works without gripper
+         self._gripper_limits = gripper_limits
+ 
+@@ -333,6 +343,9 @@ class MotorChainRobot(Robot):
+                     vel=joint_commands.vel,
+                     kp=joint_commands.kp,
+                     kd=joint_commands.kd,
++                    types=joint_commands.types,
++                    vel_limits=joint_commands.vel_limits,
++                    torque_limits=joint_commands.torque_limits,
+                 )
+                 self.motor_chain.start_thread()
+                 self.motor_chain.start_thread_flag = True
+@@ -343,6 +356,9 @@ class MotorChainRobot(Robot):
+                 vel=joint_commands.vel,
+                 kp=joint_commands.kp,
+                 kd=joint_commands.kd,
++                types=joint_commands.types,
++                vel_limits=joint_commands.vel_limits,
++                torque_limits=joint_commands.torque_limits,
+             )
+             self._joint_state = self._motor_state_to_joint_state(motor_state)
+             # For SWE-454, check if the current qpos is in the joint limits
+@@ -441,6 +457,30 @@ class MotorChainRobot(Robot):
+             self._commands.pos = self.remapper.to_robot_joint_pos_space(pos)
+             self._commands.kp = self._kp
+             self._commands.kd = self._kd
++            if self._gripper_index is not None and self._gripper_cmd_type is not None:
++                types = ["pos_vel_torque"] * len(self.motor_chain)
++                types[self._gripper_index] = self._gripper_cmd_type
++                self._commands.types = types
++                vel_limits = [None] * len(self.motor_chain)
++                vel_limits[self._gripper_index] = self._gripper_vel_limit
++                self._commands.vel_limits = vel_limits
++                torque_limits = [None] * len(self.motor_chain)
++                torque_limits[self._gripper_index] = self._gripper_torque_limit
++                self._commands.torque_limits = torque_limits
++                print(
++                    "Gripper cmd:",
++                    {
++                        "pos": self._commands.pos[self._gripper_index],
++                        "vel": self._commands.vel[self._gripper_index],
++                        "kp": self._commands.kp[self._gripper_index],
++                        "kd": self._commands.kd[self._gripper_index],
++                        "torque": self._commands.torques[self._gripper_index],
++                        "type": self._commands.types[self._gripper_index],
++                        "vel_limit": self._commands.vel_limits[self._gripper_index],
++                        "torque_limit": self._commands.torque_limits[self._gripper_index],
++                    },
++                )
++                
+ 
+     def command_joint_state(self, joint_state: Dict[str, np.ndarray]) -> None:
+         """Command the leader robot to a given state.
+@@ -453,11 +493,29 @@ class MotorChainRobot(Robot):
+         self._commands = JointCommands.init_all_zero(len(self.motor_chain))
+         kp = joint_state.get("kp", self._kp)
+         kd = joint_state.get("kd", self._kd)
++        types = joint_state.get("type")
++        vel_limits = joint_state.get("vel_limit")
++        torque_limits = joint_state.get("torque_limit")
+         with self._command_lock:
+             self._commands.pos = self.remapper.to_robot_joint_pos_space(pos)
+             self._commands.vel = self.remapper.to_robot_joint_vel_space(vel)
+             self._commands.kp = kp
+             self._commands.kd = kd
++            if types is not None:
++                self._commands.types = list(types)
++                self._commands.vel_limits = list(vel_limits) if vel_limits is not None else None
++                self._commands.torque_limits = list(torque_limits) if torque_limits is not None else None
++            elif self._gripper_index is not None and self._gripper_cmd_type is not None:
++                default_types = ["pos_vel_torque"] * len(self.motor_chain)
++                default_types[self._gripper_index] = self._gripper_cmd_type
++                self._commands.types = default_types
++                default_vel_limits = [None] * len(self.motor_chain)
++                per_call_vel = joint_state.get("gripper_vel_limit")
++                default_vel_limits[self._gripper_index] = per_call_vel if per_call_vel is not None else self._gripper_vel_limit
++                self._commands.vel_limits = default_vel_limits
++                default_torque_limits = [None] * len(self.motor_chain)
++                default_torque_limits[self._gripper_index] = self._gripper_torque_limit
++                self._commands.torque_limits = default_torque_limits
+ 
+     def zero_torque_mode(self) -> None:
+         logging.info(f"Entering zero_torque_mode for {self}")
+diff --git a/i2rt/robots/utils.py b/i2rt/robots/utils.py
+index 2fb515e..806f848 100644
+--- a/i2rt/robots/utils.py
++++ b/i2rt/robots/utils.py
+@@ -9,6 +9,7 @@ from typing import Callable, Dict, List, Optional, Tuple
+ import numpy as np
+ 
+ from i2rt.motor_drivers.dm_driver import DMChainCanInterface
++from i2rt.motor_drivers.utils import MotorType
+ 
+ I2RT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ YAM_XML_PATH = os.path.join(I2RT_ROOT, "robot_models/yam/yam.xml")
+@@ -332,9 +333,11 @@ def detect_gripper_limits(
+     motor_chain: DMChainCanInterface,
+     gripper_index: int = 6,
+     test_torque: float = 0.2,
+-    max_duration: float = 2.0,
++    max_duration: float = 4.0,
+     position_threshold: float = 0.01,
+     check_interval: float = 0.1,
++    gripper_control_mode: str = "pos_vel_torque", # or pos_with_vel_torque_limit
++    gripper_torque_limit: float = .5,
+ ) -> List[float]:
+     """
+     Detect gripper limits by applying test torques and monitoring position changes.
+@@ -364,19 +367,29 @@ def detect_gripper_limits(
+     initial_pos = initial_states[gripper_index].pos
+     positions.append(initial_pos)
+     logger.info(f"Gripper calibration starting from position: {initial_pos:.4f}")
++    
++    gripper_motor_type = motor_chain.motor_list[-1][1]
++    gripper_motor_constants = MotorType.get_motor_constants(gripper_motor_type)
+ 
+     # Test both directions
+     for direction in [1, -1]:
+         logger.info(f"Testing gripper direction: {direction}")
+         test_torques = init_torque
+-        test_torques[gripper_index] = direction * test_torque
+-
++        test_torques[gripper_index] = direction * test_torque # used in MIT mode
++        test_positions = np.array([state.pos for state in initial_states])
++        test_positions[gripper_index] = direction * gripper_motor_constants.POSITION_MAX # used in FORCE_POS mode
+         start_time = time.time()
+         last_pos = None
+         position_stable_count = 0
+-
+         while time.time() - start_time < max_duration:
+-            motor_chain.set_commands(torques=test_torques)
++            if (gripper_control_mode == "pos_vel_torque"):
++                motor_chain.set_commands(torques=test_torques)
++                logging.info(f"Setting gripper torque command to {direction * test_torque} Nm for MIT mode")
++            elif (gripper_control_mode == "pos_with_vel_torque_limit"):
++                motor_chain.set_commands(pos=test_positions, send_raw=True)
++                logging.info(f"Setting gripper position command to {test_positions} for FORCE_POS mode")
++            else:
++                logging.warning(f"{gripper_control_mode} not supported yet")
+             time.sleep(check_interval)
+ 
+             states = motor_chain.read_states()
+diff --git a/i2rt/utils/mujoco_utils.py b/i2rt/utils/mujoco_utils.py
+index 81ab424..4980a1e 100644
+--- a/i2rt/utils/mujoco_utils.py
++++ b/i2rt/utils/mujoco_utils.py
+@@ -9,7 +9,6 @@ class MuJoCoKDL:
+ 
+     def __init__(self, path: str):
+         self.model = mujoco.MjModel.from_xml_path(os.path.expanduser(path))
+-        self.data = mujoco.MjData(self.model)
+         self.set_gravity(np.array([0, 0, -9.81]))
+ 
+         # Disable all collisions
+@@ -17,6 +16,8 @@ class MuJoCoKDL:
+         self.model.geom_conaffinity[:] = 0
+         # Disable all joint limit
+         self.model.jnt_limited[:] = 0
++        # Data must be created after model edits to avoid constraint under-allocation.
++        self.data = mujoco.MjData(self.model)
+ 
+     @property
+     def joint_limits(self):

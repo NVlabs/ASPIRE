@@ -1,0 +1,78 @@
+robot: "YAM"
+collision_spheres:
+  left_arm:
+    - center: [0.0, 0.0, 0.026]
+      radius: 0.045
+  left_link_1:
+    - center: [0.0, 0.0, -0.03]
+      radius: 0.045
+  left_link_2:
+    - center: [0.04, 0.0, 0.0]
+      radius: 0.04
+    - center: [0.12, 0.0, 0.0]
+      radius: 0.04
+    - center: [0.20, 0.0, 0.0]
+      radius: 0.04
+    - center: [0.265, 0.0, 0.0]
+      radius: 0.04
+  left_link_3:
+    - center: [-0.06, -0.03, 0.0]
+      radius: 0.045
+    - center: [-0.14, -0.06, 0.0]
+      radius: 0.045
+    - center: [-0.22, -0.06, 0.0]
+      radius: 0.04
+  left_link_4:
+    - center: [-0.073, -0.06, 0.0]
+      radius: 0.04
+  left_link_5:
+    - center: [0.0, 0.025, 0.04]
+      radius: 0.038
+  left_link_6:
+    - center: [0.0, 0.0, 0.03]
+      radius: 0.035
+    - center: [0.0, 0.03, 0.052]
+      radius: 0.02
+    - center: [0.0, -0.03, 0.052]
+      radius: 0.02
+
+  right_arm:
+    - center: [0.0, 0.0, 0.026]
+      radius: 0.045
+  right_link_1:
+    - center: [0.0, 0.0, -0.03]
+      radius: 0.045
+  right_link_2:
+    - center: [0.04, 0.0, 0.0]
+      radius: 0.04
+    - center: [0.12, 0.0, 0.0]
+      radius: 0.04
+    - center: [0.20, 0.0, 0.0]
+      radius: 0.04
+    - center: [0.265, 0.0, 0.0]
+      radius: 0.04
+  right_link_3:
+    - center: [-0.06, -0.03, 0.0]
+      radius: 0.045
+    - center: [-0.14, -0.06, 0.0]
+      radius: 0.045
+    - center: [-0.22, -0.06, 0.0]
+      radius: 0.04
+  right_link_4:
+    - center: [-0.073, -0.06, 0.0]
+      radius: 0.04
+  right_link_5:
+    - center: [0.0, 0.025, 0.04]
+      radius: 0.038
+  right_link_6:
+    - center: [0.0, 0.0, 0.03]
+      radius: 0.035
+    - center: [0.0, 0.03, 0.052]
+      radius: 0.02
+    - center: [0.0, -0.03, 0.052]
+      radius: 0.02
+  right_left_link_finger:
+    - center: [0.0, 0.0, 0.045]
+      radius: 0.018
+    - center: [0.0, 0.0, 0.075]
+      radius: 0.015

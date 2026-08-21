@@ -1,0 +1,58 @@
+# Traced config for LIBERO Long Pro (libero_10_swap, libero_10_task) replay.
+# Use with replay_trial.py for Stage 1 debug and Stage 2 eval.
+# enable_render: false for speed; FrankaLiberoApiReducedSkillLibraryTraced records trace.json.
+#
+# Usage:
+#   .venv-libero/bin/python3 scripts/libero/replay_trial.py \
+#     --args.suite libero_10_swap \
+#     --args.task "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket" \
+#     --args.trial 51 \
+#     --args.replay-code /tmp/fix_attempt.py \
+#     --args.config env_configs/libero/franka_libero_libero10_traced.yaml \
+#     --args.output-dir /tmp/long_debug
+
+env:
+  _target_: aspire.sim.cap.envs.tasks.franka.franka_libero_env.FrankaLiberoCodeEnv
+  cfg:
+    _target_: aspire.sim.cap.envs.tasks.base.CodeExecEnvConfig
+    low_level:
+      _target_: aspire.sim.cap.envs.simulators.libero.FrankaLiberoEnv
+      suite_name: libero_10_swap
+      task_id: 0
+      privileged: false
+      max_steps: 4000
+      seed: null
+      enable_render: false
+      viser_debug: false
+    privileged: false
+    apis:
+      - FrankaLiberoApiReducedSkillLibraryTraced
+    prompt: |
+      You are controlling a Franka Emika robot with API described below.
+      Goal: {libero_environment_goal}
+      In this robot environment, the agentview camera is looking at the robot's workspace from the front. In image space the right is world frame positive Y, up is world frame positive Z, and backward into the camera is world frame positive X.
+      You may write python code comments for reasoning but ONLY write the executable Python code and do not write it in code fences.
+      After this code executes, you will receive the current console stdout and stderr (any errors or print statements made in the code). You will then have the chance to write new code to query the environment state and/or complete the task.
+      After this code executes, you will be able to get a new observation of the environment and write new code to complete the task if needed.
+      The functions (APIs) below are already imported to the environment. If you want to use numpy, you need to import it explicitly.
+
+    multi_turn_prompt: |
+      The following code blocks were just executed:
+      ```python
+      {executed_code}
+      ```
+      The current console stdout is:
+      ```
+      {console_stdout}
+      ```
+      The current console stderr is:
+      ```
+      {console_stderr}
+      ```
+      If there were no errors during compilation or execution, the console stderr will be empty. If there were errors, consider regenerating the code.
+      Please respond with EXACTLY ONE of the following:
+      - The word 'REGENERATE' followed immediately by new Python code in a fenced code block (```python...```) if you want to write new code.
+      - The word 'FINISH' if the task appears to be complete
+
+record_video: false
+output_dir: ./outputs/aspire_libero_long_eval

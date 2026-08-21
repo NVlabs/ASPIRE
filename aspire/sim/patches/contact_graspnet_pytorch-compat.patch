@@ -1,0 +1,21 @@
+diff --git a/contact_graspnet_pytorch/checkpoints.py b/contact_graspnet_pytorch/checkpoints.py
+index e502f4d..ba7a97b 100644
+--- a/contact_graspnet_pytorch/checkpoints.py
++++ b/contact_graspnet_pytorch/checkpoints.py
+@@ -65 +65 @@ class CheckpointIO(object):
+-            state_dict = torch.load(filename)
++            state_dict = torch.load(filename, weights_only=False)
+diff --git a/contact_graspnet_pytorch/contact_graspnet.py b/contact_graspnet_pytorch/contact_graspnet.py
+index 9f5699a..9e73c2b 100644
+--- a/contact_graspnet_pytorch/contact_graspnet.py
++++ b/contact_graspnet_pytorch/contact_graspnet.py
+@@ -329 +329 @@ class ContactGraspnet(nn.Module):
+-            grasp_R = torch.stack([base_dirs, torch.cross(approach_dirs,base_dirs),approach_dirs], dim=3)  # B x N x 3 x 3
++            grasp_R = torch.stack([base_dirs, torch.linalg.cross(approach_dirs,base_dirs),approach_dirs], dim=3)  # B x N x 3 x 3
+diff --git a/contact_graspnet_pytorch/visualization_utils_o3d.py b/contact_graspnet_pytorch/visualization_utils_o3d.py
+index ecb6549..8ab829e 100644
+--- a/contact_graspnet_pytorch/visualization_utils_o3d.py
++++ b/contact_graspnet_pytorch/visualization_utils_o3d.py
+@@ -13 +13 @@ from scipy.spatial.transform import Rotation as R
+-import mesh_utils
++import contact_graspnet_pytorch.mesh_utils as mesh_utils

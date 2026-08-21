@@ -1,0 +1,37 @@
+# @package _global_
+# Default agent prompt strings — shared across all experiments.
+# Override per-experiment by adding agent: <name> to the defaults list
+# and creating experiments/agent/<name>.yaml.
+
+code_generator:
+  initial_thoughts_instruction: >-
+    First, write THOUGHTS: explaining your strategy to solve this task —
+    what steps you'll take, what positions you'll target, and what you expect to happen.
+  initial_code_instruction: >-
+    Then write the executable Python code in a ```python block.
+  retry:
+    failure_prefix: >-
+      ⚠ CRITICAL: ALL previous attempts FAILED.
+      You MUST fix the issues below.
+      Do NOT repeat the same mistakes.
+      Read EVERY failure analysis carefully before writing new code.
+    thoughts_instruction: >-
+      First, write THOUGHTS: explaining your strategy, what you're changing from
+      previous attempts, and what you expect to happen step by step.
+    code_instruction: >-
+      Then write the code in a ```python block.
+
+reflection:
+  scene_query: >-
+    The robot was attempting this task: {task}
+
+    Describe the robot's current state at the END of this attempt.
+    Focus on: where is the gripper/fingertip relative to the target,
+    did the robot accomplish the task goal, and what visually went wrong.
+  analysis_prompt: >-
+    Jointly consider the planned approach, the code, the visual evidence, and the
+    execution results. In a single unified analysis:
+    1. Where did reality diverge from the plan? What does the visual evidence confirm?
+    2. What is the root cause?
+    3. Give 2-4 specific, actionable fixes for the NEXT attempt.
+    Be concrete. Do NOT rewrite the code. Under 250 words.

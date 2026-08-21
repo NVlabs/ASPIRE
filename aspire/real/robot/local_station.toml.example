@@ -1,0 +1,3 @@
+# Copy to robot/local_station.toml and select a profile defined in
+# robot/station_profiles.py. The copied file is intentionally gitignored.
+station = "default"

@@ -1,154 +1,138 @@
-# __NVIDIA_OSS__ Standard Repo Template
+# ASPIRE: Agentic /Skills Discovery for Robotics
 
-This README file is from the NVIDIA_OSS standard repo template of [PLC-OSS-Template](https://github.com/NVIDIA-GitHub-Management/PLC-OSS-Template?tab=readme-ov-file). It provides a list of files in the PLC-OSS-Template and guidelines on how to use (clone and customize) them.
+[Project Page](https://research.nvidia.com/labs/gear/aspire/) &ensp;|&ensp; [Paper](https://arxiv.org/abs/2607.00272)
 
-**Upon completing the customization for the project repo, the repo admin should replace this README template with the project specific README file.**
+<img src="assets/media/covervideo.gif" alt="ASPIRE robot demonstrations" width="100%">
 
-- Files (org-wide templates in the NVIDIA .github org repo; per-repo overrides allowed) in [PLC-OSS-Template](https://github.com/NVIDIA-GitHub-Management/PLC-OSS-Template?tab=readme-ov-file)
+ASPIRE is a new type of continual learning: "training" is skill refinement instead of gradient descent. 
 
-   - Root 
-     - README.md skeleton (CTA + Quickstart + Support/Security/Governance links) 
-     - LICENSE (Apache 2.0 by default)
-        - For other licenses, see the [Confluence page](https://confluence.nvidia.com/pages/viewpage.action?pageId=788418816) for other licenses
-        - CLA.md file (delete if not using MIT or BSD licenses)
-     - CODE_OF_CONDUCT.md 
-     - SECURITY.md (vuln reporting path) 
-     - CONTRIBUTING.md (base; repo can add specifics)
-     - SUPPORT.md (Support levels/channels)
-     - GOVERNANCE.md (baseline; repo may extend)
-     - CITATION.md (for projects that need citation)
+"Trained model" is a repo of sensorimotor skills instead of floating weights. 
 
-   - .github/ 
-     - ISSUE_TEMPLATE/ (<https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository>)
-       - bug.yml, feature.yml, task.yml, config.yml 
-     - PULL_REQUEST_TEMPLATE.md (<https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/creating-a-pull-request-template-for-your-repository>)
-     - workflows/
-     - Note: workflow-templates/ for starter workflows should live in the org-level .github repo, not per-repo
+“Distributed training” is a panel of agents each practicing a different skill instead of sharded minibatches.
 
-   - Repo-specific (not org-template, maintained by the team)
-     - CODEOWNERS (place at .github/CODEOWNERS or repo root)
-     - CHANGELOG.md (or RELEASE.md) 
-     - ROADMAP.md 
-     - MAINTAINERS.md 
-     - NOTICE or THIRD_PARTY_NOTICES / THIRD_PARTY_LICENSES (dependency specific)
-     - Build/package files (CMake, pyproject, Dockerfile, etc.)
+## Quick Start
 
-   - Recommended structure and hygiene
-     - docs/
-     - examples/
-     - tests/
-     - scripts/
-     - Container/dev env: Dockerfile, docker/, .devcontainer/ (optional)
-     - Build/package (language-specific):
-       - Python: pyproject.toml, setup.cfg/setup.py, requirements.txt, environment.yml
-       - C++: CMakeLists.txt, cmake/, vcpkg.json
-     - Repo hygiene: .gitignore, .gitattributes, .editorconfig, .pre-commit-config.yaml, .clang-format
+### Run with a coding agent
 
+To get started with ASPIRE, launch a coding agent such as Codex or Claude Code and enter the following prompt:
 
-## Usage of [PLC-OSS-Template](https://github.com/NVIDIA-GitHub-Management/PLC-OSS-Template?tab=readme-ov-file) for NEW NVIDIA OSS repos
+```text
+Clone the repo: https://github.com/NVlabs/ASPIRE/, Read AGENTS.md and 
+run the complete ASPIRE LIBERO-Pro Goal-Swap Quick Start for all ten 
+tasks in the libero_goal_swap suite.
 
-1. Clone the [PLC-OSS-Template](https://github.com/NVIDIA-GitHub-Management/PLC-OSS-Template?tab=readme-ov-file)
-2. Find/replace all in the clone of `___PROJECT___` and `__PROJECT_NAME__` with the name of the specific project.
-3. Inspect all files to make sure all replacements work and update text as needed
-
-
-**What you can reuse immediately**
-- CODE_OF_CONDUCT.md
-- SECURITY.md
-- CONTRIBUTING.md (base)
-- .github/ISSUE_TEMPLATE/.yml (bug/feature/task + config.yml)
-- .github/PULL_REQUEST_TEMPLATE.md
-- Reusable workflows 
-
-**What you must customize per repo**
-- README.md: copy the skeleton and fill in product-specific details (Quickstart, Requirements, Usage, Support level, links)
-- LICENSE: check file is correct, update year, consult Confluence for alternatives https://confluence.nvidia.com/pages/viewpage.action?pageId=788418816, add CLA.md only if your license/process requires it
-- CODEOWNERS: replace <TEAM> with your GitHub team handle(s). Place at .github/CODEOWNERS (or repo root)
-- MAINTAINERS.md: list maintainers names/roles, escalation path
-- CHANGELOG.md (or RELEASE.md): track releases/changes
-- SUPPORT.md: Update for your project
-- ROADMAP.md (optional): upcoming milestones
-- NOTICE / THIRD_PARTY_NOTICES (if you ship third‑party content)
-- Build/package files (CMake/pyproject/Dockerfile/etc.), tests/, docs/, examples/, scripts/ as appropriate
-- Workflows: Edit if you need custom behavior 
-
-
-4. Change git origin to point to new repo and push
-5. Remove the line break below and everything above it
-
-## Usage for existing NVIDIA OSS repos
-
-1. Follow the steps above, but add the files to your existing repo and merge
-
-<!-- REMOVE THE LINE BELOW AND EVERYTHING ABOVE -->
------------------------------------------
-# [Project Title]
-One-sentence value proposition for users. Who is it for, and why it matters. 
-
-# Overview
-What the project does? Why the project is useful?
-Provide a brief overview, highlighting key features or problem-solving capabilities.
-
-# Getting Started
-Guide users on how they can get started with the project. This should include basic installation step, quick-start examples 
-```bash
-# Option A: Package manager (pip/conda/npm/etc.)
-<copy-paste install>
-
-# Option B: Container
-docker run <image> <args>
-
-# Verify (hello world)
-<one-liner or ~10-line example>
+Before executing, report the required GPUs, credentials, gated weights, 
+services, expected runtime, seed partitions, and output paths. Wait for 
+my confirmation before launching. Do not access real-robot code.
 ```
-# Requirements
-Include a list of pre-requisites. 
-- OS/Arch: <summary or link to full matrix>
-- Runtime/Compiler: <versions>
-- GPU/Drivers (if applicable): CUDA <ver>, driver <ver>, etc.
 
-# Usage
-```bash
-# Minimal runnable snippet (≤20 lines)
-<code>
+The canonical procedure for a quick start is [`aspire/sim/.claude/libero/fix-loop/QUICKSTART.md`](aspire/sim/.claude/libero/fix-loop/QUICKSTART.md). The agent must complete preflight and wait for confirmation before installing dependencies, starting services, or launching trials.
+
+**Reference agent environments:** ASPIRE is coding-agent agnostic. Our simulation workflow is packaged for reproduction with Claude Code with Opus 4.6 1M, while the real-robot agent experiments were conducted with Codex. All coding agents can follow the model-neutral instructions in [`AGENTS.md`](AGENTS.md), although orchestration behavior may differ.
+
+### Reproduce full paper results
+
+Name the suite and experiment explicitly. If neither is named, the agent should present this table and stop for selection.
+
+<table>
+  <thead>
+    <tr>
+      <th>Suite</th>
+      <th>Experiment</th>
+      <th>Runbook</th>
+      <th>Video</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>LIBERO-Pro</td>
+      <td>Fix Loop</td>
+      <td><a href="aspire/sim/.claude/libero/fix-loop/INSTRUCTIONS.md"><code>libero/fix-loop/</code></a></td>
+      <td rowspan="3"><video src="https://github.com/user-attachments/assets/15c0b425-9fe9-4313-8a5b-8c7da54c24b7" width="240" controls></video></td>
+    </tr>
+    <tr>
+      <td>Robosuite</td>
+      <td>Fix Loop</td>
+      <td><a href="aspire/sim/.claude/robosuite/fix-loop/INSTRUCTIONS.md"><code>robosuite/fix-loop/</code></a></td>
+    </tr>
+    <tr>
+      <td>BEHAVIOR-1K</td>
+      <td>Fix Loop</td>
+      <td><a href="aspire/sim/.claude/behavior/fix-loop/INSTRUCTIONS.md"><code>behavior/fix-loop/</code></a></td>
+    </tr>
+    <tr>
+      <td>LIBERO-Pro</td>
+      <td>Evolutionary Search</td>
+      <td><a href="aspire/sim/.claude/libero/evosearch/INSTRUCTIONS.md"><code>libero/evosearch/</code></a></td>
+      <td rowspan="2"><video src="https://github.com/user-attachments/assets/edd2e5e1-b7d6-408a-bb62-23729df14db2" width="240" controls></video></td>
+    </tr>
+    <tr>
+      <td>Robosuite</td>
+      <td>Evolutionary Search</td>
+      <td><a href="aspire/sim/.claude/robosuite/evosearch/INSTRUCTIONS.md"><code>robosuite/evosearch/</code></a></td>
+    </tr>
+    <tr>
+      <td>LIBERO</td>
+      <td>Zero-Shot Transfer</td>
+      <td><a href="aspire/sim/.claude/libero/zeroshot-transfer/INSTRUCTIONS.md"><code>libero/zeroshot-transfer/</code></a></td>
+      <td rowspan="4"><video src="https://github.com/user-attachments/assets/8676fa10-6719-477f-9d60-a4ad241a3de3" width="240" controls></video></td>
+    </tr>
+    <tr>
+      <td>LIBERO-Long-Pro</td>
+      <td>Library-Size Scaling</td>
+      <td><a href="aspire/sim/.claude/libero/library-size-scaling/INSTRUCTIONS.md"><code>libero/library-size-scaling/</code></a></td>
+    </tr>
+    <tr>
+      <td>LIBERO-Long-Pro</td>
+      <td>Inference-Time Scaling</td>
+      <td><a href="aspire/sim/.claude/libero/inference-time-scaling/INSTRUCTIONS.md"><code>libero/inference-time-scaling/</code></a></td>
+    </tr>
+    <tr>
+      <td>Robosuite</td>
+      <td>Training Law</td>
+      <td><a href="aspire/sim/.claude/robosuite/training-law/INSTRUCTIONS.md"><code>robosuite/training-law/</code></a></td>
+    </tr>
+    <tr>
+      <td>YAM Bimanual</td>
+      <td>Sim-to-Real</td>
+      <td><a href="aspire/real/README.md"><code>aspire/real/</code></a></td>
+      <td><video src="https://github.com/user-attachments/assets/91b38cd3-3a38-4f56-9758-f986d50c5956" width="240" controls></video></td>
+    </tr>
+  </tbody>
+</table>
+
+
+Before a paper-scale launch, the agent must report the selected tasks, seed schedule, expected trial count and runtime, GPU and credential requirements, services, and output paths, then wait for explicit confirmation.
+
+> [!WARNING]
+> ASPIRE executes language-model-generated Python with full import access. Trial processes and watchdogs are not a security sandbox. Run generated code on an isolated host without credentials or sensitive mounts, restrict network access, and never grant a simulation agent access to physical hardware. Real-robot work requires the controls in [`aspire/real/AGENTS.md`](aspire/real/AGENTS.md) and separate operator authorization.
+
+## Contribution Guidelines
+
+Start with [CONTRIBUTING.md](CONTRIBUTING.md). Third-party contributions must include a Developer Certificate of Origin sign-off.
+
+## License
+
+ASPIRE material owned by NVIDIA or contributed under the project license is
+available under the [Apache License 2.0](LICENSE). Third-party materials retain
+their original terms. See [NOTICE](NOTICE) and the central
+[licensing and compliance index](LICENSES/README.md) before using or
+redistributing the full stack.
+
+## Citation
+
+If you find ASPIRE useful in your research, please cite:
+
+```bibtex
+@article{lu2026aspire,
+  title   = {ASPIRE: Agentic /Skills Discovery for Robotics},
+  author  = {Runyu Lu and Yubo Wu and Ethan Kou and Letian Fu and Wenli Xiao and
+             Ajay Mandlekar and Yinzhen Xu and Guanya Shi and Ken Goldberg and
+             Ang Chen and Mosharaf Chowdhury and Yuke Zhu and Linxi "Jim" Fan and Guanzhi Wang},
+  year    = {2026},
+  journal = {arXiv preprint arXiv:2607.00272},
+  url     = {https://arxiv.org/abs/2607.00272}
+}
 ```
-- More examples/tutorials: <link>
-- API reference: <link>
 
-# Performance (Optional)
-Summary of benchmarks; link to detailed results and hardware used.
-
-## Releases & Roadmap 
-- Releases/Changelog: <link>
-- (Optional) Next milestones or link to `ROADMAP.md`.
-  
-# Contribution Guidelines
-- Start here: `CONTRIBUTING.md`
-- Code of Conduct: `CODE_OF_CONDUCT.md`
-- Development quickstart (build/test):
-```bash
-<clone> && <deps> && <build/test>
-```
-## Governance & Maintainers
-- Governance: `GOVERNANCE.md`
-- Maintainers: <team/handles>
-- Labeling/triage policy: <link>
-
-## Security
-- Vulnerability disclosure: `SECURITY.md`
-- Do not file public issues for security reports.
-
-## Support
-- Level: <Experimental | Maintained | Stable>
-- How to get help: Issues/Discussions/<channel link>
-- Response expectations (if any).
-
-# Community
-Provide the channel for community communications.
-
-# References
-Provide a list of related references
-
-# License
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-- License: <link>
+ASPIRE was developed by researchers from NVIDIA, the University of Michigan, the University of Illinois Urbana-Champaign, UC Berkeley, and Carnegie Mellon University.

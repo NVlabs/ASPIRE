@@ -1,0 +1,53 @@
+# Copy this file to .forge_env and fill in workstation-specific values.
+# Never commit .forge_env or put credentials in this example.
+
+# Required for physical YAM motion planning.
+export YAM_STATION_CALIBRATED_XML="/path/to/calibrated/station.xml"
+
+# Select a profile defined in robot/station_profiles.py. Alternatively, create
+# robot/local_station.toml from robot/local_station.toml.example.
+export ASPIRE_STATION="default"
+
+# Camera defaults used by the current real-station scripts.
+export CAP_TOP_CAMERA_BACKEND="realsense"
+export CAP_TOP_CAMERA_FRAME="top_camera_d405"
+export CAP_TOP_CAMERA_NEEDS_OPTICAL_FLIP="0"
+
+# Optional GPU/runtime locations. Uncomment only when auto-detection is not
+# sufficient on the workstation.
+# export CUDA_HOME="/usr/local/cuda"
+# export HF_HOME="$HOME/.cache/huggingface"
+
+# Optional recording root. Defaults to ${XDG_DATA_HOME:-$HOME/.local/share}/aspire.
+# Override the individual paths with LEARN_SKILL_DATA_PATH or RL_DATA_PATH only
+# when they need to live in different locations.
+# export ASPIRE_DATA_DIR="/path/to/aspire-data"
+
+# Perception assets. BundleSDF is required by the canonical saved demo;
+# AnyGrasp is optional and is not used by yam_demo.sh full. Licensed vendor
+# files must remain local.
+# ASPIRE does not redistribute the AnyGrasp server, model, or machine license.
+# Point the client at an authorized external service. The optional command is
+# used only by tools/vision/launch_anygrasp_server.sh to start your local install.
+# export ANYGRASP_SERVICE_URL="http://127.0.0.1:8122"
+# export ANYGRASP_SERVER_COMMAND="/absolute/path/to/authorized/start-anygrasp.sh"
+# export BUNDLESDF_REPO_LIB_DIR="/path/to/bundlesdf/libs"
+# export BUNDLESDF_RUNTIME_LIB_DIR="/path/to/bundlesdf/runtime/libs"
+
+# Optional remote services. Prefer localhost unless the network is trusted and
+# the service is intentionally exposed.
+# export SMOL_VLM_URL="http://127.0.0.1:8401/v1"
+# export CAP_CUROBO_SSH_TARGET="user@approved-host"
+# export PI05_POLICY_LAUNCH_SCRIPT="/path/to/launch_policy_server.sh"
+
+# Provider credentials belong only in the untracked .forge_env.secrets file.
+# export NVIDIA_API_KEY="replace-locally"
+# export GEMINI_API_KEY="replace-locally"
+
+# Load repository defaults and installer-generated runtime paths last. Secrets
+# remain in the ignored .forge_env.secrets file rather than this template.
+_ASPIRE_ENV_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$_ASPIRE_ENV_ROOT/tools/runtime_env.sh"
+[[ -f "$_ASPIRE_ENV_ROOT/.forge_env.runtime" ]] && source "$_ASPIRE_ENV_ROOT/.forge_env.runtime"
+[[ -f "$_ASPIRE_ENV_ROOT/.forge_env.secrets" ]] && source "$_ASPIRE_ENV_ROOT/.forge_env.secrets"
+unset _ASPIRE_ENV_ROOT

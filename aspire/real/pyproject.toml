@@ -1,0 +1,234 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+# Keep editable builds focused on the repo's own Python packages.
+include = ["bringup*", "cap*", "experimental*", "hardware*", "robot*", "tools*"]
+exclude = [
+    "log*",
+    "logs*",
+    "data*",
+    "models*",
+    "videos*",
+    "scripts*",
+    "third_party*",
+    "cap.ui*",
+    "tmux*",
+    "build*",
+    ".venv*",
+    "__pycache__*",
+]
+
+[project]
+name = "yam"
+version = "0.1.0"
+description = "Simple and easy-to-use Gym environments for the YAM bimanual robot station."
+readme = "README.md"
+requires-python = "==3.11.*"  # i2rt requires >= 3.11
+dependencies = [
+    "gear",
+    "gymnasium==1.2.0",
+    "i2rt",
+    "ipdb>=0.13.13",
+    "mink==0.0.12",
+    "pin-pink",
+    "opencv-python==4.12.0.88",
+    # Pin to the official Stereolabs SDK wheel for Linux x86_64 / CPython 3.11.
+    # Do NOT replace this with the unrelated PyPI `pyzed` package.
+    "pyzed @ https://download.stereolabs.com/zedsdk/5.2/whl/linux_x86_64/pyzed-5.2-cp311-cp311-linux_x86_64.whl ; sys_platform == 'linux'",
+    "pyrealsense2==2.56.5.9235; sys_platform == 'linux'",
+    "viser==1.0.6",
+    "pyzmq==27.1.0",
+    "pytest>=9.0.1",
+    "damiao-motor>=1.0.7b1",
+    "pyarrow",
+    "fastparquet",
+    "pyyaml>=6.0.3",
+    "termcolor",
+    "fastapi>=0.115",
+    "uvicorn>=0.34",
+    "mcp[cli]>=1.0",
+    "msgpack>=1.0",
+    "portal>=3.7.3",
+    "torch>=2.8.0",
+    "transformers>=5.2.0",
+    "open3d>=0.19.0",
+    "torchvision>=0.23.0",
+    "pynput>=1.7",
+    "rich>=13.0",
+    "pyserial>=3.5",
+    "google-genai>=1.0",
+    "openai>=1.0",
+    "hydra-core>=1.3.2",
+    "omegaconf>=2.3.0",
+]
+
+[project.scripts]
+serve-sam3 = "tools.vision.serve_sam3:main"
+download-robocasa-assets = "robocasa.scripts.download_kitchen_assets:main"
+
+[project.optional-dependencies]
+experimental = [
+    "pyroki",
+    "yourdfpy==0.0.59",
+    "pandas",
+    "tianshou==0.4.10",
+    "diffusers==0.35.1",
+    "decord==0.6.0",
+    "torchcodec==0.5",
+    "ninja",
+    "torch==2.8.0",
+    "torchvision==0.23.0",
+    "torchaudio==2.8.0",
+    "qwen-vl-utils>=0.0.14",
+    "xrobotoolkit-sdk @ git+https://github.com/XR-Robotics/XRoboToolkit-PC-Service-Pybind.git@refs/pull/14/head",
+]
+cap = [
+    # vllm is NOT included here — run it in a separate venv (~/vllm-env)
+    # to avoid torch ABI conflicts. See docs/CAP_DESIGN.md § 4e.
+    "pyroki",
+    "yourdfpy==0.0.59",
+]
+cap_tools = [
+    # CAP + BundleSDF pose estimation — install with: uv sync --extra cap_tools
+    "pyroki",
+    "yourdfpy==0.0.59",
+    "bundlesdf",
+    "transformers>=5.1.0",
+    "torch>=2.8.0",
+    "torchvision>=0.23.0",
+    "warp-lang",
+    "ninja",                # build-dep for nvidia-curobo (no-build-isolation)
+    "nvidia-curobo",        # editable path source; see [tool.uv.sources]
+    "graspnetAPI",          # AnyGrasp Python API; transforms3d pin overridden
+]
+robocasa = [
+    "robosuite",
+    "robocasa",
+    "qpsolvers[quadprog]>=4.3.1",
+    "wandb>=0.19",
+]
+sim_warp = [
+    "mujoco-warp>=3.5.0",
+]
+stt = [
+    # RealtimeSTT dependencies
+    "PyAudio==0.2.14",
+    "faster-whisper==1.1.1",
+    "pvporcupine==1.9.5",
+    "webrtcvad-wheels==2.0.14",
+    "halo==0.0.31",
+    "scipy==1.15.2",
+    "openwakeword>=0.4.0",
+    "websockets==15.0.1",
+    "websocket-client==1.8.0",
+    "soundfile==0.13.1",
+    "RealtimeSTT @ git+https://github.com/KoljaB/RealtimeSTT.git",
+]
+vllm_serving = [
+    "openai>=1.0.0",
+    "llvmlite>=0.46.0",
+    "numba>=0.63.1",
+]
+voice = [
+    "av>=16.1.0",
+    "h5py>=3.15.1",
+    "jax>=0.9.0",
+    "jaxlib>=0.9.0",
+    "jax-dataclasses>=1.6.3",
+    "jaxlie>=1.5.0",
+    "jaxls @ git+https://github.com/brentyi/jaxls.git@6fe7cf9d56223736b2c0272d080ec7346203c648",
+    "jaxtyping>=0.3.7",
+    "grpcio>=1.78.0",
+    "gym>=0.26.2",
+    "tensorboard>=2.20.0",
+    "robot-descriptions>=1.22.0",
+    "pyliblzfse>=0.4.1",
+    "wadler-lindig>=0.1.7",
+    "torchaudio>=2.8.0",
+]
+
+[tool.uv.sources]
+i2rt = { path = "third_party/i2rt", editable = true }
+pyroki = { path = "third_party/pyroki", editable = true }
+bundlesdf = { path = "third_party/bundlesdf", editable = true }
+robosuite = { path = "third_party/robosuite", editable = true }
+robocasa = { path = "third_party/robocasa", editable = true }
+nvidia-curobo = { path = "third_party/curobo", editable = true }
+jaxls = { git = "https://github.com/brentyi/jaxls.git", rev = "6fe7cf9d56223736b2c0272d080ec7346203c648" }
+torch = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
+]
+torchvision = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
+]
+torchaudio = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
+]
+[tool.uv]
+preview = true
+environments = ["sys_platform == 'linux'"]
+# nvidia-curobo has CUDA-host build deps (ninja, gcc, CUDA_HOME) and must
+# build against the venv's torch — no PEP 517 isolation.
+no-build-isolation-package = ["nvidia-curobo"]
+override-dependencies = [
+    # From gr00t pyproject.toml
+    "numpy>2.0.0",
+    "ray[default]==2.48.0",
+    "transformers>=5.1.0",  # 5.1+ for DINOv3 (dinov3_vit) support
+    "matplotlib",
+
+    # 0.18.0 tries to import transformers.modeling_layers, which does not exist
+    "peft==0.17.1",
+
+    # For tianshou
+    "protobuf==6.32.1",
+
+    # mujoco-warp requires >=3.5.0; i2rt pins ==3.3.5 — override globally
+    "mujoco>=3.5.0",
+
+    # PyOpenGL 3.1.0 is missing EGLDeviceEXT (breaks MuJoCo EGL)
+    "PyOpenGL>=3.1.7",
+
+    # graspnetAPI hard-pins transforms3d==0.3.1 (uses removed-in-NumPy-2 APIs).
+    # We've smoke-tested the relaxed pin and it works fine at runtime.
+    "transforms3d>=0.4",
+]
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.python.org/simple"
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[dependency-groups]
+# Minimal deps for running CAP in sim mode on macOS (Apple Silicon Mac Mini).
+# Install with:  uv sync --only-group macmini
+# No torch, transformers, pyrealsense2, gear, or CUDA packages.
+macmini = [
+    "i2rt",
+    "gymnasium==1.2.0",
+    "mink==0.0.12",
+    "pin-pink",
+    "opencv-python==4.12.0.88",
+    "viser==1.0.6",
+    "pyzmq==27.1.0",
+    "pyyaml>=6.0.3",
+    "termcolor",
+    "fastapi>=0.115",
+    "uvicorn>=0.34",
+    "msgpack>=1.0",
+    "pynput>=1.7",
+    "numpy>2.0.0",
+    "requests",
+    "Pillow",
+    "pyroki",
+    "yourdfpy==0.0.59",
+    # Real YAM motor control
+    "damiao-motor>=1.0.7b1",
+    "tyro",
+]

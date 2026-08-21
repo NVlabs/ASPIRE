@@ -1,0 +1,55 @@
+# LIBERO baseline image-difference debug config: runs seeds 51-65 with image-difference feedback.
+# Same as franka_libero_baseline_debug.yaml, but with use_img_differencing: true and rendering enabled.
+# resume_idx: 51 means the runner skips trials 1–50 and starts at trial 51.
+# Use with --args.total-trials 65 to run seeds 51–65 only.
+
+env:
+  _target_: aspire.sim.cap.envs.tasks.franka.franka_libero_env.FrankaLiberoCodeEnv
+  cfg:
+    _target_: aspire.sim.cap.envs.tasks.base.CodeExecEnvConfig
+    low_level:
+      _target_: aspire.sim.cap.envs.simulators.libero.FrankaLiberoEnv
+      suite_name: libero_goal_swap
+      task_id: 1
+      privileged: false
+      max_steps: 4000
+      seed: null
+      enable_render: true
+      viser_debug: false
+    privileged: false
+    apis:
+      - FrankaLiberoApiReducedSkillLibraryTraced
+    prompt: |
+      You are controlling a Franka Emika robot with API described below.
+      Goal: {libero_environment_goal}
+      In this robot environment, the agentview camera is looking at the robot's workspace from the front. In image space the right is world frame positive Y, up is world frame positive Z, and backward into the camera is world frame positive X.
+      You may write python code comments for reasoning but ONLY write the executable Python code and do not write it in code fences.
+      After this code executes, you will receive the current console stdout and stderr (any errors or print statements made in the code). You will then have the chance to write new code to query the environment state and/or complete the task.
+      After this code executes, you will be able to get a new observation of the environment and write new code to complete the task if needed.
+      The functions (APIs) below are already imported to the environment. If you want to use numpy, you need to import it explicitly.
+
+    multi_turn_prompt: |
+      The following code blocks were just executed:
+      ```python
+      {executed_code}
+      ```
+      The current console stdout is:
+      ```
+      {console_stdout}
+      ```
+      The current console stderr is:
+      ```
+      {console_stderr}
+      ```
+      If there were no errors during compilation or execution, the console stderr will be empty. If there were errors, consider regenerating the code.
+      Please respond with EXACTLY ONE of the following:
+      - The word 'REGENERATE' followed immediately by new Python code in a fenced code block (```python...```) if you want to write new code.
+      - The word 'FINISH' if the task appears to be complete
+
+record_video: true
+output_dir: ./outputs/libero_baseline_image_diff
+use_img_differencing: true
+
+resume_idx: 51
+trials: 100
+num_workers: 8
