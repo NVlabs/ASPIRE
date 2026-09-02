@@ -35,7 +35,7 @@ register_exec_env("franka_pick_place_code_env", FrankaPickPlaceCodeEnv)
 register_config(
     "franka_pick_place_code_env",
     CodeExecEnvConfig(
-        low_level="franka_cubes_low_level",
+        low_level="franka_robosuite_cubes_low_level",
         apis=["FrankaControlPrivilegedApi"],
     ),
 )
@@ -70,7 +70,7 @@ register_exec_env("franka_pick_place_multi_code_env", FrankaPickPlaceCodeEnv)
 register_config(
     "franka_pick_place_multi_code_env",
     CodeExecEnvConfig(
-        low_level="franka_cubes_low_level",
+        low_level="franka_robosuite_cubes_low_level",
         apis=["FrankaControlMultiPrivilegedApi"],
     ),
 )

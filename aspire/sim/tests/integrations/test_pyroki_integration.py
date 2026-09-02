@@ -53,5 +53,7 @@ def test_pyroki_real_service() -> None:
         pytest.skip("Set ASPIRE_INTEGRATION_REAL=1 to run real PyRoKI service test")
 
     ik_solve = pyroki_mod.init_pyroki(os.environ.get("PYROKI_SERVICE_URL", pyroki_mod.DEFAULT_URL))
-    q = ik_solve(np.eye(4))
+    # The /ik endpoint takes a flat 7-vector (wxyz quaternion + xyz position),
+    # not a 4x4 homogeneous transform.
+    q = ik_solve(np.array([1.0, 0.0, 0.0, 0.0, 0.4, 0.0, 0.4]))
     assert q.shape[0] >= 6
