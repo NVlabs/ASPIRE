@@ -1,0 +1,11 @@
+schema_version: 1
+name: behavior-structural
+benchmark: behavior
+# Structural gate for the two R1 Pro pickup tasks: each suite resets task instances 1-3, publishes
+# the head and wrist cameras in odom, advances exactly one 1/30 s control period per hold tick and
+# moves the primary arm. No providers are needed; the simulator alone is under test.
+cases:
+  - id: all-tasks
+    kind: structural
+    select: all
+    seeds: [1, 2, 3]

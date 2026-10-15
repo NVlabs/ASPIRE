@@ -1,0 +1,63 @@
+schema_version: 1
+required_count: 80
+
+# Release-gate order is stable and is preserved in manifest.json and matrix.jsonl.
+required_suites:
+  - name: libero_goal_swap
+    family: goal
+    variant: swap
+    expected_tasks: 10
+  - name: libero_goal_task
+    family: goal
+    variant: task
+    expected_tasks: 10
+  - name: libero_object_swap
+    family: object
+    variant: swap
+    expected_tasks: 10
+  - name: libero_object_task
+    family: object
+    variant: task
+    expected_tasks: 10
+  - name: libero_spatial_swap
+    family: spatial
+    variant: swap
+    expected_tasks: 10
+  - name: libero_spatial_task
+    family: spatial
+    variant: task
+    expected_tasks: 10
+  - name: libero_10_swap
+    family: long
+    variant: swap
+    expected_tasks: 10
+  - name: libero_10_task
+    family: long
+    variant: task
+    expected_tasks: 10
+
+# Selection is deterministic: required-suite priority, numeric task id, then task
+# name. These are the approved representative gates; there is no fallback.
+representatives:
+  object:
+    family: object
+    suite_priority: [libero_object_swap, libero_object_task]
+    task_id_priority: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    language_contains_any: ["alphabet soup"]
+  spatial:
+    family: spatial
+    suite_priority: [libero_spatial_swap, libero_spatial_task]
+    task_id_priority: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    language_match_any:
+      - "\\b(left|right|between)\\b|\\bnext\\s+to\\b"
+  goal:
+    family: goal
+    suite_priority: [libero_goal_swap, libero_goal_task]
+    task_id_priority: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    language_match_any:
+      - "\\b(drawer|stove|microwave)\\b"
+  long:
+    family: long
+    suite_priority: [libero_10_swap, libero_10_task]
+    task_id_priority: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    task_name_exact: KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it

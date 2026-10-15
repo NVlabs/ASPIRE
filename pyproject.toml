@@ -1,0 +1,392 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cap-harness"
+version = "0.1.0"
+description = "Typed Code-as-Policy APIs for LIBERO-Pro, Robosuite, and real YAM."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+  "numpy>=1.26,<3",
+  "requests>=2.32",
+  "scipy>=1.12",
+  "PyYAML>=6",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-timeout>=2.3",
+  "ruff>=0.12",
+]
+agent = [
+  "fastapi>=0.115",
+  "uvicorn>=0.34",
+  "viser[urdf]>=1.0.30,<2",
+  "mcp>=1.26,<2",
+  "pillow>=10",
+  "jsonschema>=4",
+]
+yam-real = [
+  "imageio[ffmpeg]>=2.34",
+  "portal>=3.7.3",
+  "mink>=0.0.4",
+  "mujoco==3.3.0",
+  "pyrealsense2>=2.55",
+]
+yam-real-server = [
+  "damiao-motor>=1.0.7b1",
+]
+libero = [
+  "gymnasium>=0.29",
+  "imageio[ffmpeg]>=2.34",
+  "matplotlib>=3.7",
+  "opencv-python-headless<4.13",
+  "termcolor>=2.4",
+  "libero",
+  "robosuite",
+  "easydict==1.9",
+  "robomimic==0.2.0",
+  "einops==0.4.1",
+  "thop==0.1.1-2209072238",
+  "bddl==1.0.1",
+  "future==0.18.2",
+  "cloudpickle==2.1.0",
+  "gym==0.25.2",
+  "scikit-learn",
+]
+robosuite = [
+  "gym==0.25.2",
+  "imageio[ffmpeg]>=2.34",
+  "opencv-python-headless<4.13",
+  "termcolor>=2.4",
+  "robosuite",
+]
+# Per-provider extras: each model server installs only its own dependencies so a
+# provider venv (.venv-<name>) never carries unrelated model stacks and so
+# simulator installs can stay client-only. cuRobo is compiled from source by its
+# own bootstrap script and is intentionally not a pip extra.
+providers-sam3 = [
+  "sam3",
+  "torch==2.9.1",
+  "torchvision==0.24.1",
+  "einops",
+  "decord>=0.6",
+  "psutil>=5.9",
+  "open_clip_torch>=2.24",
+  "opencv-python-headless<4.13",
+  "pillow>=10",
+  "pycocotools>=2.0",
+  "fastapi>=0.115",
+  "uvicorn>=0.34",
+  "pydantic>=2.7",
+  "setuptools<81",
+]
+providers-pyroki = [
+  "pyroki",
+  "fastapi>=0.115",
+  "uvicorn>=0.34",
+  "pydantic>=2.7",
+]
+providers-graspnet = [
+  "contact-graspnet-pytorch",
+  "torch==2.9.1",
+  "torchvision==0.24.1",
+  "open3d>=0.19",
+  "trimesh>=4.4",
+  "pyrender>=0.1.45",
+  "matplotlib>=3.10",
+  "decord>=0.6",
+  "opencv-python-headless<4.13",
+  "pillow>=10",
+  "pycocotools>=2.0",
+  "fastapi>=0.115",
+  "uvicorn>=0.34",
+  "pydantic>=2.7",
+  "setuptools<81",
+]
+# Aggregate compatibility alias (temporary): union of the per-provider extras.
+# Retained so existing bootstrap/supervisor commands keep working during
+# migration; new bootstraps target the per-provider extras above.
+providers = [
+  "contact-graspnet-pytorch",
+  "decord>=0.6",
+  "einops",
+  "fastapi>=0.115",
+  "matplotlib>=3.10",
+  "open3d>=0.19",
+  "open_clip_torch>=2.24",
+  "opencv-python-headless<4.13",
+  "pillow>=10",
+  "psutil>=5.9",
+  "pycocotools>=2.0",
+  "pydantic>=2.7",
+  "pyrender>=0.1.45",
+  "pyroki",
+  "sam3",
+  "setuptools<81",
+  "torch==2.9.1",
+  "torchvision==0.24.1",
+  "trimesh>=4.4",
+  "uvicorn>=0.34",
+]
+[project.scripts]
+cap-harness = "cap_harness.cli:main"
+cap-harness-agent = "cap_harness.agent.server:main"
+yam-servers = "cap_harness.yam_real.server.launch:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# Declared explicitly because a build copies .py files and NOTHING else. Before
+# this, the wheel was 316 KB and carried no robot data at all: no station.xml,
+# no meshes, no cuRobo config. It went unnoticed because every venv here uses an
+# editable install, which points at the source tree rather than copying it -- so
+# the omission was invisible until the first real `pip install`.
+cap_harness = [
+  # Validation manifests and any other packaged configuration.
+  "configs/**/*.yaml",
+  "configs/**/*.json",
+  "yam_real/description/**/*.xml",
+  "yam_real/description/**/*.urdf",
+  "yam_real/description/**/*.yml",
+  "yam_real/description/**/*.stl",
+]
+[tool.uv.sources]
+contact-graspnet-pytorch = { path = "third_party/contact_graspnet_pytorch", editable = true }
+libero = { path = "third_party/LIBERO-PRO", editable = true }
+pyroki = { git = "https://github.com/chungmin99/pyroki.git", rev = "388e43e1fc0d0ee382968d3dd72970fd62a0450c" }
+robosuite = { path = "third_party/robosuite", editable = true }
+sam3 = { path = "third_party/sam3", editable = true }
+
+[tool.uv]
+environments = [
+  "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+override-dependencies = [
+  "jax<0.4.30",
+  "jaxlib<0.4.30",
+  "mujoco==3.3.0",
+  "numpy==1.26.4",
+  "opencv-python ; sys_platform == 'never'",
+  "opencv-python-headless<4.13",
+  "PyOpenGL==3.1.6",
+  "PyOpenGL-accelerate==3.1.6",
+  # scipy 1.18 dropped numpy 1.x, which mujoco/LIBERO still require above.  Without this
+  # bound, Python 3.12 resolves scipy 1.18 and `import scipy.sparse` fails on `np.long`.
+  "scipy<1.18",
+  "transformers<5.0",
+]
+
+[tool.uv.extra-build-dependencies]
+contact-graspnet-pytorch = ["numpy"]
+egl-probe = ["cmake<3.27"]
+pointnet2 = ["torch"]
+
+[tool.uv.workspace]
+exclude = ["third_party/**"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+# scene_snapshot.py is a generated-program template: like examples/, it uses
+# the injected CaP tool globals, which look like undefined names to ruff.
+extend-exclude = [
+  "examples",
+  "src/cap_harness/agent/programs",
+  "third_party",
+  ".claude/skills/iterative-debugging/scripts/scene_snapshot.py",
+]
+line-length = 100
+target-version = "py310"
+
+# ---------------------------------------------------------------------------
+# Lint contract, stated here rather than inherited.
+#
+# This package previously carried a [tool.ruff] section with no lint settings, so
+# what it was actually checked against depended on config discovery rather than
+# on anything written down. A result from `ruff check` could not be reasoned
+# about without first working out which file had supplied the rules.
+#
+# The select and ignore lists below are inherited from the tree this package
+# was extracted from, copied deliberately so that a divergence is a visible
+# edit here rather than an accident of layout.
+# ---------------------------------------------------------------------------
+[tool.ruff.lint]
+select = [
+    "A",      # flake8-builtins
+    "ARG",    # flake8-unused-arguments
+    "ASYNC",  # flake8-async
+    "B",      # flake8-bugbear
+    "BLE",    # flake8-blind-except
+    "C4",     # flake8-comprehensions
+    "COM818", # trailing-comma-on-bare-tuple
+    "D",      # pydocstyle
+    # "DOC" (pydoclint) omitted — ruff DOC rules require preview mode.
+    # Using standalone pydoclint instead; see [tool.pydoclint] below.
+    "DTZ",    # flake8-datetimez
+    "E",      # pycodestyle errors
+    "EXE",    # flake8-executable
+    "F",      # pyflakes
+    "FA",     # flake8-future-annotations
+    "FAST",   # FastAPI
+    "FURB",   # refurb
+    "I",      # isort
+    "ICN",    # flake8-import-conventions
+    "ISC",    # flake8-implicit-str-concat
+    "NPY",    # NumPy-specific rules
+    "PD",     # pandas-vet
+    "PGH",    # pygrep-hooks
+    "PIE",    # flake8-pie
+    "PLC",    # pylint convention
+    "PLE",    # pylint error
+    "PLR",    # pylint refactor
+    "PLW",    # pylint warning
+    "PT",     # flake8-pytest-style
+    "PYI",    # flake8-pyi
+    "RET",    # flake8-return
+    "RSE",    # flake8-raise
+    "RUF",    # Ruff-specific rules
+    "S102",   # exec-builtin
+    "S108",   # hardcoded-temp-file
+    "S110",   # try-except-pass
+    "S112",   # try-except-continue
+    "S113",   # request-without-timeout
+    "S301",   # suspicious-pickle-usage
+    "S302",   # suspicious-marshal-usage
+    "S306",   # suspicious-mktemp-usage
+    "S307",   # suspicious-eval-usage
+    "S605",   # start-process-with-a-shell
+    "S606",   # start-process-with-no-shell
+    "SIM",    # flake8-simplify
+    "SLF",    # flake8-self
+    "SLOT",   # flake8-slots
+    "T100",   # flake8-debugger
+    "T20",    # flake8-print
+    "TC",     # flake8-type-checking
+    "TD",     # flake8-todos
+    "TID252", # flake8-tidy-imports (relative-imports)
+    "TRY",    # tryceratops
+    "UP",     # pyupgrade
+    "W605",   # pycodestyle warnings (invalid-escape-sequence)
+    "YTT",    # flake8-2020
+]
+ignore = [
+    "D100",    # undocumented-public-module (not required by Google style)
+    "D101",    # undocumented-public-class
+    "D102",    # undocumented-public-method
+    "D103",    # undocumented-public-function
+    "D104",    # undocumented-public-package (not required by Google style)
+    "D105",    # undocumented-magic-method
+    "D106",    # undocumented-public-nested-class
+    "D107",    # undocumented-public-init
+    "PIE808",  # unnecessary-range-start (noisy, low value)
+    "PIE810",  # multiple-starts-ends-with (not auto-fixable)
+    "PLC0415", # import-outside-toplevel (tensorrt/transformers are optional deps)
+    "PLR0911", # too-many-return-statements
+    "PLR0912", # too-many-branches
+    "PLR0913", # too-many-arguments (ML functions often have many params)
+    "PLR0915", # too-many-statements
+    "PLR2004", # magic-value-comparison (ruff-only rule, noisy in ML)
+    "RET504",  # unnecessary-assign (assign before return is often clearer)
+    "RET505",  # superfluous-else-return (common pattern, noisy)
+    "RUF001",  # ambiguous-unicode-character-string
+    "RUF002",  # ambiguous-unicode-character-docstring
+    "RUF003",  # ambiguous-unicode-character-comment
+    "SIM105",  # suppressible-exception (try-except-pass is more readable)
+    "SIM108",  # if-else assignment is often clearer than ternary expressions
+    "TC001",   # typing-only-first-party-import
+    "TC002",   # typing-only-third-party-import
+    "TC003",   # typing-only-standard-library-import
+    "TC006",   # runtime-cast-value
+    "TRY003",
+    "TRY300",
+    "TRY301",
+]
+
+# Two rule families are turned off for the whole package, with reasons, rather
+# than sprinkled as ~96 `noqa` comments. Both are deliberate house style, and
+# both are documented in docs/error_handling_philosophy.md.
+extend-ignore = [
+  # type-check-without-type-error. This package raises ValueError for bad DATA
+  # -- a malformed station profile, an out-of-range gripper width -- and
+  # reserves TypeError for a caller passing the wrong type. TRY004 cannot tell
+  # those apart and wants TypeError for both. 68 occurrences, every one a
+  # deliberate "bad value" rather than a mistaken type.
+  "TRY004",
+  # blind-except. The recorder, the episode sampler and the plant-failure
+  # classifiers all swallow deliberately: recording must never be able to fail a
+  # run, and a station fault has to reach the program as a typed result rather
+  # than a traceback. 28 occurrences.
+  #
+  # This one is the weaker of the two and is worth revisiting -- a blind except
+  # in a NON best-effort path would now be invisible. Narrowing it to the
+  # recording and provider modules would be strictly better.
+  "BLE001",
+
+  # ------------------------------------------------------------------
+  # Baseline, not endorsement. Everything below fires on code that predates
+  # this config, which was never checked against these rules because the
+  # package had no lint contract of its own. Turning them on and leaving 292
+  # findings would mean `ruff check` never passes and so never gates anything;
+  # baselining them means it passes today and catches the NEXT violation of
+  # every other rule.
+  #
+  # Counts are as of 2026-08-06 so the burn-down is measurable. The first two
+  # are the ones actually worth fixing: they flag real defects rather than
+  # style.
+  "B023",    # 11 - closure captures a loop variable. A genuine bug class.
+  "B905",    # 11 - zip() without strict=; silently truncates on ragged input.
+  "PT018",   # 53 - composite assert in tests; splitting them improves failures
+  "E501",    #  37 - long lines, mostly measured tables in docstrings
+  "TID252",  # 26 - parent-relative imports inside the provider packages
+  "SLF001",  # 17 - private access, chiefly the recorder reading plant state
+  "PT011",   # 16 - broad pytest.raises
+  "T201",    # 15 - print outside server/ and scripts/
+  "PLW0603", # 12 - global statement
+  "NPY002",  # 10 - legacy numpy RandomState
+  "PT007",   # 10 - parametrize value types
+  "ARG004", "ARG002", "ARG001",  # 15 - unused arguments in protocol impls
+  "PLW0108", #  9 - unnecessary lambda
+  "S110",    #  5 - try/except/pass, all in best-effort recording paths
+  "RUF059", "B007", "D205", "PLR0917", "PYI036", "RUF012", "RUF046",
+  "S108", "SIM115", "FURB192", "PT006", "RUF005", "RUF007", "SIM102",
+  "C408", "E731", "FURB171", "PLW1510", "PT012", "PYI034", "S102",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"!tests/**" = ["PT"]
+# Same exemptions the root grants tests/**, restated because this package's
+# config is now the one in force for it.
+"tests/**" = ["ARG001", "ARG002", "ARG005", "BLE001", "PLR1722", "PT017", "S108", "SLF001", "T201"]
+# Read-only diagnostics run by hand from a shell; they print their findings,
+# which is their entire purpose.
+"scripts/**" = ["T201"]
+
+[tool.ruff.lint.isort]
+case-sensitive = false
+combine-as-imports = false
+force-sort-within-sections = true
+from-first = false
+single-line-exclusions = ["typing"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+known-first-party = ["cap_harness", "tests"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# NOT the root's ban-relative-imports = "all". This package is a self-contained
+# library whose modules import their siblings relatively throughout
+# (`from .contracts import ...`), which is the established style here and in
+# every provider package. Adopting the ban would rewrite 26 imports to say
+# nothing new.
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+

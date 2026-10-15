@@ -1,0 +1,67 @@
+{
+  "dependencies": {
+    "behavior_1k": {
+      "commit": "b1979916ec1549b10a4e65e630bc6504a9af1b00",
+      "license": "MIT (OmniGibson, BDDL); BEHAVIOR Data Bundle EULA for the user-downloaded assets (non-commercial academic research, never redistributed)",
+      "path": "third_party/BEHAVIOR-1K",
+      "repository": "https://github.com/StanfordVL/BEHAVIOR-1K",
+      "tag": "v3.9.2"
+    },
+    "contact_graspnet_pytorch": {
+      "commit": "da3dcfb2f53e43b186083ee4a9d1e232f73efc98",
+      "path": "third_party/contact_graspnet_pytorch",
+      "repository": "https://github.com/uynitsuj/contact_graspnet_pytorch",
+      "license": "NVIDIA Source Code License (non-commercial research and evaluation)"
+    },
+    "libero_pro": {
+      "commit": "47aaa8038930bcdc84ab9ea2867e2ffc8039ab4a",
+      "path": "third_party/LIBERO-PRO",
+      "repository": "https://github.com/uynitsuj/LIBERO-PRO.git"
+    },
+    "pyroki": {
+      "commit": "388e43e1fc0d0ee382968d3dd72970fd62a0450c",
+      "repository": "https://github.com/chungmin99/pyroki.git"
+    },
+    "robosuite": {
+      "commit": "a498b087d4bc5a3981e3d27030d09bc537a537f3",
+      "path": "third_party/robosuite",
+      "repository": "https://github.com/Max-Fu/robosuite"
+    },
+    "sam3": {
+      "commit": "6fe87d64a5beb9084923d7a9e002741178635b09",
+      "path": "third_party/sam3",
+      "repository": "https://github.com/Max-Fu/sam3.git"
+    }
+  },
+  "gpu_runtime": {
+    "arches": {
+      "sm_120": {
+        "cuda_arch_list": "12.0",
+        "profiles": [
+          "rtx5090"
+        ]
+      },
+      "sm_89": {
+        "cuda_arch_list": "8.9",
+        "profiles": [
+          "l40",
+          "rtx4090"
+        ]
+      }
+    },
+    "cuda_runtime": "12.8",
+    "platform": "linux-x86_64",
+    "torch": "2.9.1",
+    "torch_index": "cu128",
+    "torchvision": "0.24.1"
+  },
+  "optional_dependencies": {
+    "curobo": {
+      "commit": "a35a708ecfbb26eb9ab2d7ef22c65919c4fae4a9",
+      "license": "Apache-2.0",
+      "path": "third_party/curobo",
+      "repository": "https://github.com/NVlabs/curobo.git"
+    }
+  },
+  "schema_version": 2
+}

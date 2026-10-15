@@ -1,0 +1,20 @@
+schema_version: 1
+name: robosuite-control
+benchmark: robosuite
+renderer: egl
+# Public-API arm-control gate (independent actuation, gripper-target persistence,
+# homing) via examples/robosuite/bimanual_control_smoke.py. Provider-free: it uses
+# only joint-space public tools (move_to_joints, close_gripper, go_home).
+# Simultaneous bimanual execution via the public cuRobo synchronized path is
+# covered by robosuite-bimanual.yaml, so it is not duplicated here. Passes when
+# the program completes without an assertion.
+cases:
+  - id: control
+    kind: program
+    suite: two_arm_lift
+    task_id: 0
+    seeds: [1]
+    program: examples/robosuite/bimanual_control_smoke.py
+    max_steps: 1500
+    require:
+      program_ok: true

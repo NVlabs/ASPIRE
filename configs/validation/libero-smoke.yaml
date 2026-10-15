@@ -1,0 +1,13 @@
+schema_version: 1
+name: libero-smoke
+benchmark: libero-pro
+# The LIBERO release smoke gate: 80 required suite/task representative pairs at
+# seed 1. Delegates to the resumable one-tick matrix (BDDL/init-state checks,
+# authoritative _task language, representative selection, validation
+# fingerprints). Canonical command:
+#   cap-harness validate --plan configs/validation/libero-smoke.yaml
+cases:
+  - id: representatives
+    kind: structural
+    select: representatives
+    seeds: [1]

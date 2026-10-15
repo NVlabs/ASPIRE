@@ -1,0 +1,12 @@
+schema_version: 1
+name: robosuite-structural
+benchmark: robosuite
+# Structural conformance for every registered RoboSuite task across seeds 1-3
+# (7 tasks x 3 seeds = 21 cases): reset -> authoritative language -> observation
+# schema -> one hold tick -> one bounded probe tick, checking finite reward, one
+# native control period, a state change, and clean close. Provider-free.
+cases:
+  - id: structural
+    kind: structural
+    select: all
+    seeds: [1, 2, 3]

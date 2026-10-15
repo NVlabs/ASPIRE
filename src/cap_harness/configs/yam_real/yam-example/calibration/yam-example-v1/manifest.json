@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "bundle_id": "yam-example-v1",
+  "station": "yam-example",
+  "captured_at": "2026-07-29T16:51:45.758761",
+  "calibration_sha256": "418ff7bba9b3a820bacc4ff2a6fd9d054b01fd6a7d34f2d9f9705e3dd126886e",
+  "cameras": {
+    "top": {
+      "serial": "335122273143",
+      "resolution": [
+        1280,
+        720
+      ],
+      "intrinsics": [
+        [
+          653.8172607421875,
+          0.0,
+          641.8499145507812
+        ],
+        [
+          0.0,
+          652.8601684570312,
+          365.0030822753906
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  },
+  "provenance": {
+    "method": "horaud",
+    "translation_rms_mm": 0.7424044368564249,
+    "rotation_rms_deg": 0.34017408063407983,
+    "model_sha256": "0d4a3297ea5f738f2b8cf762eef069b4c6f7d2cff724133082acf74244de0741"
+  }
+}

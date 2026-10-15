@@ -1,0 +1,36 @@
+schema_version: 1
+name: behavior-pickup
+benchmark: behavior
+renderer: egl
+sealed: false
+# Task-success gate for the two R1 Pro pickup programs. Each seed is a task instance run in a
+# fresh process; success is the host-side pickup witness (grasp held and the object 5 mm above its
+# instance-start height). At least one success per task is required; the count is reported.
+required_providers: [sam3, contact_graspnet]
+cases:
+  - id: turning-on-radio
+    kind: program
+    suite: turning_on_radio
+    task_id: 0
+    seeds: [1, 2, 3]
+    program: examples/behavior/turning_on_radio_seed1.py
+    max_steps: 6000
+    evaluator: behavior_pickup
+    min_success: 1
+    require:
+      program_ok: true
+      task_success: true
+      evaluator_success: true
+  - id: picking-up-trash
+    kind: program
+    suite: picking_up_trash
+    task_id: 0
+    seeds: [1, 2, 3]
+    program: examples/behavior/picking_up_trash_seed1.py
+    max_steps: 6000
+    evaluator: behavior_pickup
+    min_success: 1
+    require:
+      program_ok: true
+      task_success: true
+      evaluator_success: true

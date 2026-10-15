@@ -1,0 +1,19 @@
+{
+  "schema": "cap-harness/profile/1",
+  "name": "l40",
+  "arch": "sm_89",
+  "description": "Multi-GPU L40 (Ada, sm_89) node; providers spread across GPUs with node-local venv backing.",
+  "venv_root": null,
+  "gpus": {
+    "sam3": 0,
+    "contact_graspnet": 1,
+    "curobo": 3
+  },
+  "concurrency": {
+    "sam3": 2,
+    "contact_graspnet": 2,
+    "pyroki": 8,
+    "curobo": 2
+  },
+  "ports": {}
+}

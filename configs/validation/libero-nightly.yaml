@@ -1,0 +1,12 @@
+schema_version: 1
+name: libero-nightly
+benchmark: libero-pro
+# The LIBERO nightly gate: the same 80 representative pairs across seeds 1, 2,
+# and 3 (240 cases). Delegates to the resumable one-tick matrix in nightly mode.
+# Canonical command:
+#   cap-harness validate --plan configs/validation/libero-nightly.yaml
+cases:
+  - id: representatives
+    kind: structural
+    select: representatives
+    seeds: [1, 2, 3]

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Iterative Debugging (Fix Loop)"
+  short_description: "Run the CaP fix loop pipeline over a list of benchmark tasks"
+  default_prompt: "Use $iterative-debugging with the assigned benchmark's development and evaluation seeds: debug the first development seed until actual success, test and adapt on the remaining development seeds, verify one selected policy across all development seeds, then evaluate it frozen. Use public CaP APIs and recorded traces/videos."

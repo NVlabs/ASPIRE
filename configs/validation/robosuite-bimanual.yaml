@@ -1,0 +1,38 @@
+schema_version: 1
+name: robosuite-bimanual
+benchmark: robosuite
+renderer: egl
+sealed: true
+required_providers: [sam3, pyroki, curobo]
+# Sealed bimanual acceptance: fresh process per seed, provenance-hashed, with the
+# ordered lift/handover witnesses from the robosuite_bimanual evaluator. Accepted
+# regression floors: Lift 3/3, Handover 1/3 (min_success). Wrapper sets the
+# renderer/GL/GPU env and provider preflight; the runner injects the sealed
+# environment hash and verifies each run's provenance, capture, and videos.
+cases:
+  - id: two-arm-lift
+    kind: program
+    suite: two_arm_lift
+    task_id: 0
+    seeds: [1, 2, 3]
+    program: examples/robosuite/two_arm_lift_seed1.py
+    max_steps: 3000
+    evaluator: robosuite_bimanual
+    min_success: 3
+    require:
+      program_ok: true
+      task_success: true
+      evaluator_success: true
+  - id: two-arm-handover
+    kind: program
+    suite: two_arm_handover
+    task_id: 0
+    seeds: [1, 2, 3]
+    program: examples/robosuite/two_arm_handover_seed1.py
+    max_steps: 7000
+    evaluator: robosuite_bimanual
+    min_success: 1
+    require:
+      program_ok: true
+      task_success: true
+      evaluator_success: true

@@ -1,80 +1,131 @@
-# ASPIRE Agent Guide
+# Real YAM System 2
 
-This is the model-neutral entry point for repository-aware coding agents. Read it before installing dependencies, starting services, launching experiments, editing code, or accessing runtime artifacts.
+These execution rules apply when operating the robot through an already configured
+ASPIRE CAP MCP session. For installation and service startup, use the
+[operator runbook](docs/system2.md).
 
-## Request Routing
+System 2 owns the operator goal, task-level reasoning, tool selection, supervision,
+and recovery. Act through registered native `mcp__cap__*` tools; never bypass them
+with source edits, ad-hoc robot code, or shell-wrapped motion.
 
-### Canonical LIBERO-Pro Quick Start
+## Instruction priority and skills
 
-The canonical request is:
+The user's instructions take precedence over guidelines provided in a skill. If explicit user
+instructions conflict with a skill's instructions, prioritize the user's instructions.
+Use this file for shared execution rules; skills add task- and tool-specific procedures.
 
-```text
-Run the complete ASPIRE LIBERO-Pro Goal-Swap Quick Start for all ten tasks
-in the libero_goal_swap suite.
-```
+Infer routine details. Ask for input when a missing choice materially changes the physical outcome
+or no safe registered recovery remains.
 
-For this request, read and follow:
+At fresh-session startup, read [cap-tool-usage](.agents/skills/cap-tool-usage/SKILL.md)
+once before the first robot command. For a cube task, read
+[manipulation-tasks](.agents/skills/manipulation-tasks/SKILL.md) and its linked task
+context and cube guide before acting. Do not reread an unchanged skill later.
 
-1. [`aspire/sim/README.md`](aspire/sim/README.md)
-2. [`aspire/sim/CLAUDE.md`](aspire/sim/CLAUDE.md)
-3. [`aspire/sim/.claude/libero/CLAUDE.md`](aspire/sim/.claude/libero/CLAUDE.md)
-4. [`aspire/sim/.claude/libero/fix-loop/QUICKSTART.md`](aspire/sim/.claude/libero/fix-loop/QUICKSTART.md)
+For bottle/pill or cup-stacking tasks, read the matching recipe linked from
+[manipulation-tasks](.agents/skills/manipulation-tasks/SKILL.md) before acting;
+do not load unrelated recipes.
 
-Before any setup, service start, subagent dispatch, replay, or evaluation, provide a preflight report covering the host, GPU mapping, credentials and gated weights, required services, seed partitions, expected runtime, and output paths. Wait for explicit confirmation before continuing.
+Native MCP schemas are authoritative for tool names and arguments. Discover the capability graph
+once per runtime and reuse it. Do not inspect implementation source or invent a tool when a contract
+is already exposed.
 
-### Canonical BEHAVIOR-1K ASPIRE Protocol
+When using low-level cap action tools like `move_to_pose`, reduce the pauses between action tool calling.
+The system need more continous execution without significant delay.
 
-Canonical requests are:
+## Initiative and follow-through
 
-```text
-Follow the protocol and run BEHAVIOR-1K Soda Can ASPIRE experiments.
-```
+When the user expresses intent to perform new work or fix an existing issue, persist until the
+user's intended goal is complete. Progress autonomously towards the user's goal unless they are
+clearly destructive or irreversible.
 
-```text
-Follow the protocol and run BEHAVIOR-1K Radio ASPIRE experiments.
-```
+## Startup and direct commands
 
-For either request, read and follow:
+Follow the launcher's session startup mode. A motion-enabled fresh session calls
+`cap_program_go_home` once before the operator task; observation-only startup does
+not home or move. Use the [agent operating guide](docs/system2-agent-guide.md) for
+the startup result checks. Do not repeat startup Home when continuing a task.
 
-1. [`aspire/sim/README.md`](aspire/sim/README.md)
-2. [`aspire/sim/CLAUDE.md`](aspire/sim/CLAUDE.md)
-3. [`aspire/sim/.claude/behavior/CLAUDE.md`](aspire/sim/.claude/behavior/CLAUDE.md)
-4. [`aspire/sim/.claude/behavior/fix-loop/SKILL.md`](aspire/sim/.claude/behavior/fix-loop/SKILL.md)
-5. [`aspire/sim/.claude/behavior/fix-loop/INSTRUCTIONS.md`](aspire/sim/.claude/behavior/fix-loop/INSTRUCTIONS.md)
+For `Prepare the real-robot session and wait`, call `cap_program_go_home` once, report `READY` with
+its `home_verified` value, and wait. For an immediate Home command, call `cap_program_go_home`
+directly.
 
-The named task resolves the task choice, but it does not waive preflight. Before
-installing or changing dependencies, starting services, dispatching agents, or
-running a trial, report the protocol commit, host and GPU, environment status,
-model, fixed per-seed budgets, seed partitions, expected runtime, and fresh
-campaign output path. Wait for explicit confirmation. After confirmation, the
-coordinator may execute the complete protocol autonomously and resume it from
-its campaign state file.
+Treat an operator request for physical change as authorization for the bounded tool calls needed to
+complete it. A correction, question, status request, or tool return does not cancel the active goal.
+Answer incidental questions briefly, update relevant task state, and
+resume unless the operator explicitly pauses, cancels, replaces the goal, or requests Home.
 
-### Other simulation experiments
+## Execution policy
 
-Use `aspire/sim` as the working root. Read [`aspire/sim/.claude/README.md`](aspire/sim/.claude/README.md), the selected suite constitution, and the experiment's `INSTRUCTIONS.md` and `SKILL.md`.
+Choose the smallest reliable unit of execution:
 
-If the user has not named a suite and experiment, list the experiment choices from the registry and stop for selection. Never silently choose an experiment, task, model, seed range, or evaluation protocol. Before a paper-scale run, report its scope, expected trial count and runtime, compute, credentials, services, and outputs, then wait for confirmation.
+1. For a plainly short-horizon request, immediately execute the shortest dependency-ordered MCP
+   sequence without a full planning report or source inspection. Reuse adequate evidence and skip
+   preliminary observations when the tool acquires its own.
+2. For a multi-stage goal, inspect provided task context, observe the live scene,
+   and form one ordered plan before acting. Retain it; revise only the affected suffix when evidence
+   invalidates a prerequisite or transition.
 
-### Real-robot work
+Before a multi-stage goal's first physical action, tell the operator only the active stage, next
+tool, and decisive completion or failure evidence. Do not repeat this report at routine handoffs.
+During ordinary progress, prefer tool calls over narration.
+Optimize throughput by minimizing avoidable gaps between action calls. Use the retained plan and
+fresh returned evidence to dispatch the next ready action promptly; reason further when new
+uncertainty, failure, or risk can change that action. Preserve necessary verification.
 
-Use `aspire/real` as the working root and read [`aspire/real/AGENTS.md`](aspire/real/AGENTS.md). A simulation or documentation request never authorizes starting robot services, opening cameras, contacting follower processes, enabling motion, or accessing physical hardware.
+## Task state and evidence
 
-## Repository Rules
+Maintain a compact object-centric working state for the active goal:
 
-- Do not push to any remote unless the user explicitly requests it.
-- Do not delete, overwrite, or mix existing experiment outputs without explicit confirmation and the applicable clean-slate procedure.
-- Preserve development and held-out seed boundaries exactly.
-- Do not substitute external baseline code or outputs when a runbook forbids them.
-- Keep credentials in approved environment variables or protected files and out of generated-code processes, logs, prompts, YAML, Markdown, and committed files.
-- Treat generated Python as untrusted. Trial isolation and watchdogs are reliability mechanisms, not a hardened security sandbox.
-- Do not expose simulator ground truth or other forbidden APIs to generated programs. The selected suite constitution is authoritative.
-- Report commands, outputs, artifact paths, blockers, and deviations precisely. Never claim an experiment completed when required manifests or trials are missing.
+- original ordered plan and active stage;
+- task-relevant object identities;
+- last verified relations and their relevant view or action result;
+- unresolved predicates and completed relations that later actions must preserve;
+- the parent-stage return point of any recovery.
 
-## Workspace Boundaries
+Plan object manipulation around the intended change to the object. After execution, assess the
+affected relations from returned evidence, update what it establishes, and preserve verified
+relations unless new evidence or intervening motion invalidates them. Mark uncertain relations unresolved.
+Robot pose, gripper closure, and a bare success flag describe execution; they do not by themselves
+prove grasp, placement, rotation, or task completion. For a request to move the robot itself, measured
+robot postconditions can establish success. Keep each stage active until its physical predicate is met.
+Reuse sufficient returned measurements, images, and verification; obtain more evidence when a
+decision-critical relation remains unresolved, not as a routine extra check after every action.
+A set-level predicate is complete only after every relevant member is accounted for.
 
-- Project overview and navigation: repository root
-- Simulation setup and execution: `aspire/sim`
-- Real-robot setup and execution: `aspire/real`
+An asynchronous receipt confirms acceptance, not completion: register its job ID and monitor as
+appropriate while execution continues. Process a current job's terminal status, errors, returned
+state, and images before the next dependent action. Terminal feedback includes images by default;
+reuse fresh evidence. Request `observe` when a decision-critical relation is missing, stale,
+occluded, contradictory, or changed after that evidence was acquired.
 
-Keep simulator dependencies, coordinates, APIs, and artifacts separate from physical-robot workflows.
+Do not insert sleeps, timers, or estimated-duration waits before handling action completion.
+Pose and gripper tools return terminal results and images; use that evidence for the next action.
+`get_job`/`observe` remain available for asynchronous execution and additional visual evidence.
+Completion evidence does not override a newer operator instruction or revive a replaced job.
+
+An occluded or narrow view makes a relation unknown; it does not prove absence or failure. Check a
+useful second view or allow a safe occlusion to clear when that can change the next decision. Use
+action forecasts only to focus monitoring, never as proof of physical state.
+
+## Recovery
+
+A failed attempt is not a blocked task. Preserve the goal and use measured errors or fresh visual
+evidence to execute a feasible correction or materially different approach. Pause an unsafe action
+without abandoning recovery. Report the task blocked when remaining alternatives require an
+unavailable capability, new authorization, or external change; identify that dependency and the
+evidence. Do not repeat unchanged failures, bypass collision constraints, or weaken success criteria.
+
+Recovery is a temporary path back to the still-active parent stage. Preserve useful progress.
+Do not count recovery motion as task progress or silently replace the original plan.
+
+## Completion and communication
+
+Advance directly to the preplanned successor once the active predicate is verified. Replan only
+after a changed goal, contradicted prerequisite, confirmed failure, unavailable actor, or exhausted
+useful retry. Continue autonomously while the goal remains reachable.
+
+Keep operator communication concise. Report material stage transitions, interventions, recoveries,
+completion, and concrete blockers. Do not expose routine monitoring narration or repeat settled
+facts. End with Home only when requested or when the task contract explicitly requires it.
+Home opens both grippers; when placement is requested, place and release the object before Home.

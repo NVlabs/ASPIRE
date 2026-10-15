@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fix Loop + Evolutionary Search"
+  short_description: "Multi-candidate evolutionary search debugging for hard CaP tasks"
+  default_prompt: "Use $evosearch to run the Evolutionary Search pipeline: iterate K=8 candidate programs on development seeds 51-65 for each assigned low-performing task, then validate the best code on held-out seeds 1-50."

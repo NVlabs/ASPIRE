@@ -1,0 +1,19 @@
+{
+  "schema": "cap-harness/profile/1",
+  "name": "rtx4090",
+  "arch": "sm_89",
+  "description": "Single Ada RTX 4090 (sm_89); all providers share GPU 0 with serialized GPU access.",
+  "venv_root": null,
+  "gpus": {
+    "sam3": 0,
+    "contact_graspnet": 0,
+    "curobo": 0
+  },
+  "concurrency": {
+    "sam3": 1,
+    "contact_graspnet": 1,
+    "pyroki": 4,
+    "curobo": 1
+  },
+  "ports": {}
+}

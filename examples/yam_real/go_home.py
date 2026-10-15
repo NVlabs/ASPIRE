@@ -1,0 +1,1 @@
+result = go_home()

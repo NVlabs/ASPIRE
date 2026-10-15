@@ -1,0 +1,76 @@
+{
+  "schema": "cap-harness/environments/1",
+  "venv_prefix": ".venv-",
+  "simulators": {
+    "libero": {
+      "venv": ".venv-libero",
+      "extras": [
+        "libero"
+      ],
+      "client_only": true
+    },
+    "robosuite": {
+      "venv": ".venv-robosuite",
+      "extras": [
+        "robosuite"
+      ],
+      "client_only": true
+    },
+    "behavior": {
+      "venv": ".venv-behavior",
+      "extras": [],
+      "client_only": true,
+      "external_bootstrap": "scripts/bootstrap_behavior.sh"
+    }
+  },
+  "providers": {
+    "sam3": {
+      "venv": ".venv-sam3",
+      "module": "cap_harness.providers.sam3.service",
+      "port": 8114,
+      "gpu": true,
+      "extra": "providers-sam3",
+      "submodule": "third_party/sam3",
+      "import_check": "sam3",
+      "optional": false
+    },
+    "contact_graspnet": {
+      "venv": ".venv-graspnet",
+      "module": "cap_harness.providers.graspnet.service",
+      "port": 8115,
+      "gpu": true,
+      "extra": "providers-graspnet",
+      "submodule": "third_party/contact_graspnet_pytorch",
+      "import_check": "contact_graspnet_pytorch",
+      "optional": true
+    },
+    "pyroki": {
+      "venv": ".venv-pyroki",
+      "module": "cap_harness.providers.pyroki.service",
+      "port": 8116,
+      "gpu": false,
+      "extra": "providers-pyroki",
+      "import_check": "pyroki",
+      "optional": false
+    },
+    "curobo": {
+      "venv": ".venv-curobo",
+      "module": "cap_harness.providers.curobo.service",
+      "port": 8118,
+      "gpu": true,
+      "source_build": true,
+      "optional": true
+    }
+  },
+  "client_dependencies": [
+    "numpy",
+    "requests",
+    "scipy",
+    "PyYAML"
+  ],
+  "required_provider_ports": [
+    8114,
+    8116,
+    8118
+  ]
+}
