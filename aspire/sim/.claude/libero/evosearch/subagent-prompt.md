@@ -110,7 +110,7 @@ cat .claude/libero/skills/manipulation.md
 **Also read the existing fix_code.py if it exists** — this is your baseline to beat and **must be seeded as candidate_A**:
 ```bash
 cat $EVOSEARCH_DIR/$SUITE/$TASK/evosearch_best_code.py 2>/dev/null || \
-cat outputs/libero_baseline_image_diff_gemini/$SUITE/$TASK/fix_code.py 2>/dev/null || \
+cat outputs/libero_fix_loop/$SUITE/$TASK/fix_code.py 2>/dev/null || \
 echo "No baseline fix_code.py found"
 ```
 
@@ -263,18 +263,19 @@ BEST_CODE="$RUN_DIR/iter_NN/candidate_X/code.py"
 
 # Sanity check: Evolutionary Search best must beat fix_code.py (candidate_A = fix_code verbatim) on seeds 51–65
 # If not, fall back to fix_code.py so Stage 2 uses the stronger baseline.
-.venv/bin/python3 << 'PYEOF'
+.venv/bin/python3 - "$RUN_DIR" << 'PYEOF'
 import json, sys
 from pathlib import Path
 
-rdir = Path("$RUN_DIR")
+rdir = Path(sys.argv[1])
 baseline, best_rate = 0.0, 0.0
 for f in sorted(rdir.rglob("iter_summary.json")):
-    if "stage2" in str(f):
+    if "stage2" in f.relative_to(rdir).parts:
         continue
     for c in json.loads(f.read_text()).get("candidates", []):
         best_rate = max(best_rate, c["pass_rate"])
-        if c["candidate"] == "candidate_A":
+        # candidate_A is fix_code.py verbatim only in iter_00 (see Step 6)
+        if c["candidate"] == "candidate_A" and f.parent.name == "iter_00":
             baseline = max(baseline, c["pass_rate"])
 
 print(f"Best Evolutionary Search:          {best_rate:.0%}  (seeds 51–65)")
@@ -284,7 +285,7 @@ PYEOF
 
 if [ $? -ne 0 ]; then
     echo "⚠ Evolutionary Search did not beat fix_code.py — using fix_code.py as evosearch_best_code.py"
-    BEST_CODE="outputs/libero_baseline_image_diff_gemini/$SUITE/$TASK/fix_code.py"
+    BEST_CODE="outputs/libero_fix_loop/$SUITE/$TASK/fix_code.py"
     if [ ! -f "$BEST_CODE" ]; then
         echo "ERROR: fix_code.py not found at $BEST_CODE — marking BLOCKED"
         touch $EVOSEARCH_DIR/$SUITE/$TASK/BLOCKED
