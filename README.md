@@ -2,6 +2,8 @@
 
 [Project Page](https://research.nvidia.com/labs/gear/aspire/) &ensp;|&ensp; [Paper](https://arxiv.org/abs/2607.00272)
 
+This is the original ASPIRE release on [`v0.1`](https://github.com/NVlabs/ASPIRE/tree/v0.1). For ASPIRE v1.0 and the unified harness, use [`main`](https://github.com/NVlabs/ASPIRE/tree/main).
+
 <img src="assets/media/covervideo.gif" alt="ASPIRE robot demonstrations" width="100%">
 
 ASPIRE is a new type of continual learning: "training" is skill refinement instead of gradient descent. 
@@ -17,7 +19,7 @@ ASPIRE is a new type of continual learning: "training" is skill refinement inste
 To get started with ASPIRE, launch a coding agent such as Codex or Claude Code and enter the following prompt:
 
 ```text
-Clone the repo: https://github.com/NVlabs/ASPIRE/, Read AGENTS.md and 
+Clone the v0.1 branch of https://github.com/NVlabs/ASPIRE/, read AGENTS.md and
 run the complete ASPIRE LIBERO-Pro Goal-Swap Quick Start for all ten 
 tasks in the libero_goal_swap suite.
 
