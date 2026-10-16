@@ -79,7 +79,7 @@ committed files.
 From a fresh clone:
 
 ```bash
-git clone https://github.com/NVlabs/ASPIRE.git
+git clone --branch v0.1 https://github.com/NVlabs/ASPIRE.git
 cd ASPIRE/aspire/sim
 ```
 
