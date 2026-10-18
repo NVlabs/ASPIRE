@@ -88,7 +88,9 @@ def _verify_sealed_run(
 ) -> list[str]:
     issues: list[str] = []
     run = _read_json(run_dir / "run.json")
-    if run is not None:
+    if run is None:
+        issues.append("run.json is missing or is not a valid JSON object")
+    else:
         if run.get("environment_sha256") != environment_sha256:
             issues.append("run environment_sha256 does not match the sealed environment")
         capture = run.get("capture")
@@ -102,7 +104,9 @@ def _verify_sealed_run(
     if outcome.get("finalization_errors") not in ([], None):
         issues.append("run reported finalization errors")
     provenance = _read_json(run_dir / "source/provenance.json")
-    if provenance is not None:
+    if provenance is None:
+        issues.append("source/provenance.json is missing or is not a valid JSON object")
+    else:
         issues.extend(
             check_program_provenance(
                 provenance,
@@ -121,7 +125,9 @@ def _verify_sealed_run(
     elif any((videos_dir / video).stat().st_size <= 0 for video in actual_videos):
         issues.append("a required video is empty")
     video_index = _read_json(run_dir / "media/video-index.json")
-    if video_index is not None:
+    if video_index is None:
+        issues.append("media/video-index.json is missing or is not a valid JSON object")
+    else:
         frames = video_index.get("frames")
         expected_frame_keys = {name.removesuffix(".mp4") for name in required_videos}
         if (

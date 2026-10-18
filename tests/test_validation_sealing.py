@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from cap_harness.validation.model import ValidationCase
 from cap_harness.validation.runner import _verify_sealed_run
 
@@ -93,6 +95,23 @@ def _verify(run_dir: Path):
 def test_valid_sealed_run_has_no_issues(tmp_path):
     run_dir = _good_run(tmp_path, max_steps=3000)
     assert _verify(run_dir) == []
+
+
+@pytest.mark.parametrize(
+    "relative_path", ["run.json", "source/provenance.json", "media/video-index.json"]
+)
+@pytest.mark.parametrize("state", ["missing", "invalid_json", "non_object"])
+def test_missing_or_invalid_sealed_metadata_is_flagged(tmp_path, relative_path, state):
+    run_dir = _good_run(tmp_path, max_steps=3000)
+    path = run_dir / relative_path
+    if state == "missing":
+        path.unlink()
+    else:
+        path.write_text("{" if state == "invalid_json" else "[]", encoding="utf-8")
+
+    issues = _verify(run_dir)
+
+    assert any(relative_path in issue for issue in issues)
 
 
 def test_wrong_environment_hash_is_flagged(tmp_path):
