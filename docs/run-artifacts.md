@@ -32,6 +32,14 @@ outputs/<benchmark>/<suite>/<task-id>-<task-slug>/<seed>/<run-id>/    # default
 Seeds use four digits. Run IDs contain a sortable UTC timestamp and a random collision suffix.
 Every invocation creates a new directory and never overwrites an earlier run.
 
+Program cases launched by `validate --plan` additionally allocate a retained
+`<output-dir>/<case>/runs/<seed>/attempt-<suffix>/` directory for each invocation.
+Only outcomes below that invocation's directory are eligible for its result.
+Earlier records remain available, including when a later attempt produces no
+outcome. The seed summary records `attempt_root` even for an incomplete attempt,
+and `run_dir` when an outcome was found. A nonzero exit remains diagnostic:
+BEHAVIOR can finalize a valid outcome before exiting nonzero during teardown.
+
 - `run.json`: identity, task, capture settings, timestamps, lifecycle status, and an optional
   campaign environment hash.
 - `outcome.json`: program status, final task and protocol success, aggregate reward, durations,
