@@ -24,6 +24,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 from typing import Any
 
 from .model import CaseResult, SeedResult, ValidationCase, ValidationPlan
@@ -150,6 +151,9 @@ def _run_program_case(
     for seed in case.seeds:
         seed_root = case_dir / "runs" / str(seed)
         seed_root.mkdir(parents=True, exist_ok=True)
+        # Keep every attempt, but only inspect this invocation's output. An old
+        # success (including a late completion) cannot confirm a new attempt.
+        attempt_root = Path(tempfile.mkdtemp(prefix="attempt-", dir=seed_root))
         argv = [
             sys.executable,
             "-m",
@@ -166,7 +170,7 @@ def _run_program_case(
             "--program",
             str(repo_root / case.program),
             "--output-root",
-            str(seed_root),
+            str(attempt_root),
             "--flat-run-dir",
             "--max-steps",
             str(case.max_steps),
@@ -177,8 +181,10 @@ def _run_program_case(
         if seal is not None:
             env["CAP_HARNESS_ENVIRONMENT_SHA256"] = seal["environment_sha256"]
         code = run_command(argv, env)
-        run_dir = _find_run_dir(seed_root)
-        detail: dict[str, Any] = {"exit_code": code}
+        run_dir = _find_run_dir(attempt_root)
+        # BEHAVIOR can exit nonzero after finalizing valid evidence. Keep the
+        # exit code diagnostic; evaluate only the current attempt's records.
+        detail: dict[str, Any] = {"exit_code": code, "attempt_root": str(attempt_root)}
         if run_dir is None:
             detail["error"] = "no outcome.json produced"
             seed_results.append(SeedResult(seed=seed, passed=False, detail=detail))
