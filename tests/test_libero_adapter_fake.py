@@ -138,7 +138,7 @@ def _build_adapter(
     *,
     post_settle_steps: int = 0,
     init_mode: str = "saved",
-    init_states: list[float] | None = None,
+    init_states: list[float] | np.ndarray | None = None,
     env: FakeEnv | None = None,
 ):
     bddl_path = tmp_path / "task.bddl"
@@ -245,6 +245,39 @@ def test_seeded_layouts_differ_and_repeat_across_fresh_and_reused_envs(tmp_path)
 def test_saved_init_mode_rejects_a_task_with_no_saved_states(tmp_path) -> None:
     """Better a clear error than (seed - 1) %% 0."""
     adapter, _, _ = _build_adapter(tmp_path, init_mode="saved", init_states=[])
+
+    with pytest.raises(ValueError, match="no saved init states"):
+        adapter.reset(("libero_goal_task", 2), seed=1)
+
+
+def test_saved_init_mode_accepts_ndarray_init_states(tmp_path) -> None:
+    """LIBERO-Pro loads saved init states with torch.load as one (N, D) ndarray.
+
+    Truth-testing that array raised "The truth value of an array ... is ambiguous"
+    on every saved-mode reset, so the emptiness check must use len() like the
+    surrounding code (issues #26 and #27).
+    """
+
+    class ArrayStateEnv(FakeEnv):
+        def set_init_state(self, state: np.ndarray) -> dict[str, np.ndarray]:
+            self.selected_init_state = np.asarray(state).copy()
+            self.joints = np.full(7, float(state[0]))
+            return self._observation()
+
+    init_states = np.arange(12, dtype=np.float64).reshape(3, 4)
+    env = ArrayStateEnv()
+    adapter, _, _ = _build_adapter(tmp_path, init_mode="saved", init_states=init_states, env=env)
+
+    observation = adapter.reset(("libero_goal_task", 2), seed=5)
+
+    np.testing.assert_array_equal(env.selected_init_state, init_states[1])  # (5 - 1) % 3
+    assert observation.task_context.metadata["init_state_index"] == 1
+
+
+def test_saved_init_mode_rejects_an_empty_ndarray(tmp_path) -> None:
+    adapter, _, _ = _build_adapter(
+        tmp_path, init_mode="saved", init_states=np.zeros((0, 4)), env=FakeEnv()
+    )
 
     with pytest.raises(ValueError, match="no saved init states"):
         adapter.reset(("libero_goal_task", 2), seed=1)
