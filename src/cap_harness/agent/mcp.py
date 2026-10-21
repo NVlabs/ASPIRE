@@ -201,8 +201,16 @@ _DIRECT = {
     "move_synchronized",
     "set_gripper",
     "yam_real.get_controller_metadata",
+    "cerulion.get_controller_metadata",
+    "cerulion.get_task_metadata",
 }
-_READ_ONLY = {"get_robot_state", "localize_object", "yam_real.get_controller_metadata"}
+_READ_ONLY = {
+    "get_robot_state",
+    "localize_object",
+    "yam_real.get_controller_metadata",
+    "cerulion.get_controller_metadata",
+    "cerulion.get_task_metadata",
+}
 
 
 def _jsonable(value: Any, *, _active: set[int] | None = None) -> Any:

@@ -33,6 +33,16 @@ class RunOutcome:
     termination_reason: str
 
 
+def _default_camera(benchmark: str, adapter: object) -> str:
+    if benchmark == "yam_real":
+        return adapter.native_env.config.camera.role  # type: ignore[attr-defined]
+    if benchmark == "cerulion":
+        from .cerulion.adapter import CAMERA_NAME
+
+        return CAMERA_NAME
+    return "agentview"
+
+
 def run_program_with_api(
     *,
     api: CapApi,
@@ -81,10 +91,12 @@ def run_program(
     station: str = "yam-example",
     station_config_root: Path | None = None,
     allow_motion: bool = False,
+    rcpd_manifest: Path | None = None,
+    rcpd_receipts: Path | None = None,
 ) -> RunOutcome:
     """Run an episode, using its task horizon when max_steps is not supplied."""
-    if benchmark not in {"behavior", "libero-pro", "robosuite", "yam_real"}:
-        raise ValueError("benchmark must be behavior, libero-pro, robosuite, or yam_real")
+    if benchmark not in {"behavior", "cerulion", "libero-pro", "robosuite", "yam_real"}:
+        raise ValueError("benchmark must be behavior, cerulion, libero-pro, robosuite, or yam_real")
     if init_mode not in {"saved", "seeded"}:
         raise ValueError("init_mode must be 'saved' or 'seeded'")
     if init_mode != "saved" and benchmark != "libero-pro":
@@ -113,6 +125,15 @@ def run_program(
         metadata = registry.resolve(suite, task_id)
         adapter_type = BehaviorAdapter
         extension_allowlist = BEHAVIOR_PUBLIC_TOOL_NAMES
+    elif benchmark == "cerulion":
+        from .cerulion.adapter import CerulionAdapter
+        from .cerulion.registry import CerulionTaskRegistry
+        from .registry import CERULION_PUBLIC_TOOL_NAMES
+
+        registry = CerulionTaskRegistry()
+        metadata = registry.resolve(suite, task_id)
+        adapter_type = CerulionAdapter
+        extension_allowlist = CERULION_PUBLIC_TOOL_NAMES
     elif benchmark == "yam_real":
         from .registry import YAM_REAL_PUBLIC_TOOL_NAMES
         from .yam_real.adapter import YamRealAdapter
@@ -144,6 +165,10 @@ def run_program(
             "trajectory_planning": ("interpolation", "curobo"),
             "pose_planning": ("curobo-integrated",),
         }
+    elif benchmark == "cerulion":
+        # CapApi is built with no providers for this target; joint-space
+        # interpolation is the only planner a program can reach.
+        provider_capabilities = {"trajectory_planning": ("interpolation",)}
     else:
         provider_capabilities = {
             "segmentation": "sam3",
@@ -255,6 +280,16 @@ def run_program(
                     allow_physical_motion=allow_motion,
                 )
                 recorder.frequency = adapter.control_frequency
+            elif benchmark == "cerulion":
+                adapter = adapter_type(
+                    manifest=rcpd_manifest,
+                    receipts=rcpd_receipts,
+                    registry=registry,
+                    run_observer=recorder,
+                    camera_width=camera_width,
+                    camera_height=camera_height,
+                    horizon=max_steps,
+                )
             else:
                 adapter = adapter_type(**adapter_kwargs)
         with recorder.timing.measure("reset"):
@@ -298,7 +333,13 @@ def run_program(
             "sam3",
         )
         contact_graspnet = TracedProvider(ContactGraspNetProvider(), recorder, "contact_graspnet")
-        if benchmark == "behavior":
+        if benchmark == "cerulion":
+            # No perception, grasp, IK or cuRobo provider: the same surface
+            # `cap-harness-agent --embodiment cerulion` serves.
+            api = CapApi(
+                adapter, default_camera=_default_camera(benchmark, adapter), recorder=recorder
+            )
+        elif benchmark == "behavior":
             from .contracts import MotionStrategy
 
             planner = TracedProvider(adapter.planner(), recorder, "curobo")  # type: ignore[attr-defined]
@@ -351,9 +392,7 @@ def run_program(
                 ik_providers=ik_providers,
                 trajectory_planning_providers={"curobo": curobo},
                 integrated_pose_planning_providers={"curobo-integrated": curobo},
-                default_camera=adapter.native_env.config.camera.role
-                if benchmark == "yam_real"
-                else "agentview",
+                default_camera=_default_camera(benchmark, adapter),
                 recorder=recorder,
             )
         tools = api.register_tools(

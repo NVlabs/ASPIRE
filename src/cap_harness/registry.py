@@ -75,8 +75,14 @@ YAM_REAL_PUBLIC_TOOL_NAMES = frozenset(
     {"yam_real.get_task_metadata", "yam_real.get_controller_metadata"}
 )
 
+CERULION_PUBLIC_TOOL_NAMES = frozenset(
+    {"cerulion.get_task_metadata", "cerulion.get_controller_metadata"}
+)
+"""Nonprivileged metadata extensions of the Cerulion simulated arm."""
+
 _APPROVED_EMBODIMENT_PREFIXES = (
     "behavior.",
+    "cerulion.",
     "yam_real.",
     "libero.",
     "robosuite.",
