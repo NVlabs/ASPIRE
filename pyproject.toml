@@ -31,6 +31,10 @@ agent = [
   "pillow>=10",
   "jsonschema>=4",
 ]
+cerulion = [
+  "imageio[ffmpeg]>=2.34",
+  "mcp>=1.26,<2",
+]
 yam-real = [
   "imageio[ffmpeg]>=2.34",
   "portal>=3.7.3",

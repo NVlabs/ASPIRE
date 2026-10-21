@@ -15,6 +15,7 @@ DEFAULT_EMBODIMENT = "robosuite"
 JOINT_DIMENSIONS: Mapping[str, int] = MappingProxyType(
     {
         "behavior": 7,
+        "cerulion": 6,
         "libero": 7,
         "robosuite": 7,
         "yam_real": 6,

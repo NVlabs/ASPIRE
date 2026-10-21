@@ -110,6 +110,25 @@ OMNIGIBSON_HEADLESS=1 OMNIGIBSON_GPU_ID=0 OMNIGIBSON_DATA_PATH="$HOME/behavior-d
   --camera-width 512 --camera-height 512
 ```
 
+## Cerulion runtime target (simulated arm)
+
+- Benchmark: `cerulion`
+- Task: pick up the cube and lift it at least 15 cm
+- Suite/task: `cerulion:0`
+- Seed: `0`
+
+Needs no GPU services: the arm runs in a Cerulion graph and is reached through
+`cerulion-rcpd`. There is no perception; the program reads the cube position
+from task metadata. Start the graph first; see [`docs/cerulion.md`](../docs/cerulion.md).
+
+```bash
+cap-harness run --benchmark cerulion --suite cerulion --task-id 0 --seed 0 \
+  --program examples/cerulion/pick_cube.py \
+  --rcpd-manifest /path/to/cerulion/examples/aspire_arm/rcp.yaml \
+  --rcpd-receipts outputs/cerulion/receipts.jsonl \
+  --output-root outputs/examples --camera-width 256 --camera-height 128
+```
+
 ## Other LIBERO-Pro programs
 
 `examples/libero/` also carries five programs that came out of fix-loop campaigns rather than a

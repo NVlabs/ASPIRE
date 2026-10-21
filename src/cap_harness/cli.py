@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Sequence
 import json
+import os
 from pathlib import Path
 import sys
 from typing import Any
@@ -141,7 +142,7 @@ def build_parser() -> argparse.ArgumentParser:
     run = subparsers.add_parser("run", help="execute and record one Code-as-Policy episode")
     run.add_argument(
         "--benchmark",
-        choices=("behavior", "libero-pro", "robosuite", "yam_real"),
+        choices=("behavior", "cerulion", "libero-pro", "robosuite", "yam_real"),
         default="libero-pro",
     )
     run.add_argument("--suite", required=True)
@@ -150,6 +151,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--station-config-root", type=Path, help="Custom YAM station profiles directory"
     )
     run.add_argument("--allow-motion", action="store_true", help="Enable physical YAM commands")
+    run.add_argument(
+        "--rcpd-manifest",
+        type=Path,
+        help=(
+            "cerulion: the rcp.yaml manifest cerulion-rcpd serves "
+            "(or set CAP_HARNESS_CERULION_RCPD_CMD)"
+        ),
+    )
+    run.add_argument(
+        "--rcpd-receipts",
+        type=Path,
+        help="cerulion: where cerulion-rcpd appends its hash-chained call receipts",
+    )
     run.add_argument("--task-id", type=int, required=True)
     run.add_argument("--seed", type=int, default=1)
     run.add_argument("--program", type=Path, required=True)
@@ -403,6 +417,8 @@ def _run_command(args: argparse.Namespace) -> int:
         station=args.station,
         station_config_root=args.station_config_root,
         allow_motion=args.allow_motion,
+        rcpd_manifest=args.rcpd_manifest,
+        rcpd_receipts=args.rcpd_receipts,
     )
     # Flushed explicitly: a simulator that segfaults on interpreter teardown (Isaac Sim does)
     # would otherwise discard these lines when stdout is a file.
@@ -483,6 +499,14 @@ def _safe_error_message(exc: BaseException) -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if (
+        getattr(args, "benchmark", None) == "cerulion"
+        and getattr(args, "rcpd_manifest", None) is None
+        and not os.environ.get("CAP_HARNESS_CERULION_RCPD_CMD")
+    ):
+        parser.error(
+            "--benchmark cerulion needs --rcpd-manifest (or CAP_HARNESS_CERULION_RCPD_CMD)"
+        )
     handler: Any = args.handler
     try:
         return int(handler(args))

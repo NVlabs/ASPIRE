@@ -87,6 +87,45 @@ def build_yam_runtime(
     return adapter, runtime
 
 
+def build_cerulion_runtime(
+    adapter: Any,
+    *,
+    seed: int = 0,
+    event_sink: Any = None,
+    tool_result_sink: Any = None,
+) -> EmbeddedAgentRuntime:
+    """Attach to a Cerulion arm reached through cerulion-rcpd; resets it once, seeded."""
+    from cap_harness.api import CapApi
+    from cap_harness.cerulion.adapter import CAMERA_NAME
+    from cap_harness.registry import CERULION_PUBLIC_TOOL_NAMES, ToolRegistry
+
+    adapter.reset("cerulion", seed)
+    api = CapApi(adapter, default_camera=CAMERA_NAME)
+    registry = api.register_tools(
+        ToolRegistry(public_extension_allowlist=CERULION_PUBLIC_TOOL_NAMES)
+    )
+    return EmbeddedAgentRuntime(
+        api, registry, event_sink=event_sink, tool_result_sink=tool_result_sink
+    )
+
+
+def _serve_cerulion(args: argparse.Namespace) -> int:
+    import uvicorn
+
+    from cap_harness.cerulion.adapter import CerulionAdapter
+
+    adapter = CerulionAdapter(manifest=args.rcpd_manifest, receipts=args.rcpd_receipts)
+    try:
+        runtime = build_cerulion_runtime(adapter, seed=args.seed)
+        try:
+            uvicorn.run(create_app(runtime.session), host=args.host, port=args.port)
+        finally:
+            runtime.close()
+    finally:
+        adapter.close()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--station", default="yam-example")
@@ -101,7 +140,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-video", action="store_true")
     parser.add_argument("--sam3-url")
     parser.add_argument("--curobo-url")
+    parser.add_argument(
+        "--embodiment",
+        choices=("yam_real", "cerulion"),
+        default="yam_real",
+        help="cerulion: a simulated arm in a Cerulion graph, reached through cerulion-rcpd",
+    )
+    parser.add_argument("--rcpd-manifest", type=Path, help="cerulion: the rcp.yaml manifest")
+    parser.add_argument("--rcpd-receipts", type=Path, help="cerulion: the receipt log path")
+    parser.add_argument("--seed", type=int, default=0, help="cerulion: the reset seed")
     args = parser.parse_args(argv)
+    if args.embodiment == "cerulion":
+        return _serve_cerulion(args)
     from contextlib import ExitStack
 
     import uvicorn
