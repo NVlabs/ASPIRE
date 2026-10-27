@@ -250,6 +250,16 @@ def test_saved_init_mode_rejects_a_task_with_no_saved_states(tmp_path) -> None:
         adapter.reset(("libero_goal_task", 2), seed=1)
 
 
+def test_saved_init_mode_accepts_ndarray_init_states(tmp_path) -> None:
+    """LIBERO's get_task_init_states returns an ndarray, whose truth value is ambiguous."""
+    states = np.array([[0.1], [0.2], [0.3]])
+    adapter, env, _ = _build_adapter(tmp_path, init_mode="saved", init_states=states)
+
+    adapter.reset(("libero_goal_task", 2), seed=5)
+
+    np.testing.assert_allclose(env.selected_init_state, [0.2])  # (5 - 1) % 3 == 1
+
+
 def test_init_mode_rejects_unknown_value(tmp_path) -> None:
     with pytest.raises(ValueError, match="init_mode"):
         _build_adapter(tmp_path, init_mode="procedural")

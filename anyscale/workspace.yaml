@@ -1,0 +1,44 @@
+# ASPIRE workspace on Anyscale: one node with one L4 GPU that runs the coordinator agent, the
+# sims and the providers, with no Ray changes. The image holds only the environment; the code
+# is a git checkout in the workspace's working directory, which persists across restarts.
+#
+#   anyscale workspace_v2 create -f anyscale/workspace.yaml
+#   anyscale workspace_v2 start -n aspire && anyscale workspace_v2 wait -n aspire
+#
+# When this cloud has no GPU, start the same workspace on another cloud. Each was tested on
+# 26 Oct 2026: workspace-aws-use1.yaml (fastest), workspace-gcp-usw1.yaml, workspace-aws-use2.yaml
+# and workspace-gcp-usc1.yaml.
+#
+# Then, in the workspace terminal, from the working directory. The first start fetches the code;
+# `git clone .` fails there because Anyscale has already written a .anyscaleignore:
+#   git init -q && git remote add origin https://github.com/anyscale/ASPIRE.git
+#   git fetch origin anyscale && git checkout -t origin/anyscale
+#   scripts/bootstrap_libero.sh && scripts/bootstrap_providers.sh --providers sam3,pyroki,curobo
+#
+# The venvs and uv caches live on the node's NVMe, outside the working directory's 10 GB
+# snapshot, so run the bootstraps again after every start (about 2.5 minutes).
+name: aspire
+image_uri: anyscale/image/aspire:3
+compute_config:
+  cloud: aws-public-us-west-2
+  head_node:
+    # On-demand GPUs are scarce on this cloud. Instances the org launched here from 5 to 26 Oct
+    # 2026: g6.2xlarge 545, g6.4xlarge 221, g6.12xlarge (4x L4) 6, g6e.12xlarge (4x L40S) 2.
+    # When AWS has no capacity, Anyscale retries the launch every few seconds.
+    # g6.4xlarge: 1x L4 24 GB (sm_89), 16 vCPU, 64 GB RAM, 600 GB NVMe.
+    instance_type: g6.4xlarge
+  worker_nodes: []
+# Anyscale counts Ray work and finished terminal commands as activity, so a long agent run can
+# look idle, and every restart queues for a GPU again.
+idle_termination_minutes: 1440
+# To change these later: `anyscale workspace_v2 update <id> -f anyscale/workspace.yaml`. It works
+# only on a terminated workspace and replaces every env var, including any added in the console.
+env_vars:
+  CAP_HARNESS_PROFILE: rtx4090            # one Ada GPU: every provider shares GPU 0
+  CAP_HARNESS_CUROBO_GPU: "0"             # the cuRobo bootstrap checks GPU 3 by default
+  CAP_HARNESS_VENV_ROOT: /mnt/local_storage/aspire-venvs
+  CAP_HARNESS_LIBERO_CACHE: /mnt/local_storage/uv-cache    # else 8 GB lands in the snapshot
+  CAP_HARNESS_PROVIDER_CACHE: /mnt/local_storage/uv-cache
+  LIBERO_CONFIG_PATH: /home/ray/.libero   # without a config, LIBERO prompts and exits
+  HF_HUB_CACHE: /mnt/user_storage/hf-hub  # SAM3 weights, downloaded once with a token
+  HF_HUB_OFFLINE: "1"                     # load them from the cache; the node has no token

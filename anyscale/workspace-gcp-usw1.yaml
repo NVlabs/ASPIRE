@@ -1,0 +1,25 @@
+# ASPIRE workspace on gcp-public-us-west1, a fallback when workspace.yaml's cloud has no GPU.
+# Same image, env vars and steps as workspace.yaml (see its header).
+#   anyscale workspace_v2 start -n aspire-gcp-usw1 --cloud gcp-public-us-west1
+# On 26 Oct 2026 an L4 launched here within 2 minutes, and the GPU render, doctor and LIBERO
+# bootstrap checks passed. Anyscale names GCP GPU types <machine>-nvidia-<gpu>-<count>. The cloud
+# hibernates when idle: the first request then fails with "has been hibernated due to inactivity"
+# and works on retry. /mnt/local_storage is the 145 GB boot disk, not NVMe; user and cluster
+# storage are Filestore. SAM3's weights aren't on this cloud: download them once with a token.
+name: aspire-gcp-usw1
+image_uri: anyscale/image/aspire:3
+compute_config:
+  cloud: gcp-public-us-west1
+  head_node:
+    instance_type: g2-standard-16-nvidia-l4-1   # 1x L4 24 GB (sm_89), 16 vCPU, 64 GB RAM
+  worker_nodes: []
+idle_termination_minutes: 1440
+env_vars:
+  CAP_HARNESS_PROFILE: rtx4090
+  CAP_HARNESS_CUROBO_GPU: "0"
+  CAP_HARNESS_VENV_ROOT: /mnt/local_storage/aspire-venvs
+  CAP_HARNESS_LIBERO_CACHE: /mnt/local_storage/uv-cache
+  CAP_HARNESS_PROVIDER_CACHE: /mnt/local_storage/uv-cache
+  LIBERO_CONFIG_PATH: /home/ray/.libero
+  HF_HUB_CACHE: /mnt/user_storage/hf-hub
+  HF_HUB_OFFLINE: "1"

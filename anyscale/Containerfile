@@ -1,0 +1,27 @@
+# ASPIRE on Anyscale: the system packages and tools LIBERO-Pro runs need. The code is not
+# in the image; it comes from the workspace or the job's working_dir, and the repo's
+# bootstraps build their venvs from that checkout.
+FROM anyscale/ray:2.59.0-slim-py311-cu128
+
+# build-essential and cmake compile egl-probe (robomimic) and pyliblzfse (pyroki) during
+# the bootstraps. libegl1, libgl1 and libgles2 are the GL dispatch libraries MuJoCo uses.
+RUN sudo apt-get update \
+ && sudo apt-get install -y --no-install-recommends \
+      build-essential cmake curl git libegl1 libgl1 libgles2 \
+ && sudo rm -rf /var/lib/apt/lists/*
+
+# Render on the GPU: the NVIDIA container toolkit mounts libEGL_nvidia only for the
+# graphics capability, and glvnd finds it through this vendor file.
+RUN sudo mkdir -p /usr/share/glvnd/egl_vendor.d \
+ && echo '{"file_format_version": "1.0.0", "ICD": {"library_path": "libEGL_nvidia.so.0"}}' \
+    | sudo tee /usr/share/glvnd/egl_vendor.d/10_nvidia.json > /dev/null
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
+    MUJOCO_GL=egl \
+    PYOPENGL_PLATFORM=egl
+
+# The bootstraps create their venvs with the base image's uv. Point them all at the image's
+# Python 3.11; bootstrap_curobo.sh would otherwise ask for /usr/bin/python3.
+ENV CAP_HARNESS_PYTHON=/home/ray/anaconda3/bin/python3
+
+# Claude Code CLI for the coordinator agent.
+RUN curl -fsSL https://claude.ai/install.sh | bash

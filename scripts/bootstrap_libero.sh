@@ -5,7 +5,7 @@ REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$REPO_ROOT/scripts/lib/venv_backing.sh"
 source "$REPO_ROOT/scripts/lib/fingerprint.sh"
 VENV_ROOT="$(resolve_canonical_venv "$REPO_ROOT" ".venv-libero")"
-UV_CACHE_ROOT="$REPO_ROOT/.uv-cache"
+UV_CACHE_ROOT="${CAP_HARNESS_LIBERO_CACHE:-$REPO_ROOT/.uv-cache}"
 LIBERO_CONFIG_DIR="${LIBERO_CONFIG_PATH:-$REPO_ROOT/.libero}"
 PYTHON_BIN="${CAP_HARNESS_PYTHON:-python3}"
 INSTALL=1

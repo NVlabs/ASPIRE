@@ -1,0 +1,24 @@
+# ASPIRE workspace on aws-public-us-east-2, a fallback when workspace.yaml's cloud has no GPU.
+# Same image, env vars and steps as workspace.yaml (see its header).
+#   anyscale workspace_v2 start -n aspire-aws-use2 --cloud aws-public-us-east-2
+# On 26 Oct 2026 only g6.4xlarge launched here; L40S and 4-GPU types were refused for 11 minutes.
+# The cloud hibernates when idle: the first request then fails with "has been hibernated due to
+# inactivity" and works on retry a few minutes later. User and cluster storage are EFS. SAM3's
+# weights aren't on this cloud: download them once with a token.
+name: aspire-aws-use2
+image_uri: anyscale/image/aspire:3
+compute_config:
+  cloud: aws-public-us-east-2
+  head_node:
+    instance_type: g6.4xlarge             # 1x L4 24 GB (sm_89), 16 vCPU, 64 GB RAM, 600 GB NVMe
+  worker_nodes: []
+idle_termination_minutes: 1440
+env_vars:
+  CAP_HARNESS_PROFILE: rtx4090
+  CAP_HARNESS_CUROBO_GPU: "0"
+  CAP_HARNESS_VENV_ROOT: /mnt/local_storage/aspire-venvs
+  CAP_HARNESS_LIBERO_CACHE: /mnt/local_storage/uv-cache
+  CAP_HARNESS_PROVIDER_CACHE: /mnt/local_storage/uv-cache
+  LIBERO_CONFIG_PATH: /home/ray/.libero
+  HF_HUB_CACHE: /mnt/user_storage/hf-hub
+  HF_HUB_OFFLINE: "1"
