@@ -31,6 +31,11 @@ PRIMARY_ARM = "primary"
 PANDA_JOINT_NAMES: tuple[str, ...] = tuple(f"robot0_joint{i}" for i in range(1, 8))
 TRAJECTORY_JOINT_TOLERANCE_RAD = 0.01
 TRAJECTORY_MAX_STEPS_PER_WAYPOINT = 120
+#: Past that bound the final waypoint is reissued only while the arm is still closing on
+#: it: the joint servo lags an interpolated trajectory, so a long joint move is still under
+#: way when the bound is reached. An arm that has stopped (contact, a limit) times out.
+TRAJECTORY_PROGRESS_WINDOW_STEPS = 20
+TRAJECTORY_MIN_PROGRESS_RAD = 0.005
 
 _LiberoAdapterT = TypeVar("_LiberoAdapterT", bound="LiberoAdapter")
 
@@ -835,9 +840,12 @@ class LiberoAdapter:
                 np.abs(final_observation.robot_state.joint_positions[PRIMARY_ARM] - final_joints)
             )
         )
-        for _ in range(TRAJECTORY_MAX_STEPS_PER_WAYPOINT - 1):
-            if error_rad <= TRAJECTORY_JOINT_TOLERANCE_RAD or terminated or truncated:
-                break
+        settle_errors = [error_rad]
+        while error_rad > TRAJECTORY_JOINT_TOLERANCE_RAD and not (terminated or truncated):
+            if len(settle_errors) >= TRAJECTORY_MAX_STEPS_PER_WAYPOINT:
+                progress_rad = settle_errors[-1 - TRAJECTORY_PROGRESS_WINDOW_STEPS] - error_rad
+                if progress_rad < TRAJECTORY_MIN_PROGRESS_RAD:
+                    break
             result = apply_waypoint(len(trajectory.joint_positions) - 1)
             if not result.ok or result.observation is None:
                 return ExecutionResult(
@@ -863,6 +871,7 @@ class LiberoAdapter:
                     )
                 )
             )
+            settle_errors.append(error_rad)
         if error_rad > TRAJECTORY_JOINT_TOLERANCE_RAD and not (terminated or truncated):
             return ExecutionResult(
                 ok=False,
@@ -875,6 +884,7 @@ class LiberoAdapter:
                         "joint_error_rad": error_rad,
                         "tolerance_rad": TRAJECTORY_JOINT_TOLERANCE_RAD,
                         "max_steps": TRAJECTORY_MAX_STEPS_PER_WAYPOINT,
+                        "settle_steps": len(settle_errors),
                     },
                 ),
                 diagnostics={"failed_waypoint": len(trajectory.joint_positions) - 1},

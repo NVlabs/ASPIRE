@@ -437,6 +437,70 @@ def test_execute_trajectory_stops_at_bounded_convergence_timeout(tmp_path) -> No
     assert result.diagnostics["failed_waypoint"] == 0
 
 
+def test_execute_trajectory_settles_past_the_bound_while_the_arm_still_closes(tmp_path) -> None:
+    adapter, env, _ = _build_adapter(tmp_path)
+    native_step = env.step
+
+    def lagging_step(action: np.ndarray):
+        # A servo that covers a fifth of each commanded joint delta.
+        slowed = np.asarray(action, dtype=np.float64).copy()
+        slowed[:7] *= 0.2
+        return native_step(slowed)
+
+    env.step = lagging_step
+    observation = adapter.reset(("libero_goal_task", 2), seed=1)
+    start = observation.robot_state.joint_positions["primary"]
+    trajectory = Trajectory(
+        joint_positions=(start + 0.5)[None, :],
+        dt_s=0.05,
+        joint_names=observation.robot_state.joint_names["primary"],
+        planner="test",
+        collision_aware=False,
+        expected_start=observation.robot_state,
+        embodiment="libero",
+    )
+
+    result = adapter.execute_trajectory(trajectory)
+
+    assert result.ok
+    assert result.steps_executed > 120
+    assert result.final_observation is not None
+    final_joints = result.final_observation.robot_state.joint_positions["primary"]
+    assert np.max(np.abs(final_joints - (start + 0.5))) <= 0.01
+
+
+def test_execute_trajectory_times_out_once_the_arm_stops_short(tmp_path) -> None:
+    adapter, env, _ = _build_adapter(tmp_path)
+    observation = adapter.reset(("libero_goal_task", 2), seed=1)
+    start = observation.robot_state.joint_positions["primary"]
+    native_step = env.step
+
+    def blocked_step(action: np.ndarray):
+        # Joints stop short of the target, as against a contact.
+        result = native_step(action)
+        env.joints = np.minimum(env.joints, start + 0.3)
+        return (env._observation(), *result[1:])
+
+    env.step = blocked_step
+    trajectory = Trajectory(
+        joint_positions=(start + 0.5)[None, :],
+        dt_s=0.05,
+        joint_names=observation.robot_state.joint_names["primary"],
+        planner="test",
+        collision_aware=False,
+        expected_start=observation.robot_state,
+        embodiment="libero",
+    )
+
+    result = adapter.execute_trajectory(trajectory)
+
+    assert not result.ok
+    assert result.steps_executed == 120
+    assert result.error is not None
+    assert result.error.code.value == "timeout"
+    assert result.error.details["settle_steps"] == 120
+
+
 def test_metadata_extensions_are_allowlisted_and_close_is_idempotent(tmp_path) -> None:
     adapter, env, _ = _build_adapter(tmp_path)
     adapter.reset(("libero_goal_task", 2), seed=3)
