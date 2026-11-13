@@ -95,6 +95,51 @@ def test_mask_projection_preserves_and_transforms_frames() -> None:
     np.testing.assert_allclose(base_cloud.points, [[1.0, 2.0, 4.0]])
 
 
+def test_mask_projection_rejects_silhouette_depth_bleed() -> None:
+    """A mask's edge pixels carrying the background's depth must not stretch
+    the cloud along the viewing ray: on a real camera a correct 0.97-score
+    mask of a 55 mm block once produced a 225 mm point cloud this way."""
+    intrinsics = np.array([[20.0, 0.0, 10.0], [0.0, 20.0, 10.0], [0.0, 0.0, 1.0]])
+    pose = Pose(
+        position=np.zeros(3),
+        quaternion_wxyz=np.array([1.0, 0.0, 0.0, 0.0]),
+        frame="base",
+    )
+    depth = np.full((20, 20), 0.70)  # background
+    depth[5:15, 5:15] = 0.50  # the object's face
+    mask = np.zeros((20, 20), dtype=bool)
+    mask[3:17, 3:17] = True  # over-wide mask: its rim is the bleed ring
+    camera = CameraObservation(
+        rgb=np.zeros((20, 20, 3), dtype=np.uint8),
+        depth_m=depth,
+        intrinsics=intrinsics,
+        frame="camera",
+        camera_pose=pose,
+    )
+    segmentation = Segmentation(
+        mask=mask, label="object", score=1.0, camera_name="agentview", frame="camera"
+    )
+
+    trimmed = mask_to_point_cloud(camera, segmentation)
+    assert trimmed.points.shape[0] == 100
+    assert float(np.ptp(trimmed.points[:, 2])) < 1e-9
+
+    raw = mask_to_point_cloud(camera, segmentation, reject_depth_outliers=False)
+    assert float(np.ptp(raw.points[:, 2])) == pytest.approx(0.20)
+
+    # Genuine depth structure is not an outlier: the cut scales with the
+    # mask's own median absolute deviation, so a continuous slope survives.
+    sloped = CameraObservation(
+        rgb=np.zeros((20, 20, 3), dtype=np.uint8),
+        depth_m=np.tile(np.linspace(0.5, 0.7, 20), (20, 1)),
+        intrinsics=intrinsics,
+        frame="camera",
+        camera_pose=pose,
+    )
+    slope_cloud = mask_to_point_cloud(sloped, segmentation)
+    assert slope_cloud.points.shape[0] == int(mask.sum())
+
+
 def test_frame_mismatch_and_nonfinite_transform_are_rejected() -> None:
     cloud = PointCloud(points=np.array([[0.0, 0.0, 1.0]]), frame="camera")
 

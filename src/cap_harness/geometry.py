@@ -256,13 +256,31 @@ def transform_pose(
     )
 
 
+#: Depth outliers are cut at this many robust sigmas (1.4826 * MAD) from the
+#: mask's median depth, but never inside the floor, so sensor noise on a flat
+#: face is not mistaken for structure to reject.
+DEPTH_OUTLIER_SIGMA = 3.0
+DEPTH_OUTLIER_FLOOR_M = 0.02
+
+
 def mask_to_point_cloud(
     observation: CameraObservation,
     segmentation: Segmentation,
     *,
     target_frame: str | None = None,
+    reject_depth_outliers: bool = True,
 ) -> PointCloud:
-    """Back-project a mask and optionally transform it to the camera parent frame."""
+    """Back-project a mask and optionally transform it to the camera parent frame.
+
+    Real depth cameras bleed at silhouettes: a mask's edge pixels carry the
+    *background's* depth, and on an oblique view those points stretch the cloud
+    along the viewing ray (a 55 mm block once became a 225 mm point cloud from
+    a correct 0.97-score mask). ``reject_depth_outliers`` trims pixels whose
+    depth sits more than ``DEPTH_OUTLIER_SIGMA`` robust sigmas from the mask's
+    median depth. The scale comes from the mask's own median absolute
+    deviation, so an object with genuinely deep structure keeps it -- only a
+    depth *discontinuity* within one mask, which is what bleed is, gets cut.
+    """
     if not isinstance(observation, CameraObservation):
         # Preserve the invalid-data ValueError contract.
         raise ValueError("observation must be a CameraObservation")
@@ -285,6 +303,15 @@ def mask_to_point_cloud(
     depths = depths[valid]
     if depths.size == 0:
         raise ValueError("segmentation contains no pixels with valid positive depth")
+    if reject_depth_outliers and depths.size >= 4:
+        median = float(np.median(depths))
+        sigma = 1.4826 * float(np.median(np.abs(depths - median)))
+        half_width = max(DEPTH_OUTLIER_SIGMA * sigma, DEPTH_OUTLIER_FLOOR_M)
+        keep = np.abs(depths - median) <= half_width
+        # The median pixel always survives its own band, so this never empties.
+        rows = rows[keep]
+        columns = columns[keep]
+        depths = depths[keep]
 
     intrinsics = observation.intrinsics
     x = (columns - intrinsics[0, 2]) * depths / intrinsics[0, 0]
